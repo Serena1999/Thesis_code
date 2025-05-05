@@ -12,9 +12,7 @@ void poly(double temp, string name_output_file, bool append_mode);
 
 //0h/3h done: 
 //usa k = 50 per fare il binning: DONE
-//sarebbe il caso che prendi altre 5000 configurazioni, oltre a quelle appena scritte: IN PROGRESS
-//poi controlla se abbastanza inversioni per condensato chirale e fai analisi anche di quello.
-//poi scegli bene intervallo di 15? valori e + then other 4 of them in CINECA_SCRATCH (CHECK);
+// fai analisi anche del condensato chirale
 
 //-----------------------------------------------------------------
 //MAIN:

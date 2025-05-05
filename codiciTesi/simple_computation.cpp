@@ -5,7 +5,6 @@
 
 /*
 OUTPUT:
-#beta    ml[MeV]
 #beta    ml[MeV]         ml_adimensional
 3.8     117.317 0.0388878
 3.827   116.034 0.0362886

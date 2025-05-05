@@ -7,11 +7,6 @@
 #include "../library.h"
 #include "../root_include.h"
 
-//1h/3h done: then errors must be implemented more carefully 
-//sistema nomi sugli assi, passali come parametri;
-//poi controlla se abbastanza inversioni per condensato chirale e fai analisi anche di quello.
-//poi scegli bene intervallo di 15? valori e + then other 4 of them in CINECA_SCRATCH (CHECK);
-
 void plot_points(vector<double>& x, vector<double>& y, string name_image);
 
 //-----------------------------------------------------------------
