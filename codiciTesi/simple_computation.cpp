@@ -5,23 +5,23 @@
 
 /*
 OUTPUT:
-#beta    ml[MeV]         ml_adimensional
-3.8     117.317 0.0388878
-3.827   116.034 0.0362886
-3.84063 115.478 0.0350957
-3.881   114.14  0.0319629
-3.908   113.46  0.0301512
-3.935   112.904 0.0285228
-3.962   112.415 0.0270421
-3.989   111.941 0.0256782
-4.016   111.421 0.0244032
-4.043   110.794 0.0231922
-4.07    110.005 0.0220253
-4.097   109.001 0.020886
-4.124   107.729 0.0197607
-4.151   106.159 0.0186421
-4.178   104.261 0.0175257
-4.2     102.466 0.0166178
+#beta    ml[MeV]
+3.8     117.317
+3.827   116.034
+3.84063 115.478
+3.881   114.14
+3.908   113.46
+3.935   112.904
+3.962   112.415
+3.989   111.941
+4.016   111.421
+4.043   110.794
+4.07    110.005
+4.097   109.001
+4.124   107.729
+4.151   106.159
+4.178   104.261
+4.2     102.4668
 */
 
 
@@ -43,15 +43,13 @@ int main() {
 
 	vector<double> afm = { 0.1377037468, 0.1290036669, 0.1249189781, 0.1139049357, 0.1073456174, 0.1013484202, 0.0958468116, 0.0907797794, 0.0860918322, 0.0817329985, 0.0776588275, 0.0738303888, 0.0702142723, 0.0667825883, 0.0635129674, 0.0609567905 }; //a[fm] //BE CAREFUL TO CHOOSE IT WELL;
 
-	double ml_value;//[in MeV] ml[fm^{-1}] = aml/afm -> ml[fm^{-1}] = hbar_c * aml/afm; 
-	double ml_adimensional; //beta = Nt *a -> a = Nt / beta ->ml_adimensional * a = aml->ml_adimensional = aml / a = aml * beta / ((double)Nt)
+	double ml_value;//[in MeV] ml[fm^{-1}] = aml/afm -> ml[fm^{-1}] = hbar_c * aml/afm;
 
-	cout << "#beta \t ml[MeV] \t ml_adimensional" << endl;
+	cout << "#beta \t ml[MeV]" << endl;
 
 	for (int ii = 0; ii < (beta.size()); ii++) {
 		ml_value = hbar_c * aml[ii] / afm[ii];
-		ml_adimensional = aml[ii] * beta[ii] / ((double)Nt);
-		cout << beta[ii] << "\t" << ml_value << "\t" << ml_adimensional << endl;
+		cout << beta[ii] << "\t" << ml_value << "\t" << endl;
 	}
 
 	return 0;
