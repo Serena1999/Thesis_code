@@ -1,0 +1,24 @@
+**/.vs
+**/out
+**/Debug/
+**/x64/
+**/x86/
+**/Data
+**/Data_tests
+**/images
+#**/Src_tests
+
+/OLD
+/documentiDiVarioGenere
+/codesFromExternalSources/pcg-cpp-0.98_OLD
+/codesFromExternalSources/ranlux-3.3
+#I realized that there are some badly written things on this library "ranlux-3.3", if you want to think about it later, in the meantime I use the ranlux48 generator implemented in C++, which works with a analogous algorithm
+
+CMakeLists_conAggiunteSoloPersonali.txt
+example.cpp
+OLD_library.h
+
+Module1/Src/OLD_random_number_generator_mersenne.cpp
+Module1/Src/OLD_random_number_generator_pcg.cpp
+Module1/Src/OLD_random_number_generator_ranlux.cpp
+
