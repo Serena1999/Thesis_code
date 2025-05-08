@@ -22,7 +22,14 @@ int main() {
 	double mpi = 800; //MeV //BE CAREFUL TO CHOOSE IT WELL;
 	double temp_value;
 	bool bool_startFile = 1;//BE CAREFUL TO CHOOSE IT WELL;
-	vector<double> aml = { 0.073104 }; //a*m_l //BE CAREFUL TO CHOOSE IT WELL;
+	//vector<double> aml = { 0.081869, 0.075858, 0.073104, 0.065886, 0.061722, 0.057988, 0.054603, 0.051498, 0.048612, 0.045891, 0.043293, 0.040783, 0.038333, 0.035928, 0.033558, 0.031653 }; //a*m_l //BE CAREFUL TO CHOOSE IT WELL;
+
+	//vector<double> beta = { 3.80000, 3.82700, 3.84063, 3.88100, 3.90800, 3.93500, 3.96200, 3.98900, 4.01600, 4.04300, 4.07000, 4.09700, 4.12400, 4.15100, 4.17800, 4.20000 }; //BE CAREFUL TO CHOOSE IT WELL;
+
+	//vector<double> afm = { 0.1377037468, 0.1290036669, 0.1249189781, 0.1139049357, 0.1073456174, 0.1013484202, 0.0958468116, 0.0907797794, 0.0860918322, 0.0817329985, 0.0776588275, 0.0738303888, 0.0702142723, 0.0667825883, 0.0635129674, 0.0609567905 }; //a[fm] //BE CAREFUL TO CHOOSE IT WELL;
+
+	
+	vector<double> aml = { 0.073104 };//a*m_l //BE CAREFUL TO CHOOSE IT WELL;
 	vector<double> beta = { 3.84063 }; //BE CAREFUL TO CHOOSE IT WELL;
 	vector<double> afm = { 0.1249189781 }; //a[fm] //BE CAREFUL TO CHOOSE IT WELL;
 
@@ -33,11 +40,13 @@ int main() {
 	mpi_stream << std::fixed << std::setprecision(1) << mpi; //set to 1 decimal place
 	string mpi_string = mpi_stream.str(); // conversion into string
 
-	string name_output_file = mpi_string + "_poly_results.txt";
-	
+	//string name_output_file = mpi_string + "_poly_results.txt";
+	string name_output_file = mpi_string + "_conversionToSeeTemp.txt";
+
 	for (int ii = 0; ii < (beta.size()); ii++) {
 		temp_value = hbar_c / (Nt * afm[ii]);
 		temp.push_back(temp_value);
+		cout << temp_value << endl;
 	}
 
 	if (bool_startFile) {
@@ -54,7 +63,7 @@ int main() {
 	
 
 
-	poly(temp[0], name_output_file, append_mode[0]);
+	//poly(temp[0], name_output_file, append_mode[0]);
 	return 0;
 }
 

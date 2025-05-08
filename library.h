@@ -1005,6 +1005,11 @@ template <class T> int stats_indipendent_unbiased(T* mean, T* var_m, int n_skip,
 //Function to compute sample mean and sample variance from a given vector of data, with autocorrelation estimated by the blocking techinque.
 template <class T> void blocking(T* mean, T* var_m, vector<T>& draws, int dim_block) {
 	/*
+		-> *mean will contain sample mean value;
+		-> *var_m will contain sample variance value from the mean;
+		-> draws contain all the draws which we are using in the mean and variance computations;
+		-> dim_block = block dimension used in blocking procedure.
+
 	Uses the Welford algorithm to avoid numerical errors due to divisions between large numbers.
 	This implies a slowdown. Therefore, a faster version of this function has also been also
 	implemented in "blocking_faster", although it is subject to problems when large divisions
@@ -1013,6 +1018,10 @@ template <class T> void blocking(T* mean, T* var_m, vector<T>& draws, int dim_bl
 	If performance is more important and the data is not extremely sensitive to numerical errors,
 	the "blocking_faster" version is a good choice.
 	*/
+
+	(*mean) = 0;
+	(*var_m) = 0;
+
 	int n_blocks = draws.size() / dim_block;//=number of blocks
 	int n_max = n_blocks * dim_block;//N_max to consider to compute variance
 	int index = 0;
@@ -1020,18 +1029,19 @@ template <class T> void blocking(T* mean, T* var_m, vector<T>& draws, int dim_bl
 	for (int jj = 0; jj < n_max; jj += dim_block) {
 		index++;
 		mean_tmp = 0;
-		for (int kk = 0; kk < dim_block; kk++) {
-			delta = draws[jj + kk] - mean_tmp;
-			mean_tmp = mean_tmp + delta / (kk + 1);
+		for (int kk = 1; kk <= dim_block; kk++) {
+			delta = draws[jj + kk - 1] - mean_tmp;
+			mean_tmp = mean_tmp + delta / kk;
 		}
 		delta = mean_tmp - (*mean);
-		(*mean) = (*mean) + delta / (index + 1);
+		//(*mean) = (*mean) + delta / (index+1);sbagliato->cancellalo poi
+		(*mean) = (*mean) + delta / index;
 		(*var_m) = (*var_m) + delta * (mean_tmp - (*mean));
 	}
 	(*var_m) = ((*var_m) / (n_blocks - 1)) / n_blocks;
-	for (int ii = n_max; ii < draws.size(); ii++) {
-		delta = draws[ii] - (*mean);
-		(*mean) = (*mean) + delta / (ii + 1);
+	for (int ii = n_max + 1; ii < draws.size(); ii++) {
+		delta = draws[ii - 1] - (*mean);
+		(*mean) = (*mean) + delta / ii;
 	}
 }
 
@@ -1039,12 +1049,18 @@ template <class T> void blocking(T* mean, T* var_m, vector<T>& draws, int dim_bl
 //More fast than blocking, but less precise.
 template <class T> void blocking_faster(T* mean, T* var_m, vector<T>& draws, int dim_block) {
 	/*
+		-> *mean will contain sample mean value;
+		-> *var_m will contain sample variance value from the mean;
+		-> draws contain all the draws which we are using in the mean and variance computations;
+		-> dim_block = block dimension used in blocking procedure.
+
 	If you need precision, use the "blocking" version, especially for numerically sensitive datasets.
 	If performance is more important and the data is not extremely sensitive to numerical errors,
 	the "blocking_faster" version is a good choice.
 	*/
-
-	int n_blocks = draws.size() / dim_block;//=number of blocks
+	(*mean) = 0;
+	(*var_m) = 0;
+	int n_blocks = draws.size() / dim_block;//=number of blocks //be careful: it is a division between int and so decimals are discarded
 	int n_max = n_blocks * dim_block;//N_max to consider to compute variance
 	int index = 0;
 	T mean_tmp, delta;
@@ -1056,13 +1072,13 @@ template <class T> void blocking_faster(T* mean, T* var_m, vector<T>& draws, int
 		}
 		mean_tmp /= dim_block;
 		delta = mean_tmp - (*mean);
-		(*mean) = (*mean) + delta / (index + 1);
+		(*mean) = (*mean) + delta / index;
 		(*var_m) = (*var_m) + delta * (mean_tmp - (*mean));
 	}
 	(*var_m) = ((*var_m) / (n_blocks - 1)) / n_blocks;
-	for (int ii = n_max; ii < draws.size(); ii++) {
-		delta = draws[ii] - (*mean);
-		(*mean) = (*mean) + delta / (ii + 1);
+	for (int ii = n_max + 1; ii < draws.size(); ii++) {
+		delta = draws[ii - 1] - (*mean);
+		(*mean) = (*mean) + delta / ii;
 	}
 }
 
@@ -1070,7 +1086,13 @@ template <class T> void blocking_faster(T* mean, T* var_m, vector<T>& draws, int
 //-----------------------------------------------------------------
 //I/O FUNCTIONS:
 
-template <class T> void read_markovchain(int n_skip, vector<T>& draws, string name_input_file) {
+//Function to read data from a file, in which datas are alligned as a single column.
+template <class T> void read_column(int n_skip, vector<T>& draws, string name_input_file) {
+	/*
+		-> name_input_file = name of the file from where we read the values that we want to put into draws;
+		-> n_skip = number of lines to discard from the start of name_input_file;
+		-> draws will contain all the values read from name_input_file.
+	*/
 	ifstream input_file;
 	string line;
 	T value;
@@ -1085,6 +1107,7 @@ template <class T> void read_markovchain(int n_skip, vector<T>& draws, string na
 			cerr << "Error: there are less than " << n_skip << " lines in the file." << endl;
 		}
 	}
+
 	while (input_file >> value) {
 		draws.push_back(value);
 	}
