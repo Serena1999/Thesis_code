@@ -1,4 +1,4 @@
-/*<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+﻿/*<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 ****   library.h: LIBRARY THAT CONTAINS HEADERS, DEFINITIONS  ****
 ****     AND FUNCTIONS FOR CODES FOR THE COURSE "NUMERICAL    ****
 ****    METHODS FOR PHYSICISTS" (author = Serena Bruzzesi)    ****
@@ -16,8 +16,8 @@ using namespace std;
 
 struct sample_gen {
 
-	//-----------------------------------------------------------------
-	//RANDOM NUMBER GENERATOR:
+//-----------------------------------------------------------------
+//RANDOM NUMBER GENERATOR:
 
 #if random_choice_par == 1
 	mt19937_64 rng;
@@ -51,7 +51,7 @@ struct sample_gen {
 	ranlux48 rng;
 
 	/*
-		48-bit RANLUX generator by Martin L�scher and Fred James (1994)
+		48-bit RANLUX generator by Martin Lüscher and Fred James (1994)
 		(a subtract-with-carry pseudo-random generator)
 		(it is a default generator in C++)
 		(https://cplusplus.com/reference/random/ranlux48/)
@@ -106,30 +106,34 @@ struct sample_gen {
 
 		file4data.open(name_file4data);
 		if (!file4data) {
-			cout << "Error opening file" << endl;
+			cout << "Error opening data file" << endl;
+			return;
 		}
 
 		file4properties.open(name_file4properties);
 		if (!file4properties) {
-			cout << "Error opening file" << endl;
+			cout << "Error opening properties file" << endl;
+			file4data.close();
+			return;
 		}
+
 		if (seed != -1) {//if seed = -1, it means that we want to use the default seed
 			rng.seed((unsigned)seed);//we assign the selected seed in file4Settings
-			file4properties << "#random_choice_par \t seed \t number of generated values:\n";
+			file4properties << "#random_choice_par \t seed \t number of generated values:" << endl;
 			file4properties << random_choice_par << "\t" << seed << "\t" << N;
 			//!!
-			file4data << "#Generator n." << random_choice_par << " - " << N << " extractions, seed = " << seed;
+			file4data << "#Generator n." << random_choice_par << " - " << N << " extractions, seed = " << seed << endl;
 		}
 		else {
-			file4properties << "#random_choice_par \t seed \t number of generated values:\n";
+			file4properties << "#random_choice_par \t seed \t number of generated values:" << endl;
 			file4properties << random_choice_par << "\t" << "default\t" << N;
 			//!!
-			file4data << "#Generator n." << random_choice_par << " - " << N << " extractions, seed = default";
+			file4data << "#Generator n." << random_choice_par << " - " << N << " extractions, seed = default" << endl;
 		}
 
 		//PSEUDO-RANDOM NUMBERS GENERATION:
 		for (int i = 0; i < N; i++) {
-			file4data << "\n" << rng();
+			file4data << rng() << endl;
 		}
 
 		file4data.close();
@@ -147,29 +151,33 @@ struct sample_gen {
 
 		file4data.open(name_file4data);
 		if (!file4data) {
-			cout << "Error opening file" << endl;
+			cout << "Error opening data file" << endl;
+			return;
 		}
 
 		file4properties.open(name_file4properties);
 		if (!file4properties) {
-			cout << "Error opening file" << endl;
+			cout << "Error opening properties file" << endl;
+			file4data.close();
+			return;
 		}
+
 		if (seed != -1) {//if seed = -1, it means that we want to use the default seed
 			rng.seed((unsigned)seed);//we assign the selected seed in file4Settings
-			file4properties << "#random_choice_par \t seed \t number of generated values:\n";
+			file4properties << "#random_choice_par \t seed \t number of generated values:" << endl;
 			file4properties << random_choice_par << "\t" << seed << "\t" << N;
 			//!!
-			file4data << "#Generator n." << random_choice_par << " - " << N << " extractions, seed = " << seed;
+			file4data << "#Generator n." << random_choice_par << " - " << N << " extractions, seed = " << seed << endl;
 		}
 		else {
-			file4properties << "#random_choice_par \t seed \t number of generated values:\n";
+			file4properties << "#random_choice_par \t seed \t number of generated values:" << endl;
 			file4properties << random_choice_par << "\t" << "default\t" << N;
 			//!!
-			file4data << "#Generator n." << random_choice_par << " - " << N << " extractions, seed = default";
+			file4data << "#Generator n." << random_choice_par << " - " << N << " extractions, seed = default" << endl;
 		}
 
 		for (int i = 0; i < N; i++) {
-			file4data << "\n" << rng();
+			file4data << rng() << endl;
 		}
 
 		file4data.close();
@@ -187,29 +195,33 @@ struct sample_gen {
 
 		file4data.open(name_file4data);
 		if (!file4data) {
-			cout << "Error opening file" << endl;
+			cout << "Error opening data file" << endl;
+			return;
 		}
 
 		file4properties.open(name_file4properties);
 		if (!file4properties) {
-			cout << "Error opening file" << endl;
+			cout << "Error opening properties file" << endl;
+			file4data.close();
+			return;
 		}
+
 		if (seed != -1) {//if seed = -1, it means that we want to use the default seed
 			rng.seed((unsigned)seed);//we assign the selected seed in file4Settings
-			file4properties << "#random_choice_par \t seed \t number of generated values:\n";
+			file4properties << "#random_choice_par \t seed \t number of generated values:" << endl;
 			file4properties << random_choice_par << "\t" << seed << "\t" << N;
 			//!!
-			file4data << "#Generator n." << random_choice_par << " - " << N << " extractions, seed = " << seed;
+			file4data << "#Generator n." << random_choice_par << " - " << N << " extractions, seed = " << seed << endl;
 		}
 		else {
-			file4properties << "#random_choice_par \t seed \t number of generated values:\n";
+			file4properties << "#random_choice_par \t seed \t number of generated values:" << endl;
 			file4properties << random_choice_par << "\t" << "default\t" << N;
 			//!!
-			file4data << "#Generator n." << random_choice_par << " - " << N << " extractions, seed = default";
+			file4data << "#Generator n." << random_choice_par << " - " << N << " extractions, seed = default" << endl;
 		}
 
 		for (int i = 0; i < N; i++) {
-			file4data << "\n" << rng();
+			file4data << rng() << endl;
 		}
 
 		file4data.close();
@@ -227,24 +239,28 @@ struct sample_gen {
 		file4data.open(name_file4data);
 		if (!file4data) {
 			cout << "Error opening file" << endl;
+			return;
 		}
 
 		file4properties.open(name_file4properties);
 		if (!file4properties) {
 			cout << "Error opening file" << endl;
+			file4data.close();
+			return;
 		}
+
 		if (seed != -1) {//if seed = -1, it means that we want to use the default seed
 			rng.seed((unsigned)seed);//we assign the selected seed in file4Settings
-			file4properties << "#random_choice_par \t seed \t number of generated values:\n";
+			file4properties << "#random_choice_par \t seed \t number of generated values:" << endl;
 			file4properties << random_choice_par << "\t" << seed << "\t" << N;
 			//!!
-			file4data << "#Generator n." << random_choice_par << " - " << N << " extractions, seed = " << seed;
+			file4data << "#Generator n." << random_choice_par << " - " << N << " extractions, seed = " << seed << endl;
 		}
 		else {
-			file4properties << "#random_choice_par \t seed \t number of generated values:\n";
+			file4properties << "#random_choice_par \t seed \t number of generated values:" << endl;
 			file4properties << random_choice_par << "\t" << "default\t" << N;
 			//!!
-			file4data << "#Generator n." << random_choice_par << " - " << N << " extractions, seed = default";
+			file4data << "#Generator n." << random_choice_par << " - " << N << " extractions, seed = default" << endl;
 		}
 
 		if (random_choice_par == 3) {
@@ -296,7 +312,7 @@ struct sample_gen {
 		}
 
 		for (int i = 0; i < N; i++) {
-			file4data << "\n" << distribution(rng);
+			file4data << distribution(rng) << endl;
 		}
 
 		file4data.close();
@@ -312,25 +328,28 @@ struct sample_gen {
 
 		file4data.open(name_file4data);
 		if (!file4data) {
-			cout << "Error opening file" << endl;
+			cout << "Error opening data file" << endl;
+			return;
 		}
 
 		file4properties.open(name_file4properties);
 		if (!file4properties) {
-			cout << "Error opening file" << endl;
+			cout << "Error opening properties file" << endl;
+			file4data.close();
+			return;
 		}
 		if (seed != -1) {//if seed = -1, it means that we want to use the default seed
 			rng.seed((unsigned)seed);//we assign the selected seed in file4Settings
-			file4properties << "#random_choice_par \t seed \t number of generated values:\n";
+			file4properties << "#random_choice_par \t seed \t number of generated values:" << endl;
 			file4properties << random_choice_par << "\t" << seed << "\t" << N;
 			//!!
-			file4data << "#Generator n." << random_choice_par << " - " << N << " extractions, seed = " << seed;
+			file4data << "#Generator n." << random_choice_par << " - " << N << " extractions, seed = " << seed << endl;
 		}
 		else {
-			file4properties << "#random_choice_par \t seed \t number of generated values:\n";
+			file4properties << "#random_choice_par \t seed \t number of generated values:" << endl;
 			file4properties << random_choice_par << "\t" << "default\t" << N;
 			//!!
-			file4data << "#Generator n." << random_choice_par << " - " << N << " extractions, seed = default";
+			file4data << "#Generator n." << random_choice_par << " - " << N << " extractions, seed = default" << endl;
 		}
 
 		if (random_choice_par == 3) {
@@ -341,7 +360,7 @@ struct sample_gen {
 		}
 
 		for (int i = 0; i < N; i++) {
-			file4data << "\n" << distribution(rng);
+			file4data << distribution(rng) << endl;
 		}
 
 		file4data.close();
@@ -356,24 +375,27 @@ struct sample_gen {
 		file4data.open(name_file4data);
 		if (!file4data) {
 			cout << "Error opening file" << endl;
+			return;
 		}
 
 		file4properties.open(name_file4properties);
 		if (!file4properties) {
 			cout << "Error opening file" << endl;
+			file4data.close();
+			return;
 		}
 		if (seed != -1) {//if seed = -1, it means that we want to use the default seed
 			rng.seed((unsigned)seed);//we assign the selected seed in file4Settings
-			file4properties << "#random_choice_par \t seed \t number of generated values:\n";
+			file4properties << "#random_choice_par \t seed \t number of generated values:" << endl;
 			file4properties << random_choice_par << "\t" << seed << "\t" << N;
 			//!!
-			file4data << "#Generator n." << random_choice_par << " - " << N << " extractions, seed = " << seed;
+			file4data << "#Generator n." << random_choice_par << " - " << N << " extractions, seed = " << seed << endl;
 		}
 		else {
-			file4properties << "#random_choice_par \t seed \t number of generated values:\n";
+			file4properties << "#random_choice_par \t seed \t number of generated values:" << endl;
 			file4properties << random_choice_par << "\t" << "default\t" << N;
 			//!!
-			file4data << "#Generator n." << random_choice_par << " - " << N << " extractions, seed = default";
+			file4data << "#Generator n." << random_choice_par << " - " << N << " extractions, seed = default" << endl;
 		}
 
 		if (random_choice_par == 3) {
@@ -384,7 +406,7 @@ struct sample_gen {
 		}
 
 		for (int i = 0; i < N; i++) {
-			file4data << "\n" << distribution(rng);
+			file4data << distribution(rng) << endl;
 		}
 
 		file4data.close();
@@ -407,26 +429,27 @@ struct sample_gen {
 		D x, y, g1, g2; //to construct gaussian distributions;
 
 		//uniform distribution in [0, 1]
-		std::uniform_real_distribution <D> dist(0, 1);
+		uniform_real_distribution <D> dist(0, 1);
 
 		ofstream file4data; //declaration of output file
 
 		file4data.open(name_file4data);
 		if (!file4data) {
-			cout << "Error opening file" << endl;
+			cout << "Error opening data file" << endl;
+			return;
 		}
-
-		file4data << "#BOX MULLER DATA: (average = " << mu << ", variance = " << var << ", number of extractions = " << n_steps << ")\n";
+		file4data << setprecision(numeric_limits<D>::max_digits10);//This way, the output to the file will show the double values ​​with the greatest possible precision.
+		file4data << "#BOX MULLER DATA: (average = " << mu << ", variance = " << var << ", number of extractions = " << n_steps << ")" << endl;
 
 		if (seed != -1) {//if seed = -1, it means that we want to use the default seed
 			rng.seed((unsigned)seed);//we assign the selected seed in file4Settings
-			file4data << "#Generator n." << random_choice_par << ", seed = " << seed << "\n";
+			file4data << "#Generator n." << random_choice_par << ", seed = " << seed << endl;
 		}
 		else {
-			file4data << "#Generator n." << random_choice_par << ", seed = default" << "\n";
+			file4data << "#Generator n." << random_choice_par << ", seed = default" << endl;
 		}
 
-		file4data << "#N�point \t Value_ditribution_1  \t Value_ditribution_2 \n";
+		file4data << "#N°point \t Value_ditribution_1  \t Value_ditribution_2" << endl;
 
 		for (int ii = 1; ii <= n_steps; ii++) {
 
@@ -442,8 +465,8 @@ struct sample_gen {
 			g1 = y * cos(x) * sqrt(var) + mu;
 			g2 = y * sin(x) * sqrt(var) + mu;
 
-			//	cout << ii << ") value = " << y << "\n";
-			file4data << ii << "\t" << g1 << "\t" << g2 << "\n";
+			//	cout << ii << ") value = " << y << endl;
+			file4data << ii << "\t" << g1 << "\t" << g2 << endl;
 
 		}
 
@@ -464,30 +487,32 @@ struct sample_gen {
 		D x, y, g1, g2; //to construct gaussian distributions;
 
 		//uniform distribution in [0, 1]
-		std::uniform_real_distribution <D> dist(-1, 1);
+		uniform_real_distribution <D> dist(-1, 1);
 
 		ofstream file4data; //declaration of output file
 
 		file4data.open(name_file4data);
 		if (!file4data) {
-			cout << "Error opening file" << endl;
+			cout << "Error opening data file" << endl;
+			return;
 		}
 
-		file4data << "#BOX MULLER DATA: (average = " << mu << ", variance = " << var << ", number of extractions = " << n_steps << ")\n";
+		file4data << fixed << setprecision(numeric_limits<D>::max_digits10);//This way, the output to the file will show the double values ​​with the greatest possible precision.
+		file4data << "#BOX MULLER DATA: (average = " << mu << ", variance = " << var << ", number of extractions = " << n_steps << ")" << endl;
 
 		if (seed != -1) {//if seed = -1, it means that we want to use the default seed
 			rng.seed((unsigned)seed);//we assign the selected seed in file4Settings
-			file4data << "#Generator n." << random_choice_par << ", seed = " << seed << "\n";
+			file4data << "#Generator n." << random_choice_par << ", seed = " << seed << endl;
 		}
 		else {
-			file4data << "#Generator n." << random_choice_par << ", seed = default" << "\n";
+			file4data << "#Generator n." << random_choice_par << ", seed = default" << endl;
 		}
 
-		file4data << "#N�point \t Value_ditribution_1  \t Value_ditribution_2 \n";
+		file4data << "#N°point \t Value_ditribution_1  \t Value_ditribution_2" << endl;
 
 		int step = 0;
 		double r2;
-
+		
 		while (step < n_steps) {
 
 			//Extraction of x and y in [0,1]
@@ -500,19 +525,19 @@ struct sample_gen {
 				step += 1;
 				g1 = sqrt(-2 * log(1 - r2) / r2) * x * sqrt(var) + mu;
 				g2 = sqrt(-2 * log(1 - r2) / r2) * y * sqrt(var) + mu;
-				//	cout << ii << ") value = " << y << "\n";
-				file4data << step << "\t" << g1 << "\t" << g2 << "\n";
+				//	cout << ii << ") value = " << y << endl;
+				file4data << step << "\t" << g1 << "\t" << g2 << endl;
 			}
 		}
 
 		file4data.close();
 
 	}
-
+	
 	//Function to implement a single step of Box-Muller algorithm with trigonometric functions:
 	template <class T, class D> void box_muller_single_step(D& distribution, T* mu, T* var, T* result1, T* result2) {
 		/*
-		 -> distribution deve essere dist cos� definita: std::uniform_real_distribution <T> dist(0, 1);
+		 -> distribution deve essere dist così definita: std::uniform_real_distribution <T> dist(0, 1);
 		 -> mu = average of the gaussian distribution;
 		 -> var = variance of the gaussian distribution;
 		 -> result1 and result2 are the 2 numbers which are distributed with two indipendent gaussian distributions.
@@ -537,7 +562,7 @@ struct sample_gen {
 	//Function to implement a single step of Box-Muller algorithm without trigonometric functions:
 	template <class T, class D> void box_muller_no_trig_single_step(D& distribution, T* mu, T* var, T* result1, T* result2) {
 		/*
-		 -> distribution deve essere dist cos� definita: std::uniform_real_distribution <T> dist(-1, 1);
+		 -> distribution deve essere dist così definita: std::uniform_real_distribution <T> dist(-1, 1);
 		 -> mu = average of the gaussian distribution;
 		 -> var = variance of the gaussian distribution;
 		 -> result1 and result2 are the 2 numbers which are distributed with two indipendent gaussian distributions.
@@ -546,7 +571,7 @@ struct sample_gen {
 		T x, y, r2; //to construct gaussian distributions;
 
 		int flag = 1;
-
+		
 		while (flag) {
 			//Extraction of x and y in [0,1]
 			x = distribution(rng); //implicit conversion int to double
@@ -587,9 +612,13 @@ struct sample_gen {
 		{
 			file4data.open(name_file4data);
 		}
+
 		if (!file4data) {
 			cout << "Error opening file" << endl;
+			return 1;
 		}
+
+		file4data << setprecision(numeric_limits<T>::max_digits10);//This way, the output to the file will show the double values ​​with the greatest possible precision.
 
 		if (seed != -1) {//if seed = -1, it means that we DON'T want to modify the seed
 			rng.seed((unsigned)seed);//we assign the selected seed in file4Settings
@@ -597,7 +626,7 @@ struct sample_gen {
 
 		for (int ii = 0; ii < n_steps; ii++) {
 			x_test = ptest(value);
-			if ((dist_unif(rng)) < (pacc(prob(x_test) / prob(value)))) {
+			if ((dist_unif(rng)) < (pacc(prob(x_test)/prob(value)))) {
 				n_acc++;
 				value = x_test;
 				file4data << value << endl;
@@ -614,13 +643,13 @@ struct sample_gen {
 
 	//Function to implement a single step of Metropolis algorithm (no Hastings), in append mode:
 	template <class F, class L, class T, class D> int metropolis_1s(D dist_unif, L ptest, F prob, T value, string name_file4data) {
-		/*
-			-> dist_unif = dist defined as std::uniform_real_distribution <double> dist(0, 1);
-			-> ptest = probability density for value->(test value) step;
-			-> prob = probability density that we want to sample;
-			-> value = starting value of Metropolis algorithm;
-			-> name_file4data = name of output file: it will contain the Markov chain;
-		*/
+	/*
+		-> dist_unif = dist defined as std::uniform_real_distribution <double> dist(0, 1);
+		-> ptest = probability density for value->(test value) step;
+		-> prob = probability density that we want to sample;
+		-> value = starting value of Metropolis algorithm;
+		-> name_file4data = name of output file: it will contain the Markov chain;
+	*/
 
 		int n_acc = 0;
 		T x_test, dp;
@@ -631,7 +660,10 @@ struct sample_gen {
 
 		if (!file4data) {
 			cout << "Error opening file" << endl;
+			return 1;
 		}
+
+		file4data << setprecision(numeric_limits<T>::max_digits10);//This way, the output to the file will show the double values ​​with the greatest possible precision.
 
 		x_test = ptest(value);
 		if ((dist_unif(rng)) < (pacc(prob(x_test) / prob(value)))) {
@@ -667,7 +699,7 @@ struct sample_gen {
 
 		ofstream file4data; //declaration of output file
 
-		if (append_mode) {
+		if (append_mode){
 			file4data.open(name_file4data, ios::app);
 		}
 		else
@@ -676,7 +708,10 @@ struct sample_gen {
 		}
 		if (!file4data) {
 			cout << "Error opening file" << endl;
+			return 1;
 		}
+
+		file4data << setprecision(numeric_limits<T>::max_digits10);//This way, the output to the file will show the double values ​​with the greatest possible precision.
 
 		if (seed != -1) {//if seed = -1, it means that we DON'T want to modify the seed
 			rng.seed((unsigned)seed);//we assign the selected seed in file4Settings
@@ -742,7 +777,7 @@ struct sample_gen {
 	}
 
 	//Function to implement a single step of Metropolis algorithm (no Hastings), for distributions writable in an exponential form, in append mode:
-	template <class F, class L, class T, class D> int metroexp_1s(D dist_unif, L ptest, F pr, T value, string name_file4data) {
+	template <class F, class L, class T, class D> int metroexp_1s(D dist_unif, L ptest, F pr,  T value, string name_file4data) {
 		/*
 			-> dist_unif = dist defined as std::uniform_real_distribution <double> dist(0, 1);
 			-> ptest = probability density for value->(test value) step;
@@ -757,10 +792,13 @@ struct sample_gen {
 		ofstream file4data; //declaration of output file
 
 		file4data.open(name_file4data, ios::app);
-
+		
 		if (!file4data) {
 			cout << "Error opening file" << endl;
+			return 1;
 		}
+		
+		file4data << setprecision(numeric_limits<T>::max_digits10);//This way, the output to the file will show the double values ​​with the greatest possible precision.
 
 		x_test = ptest(value);
 		dp = pr(x_test, value);
@@ -810,10 +848,13 @@ struct sample_gen {
 		{
 			file4data.open(name_file4data);
 		}
-
+		
 		if (!file4data) {
 			cout << "Error opening file" << endl;
+			return 1;
 		}
+
+		file4data << setprecision(numeric_limits<T>::max_digits10);//This way, the output to the file will show the double values ​​with the greatest possible precision.
 
 		if (seed != -1) {//if seed = -1, it means that we DON'T want to modify the seed
 			rng.seed((unsigned)seed);//we assign the selected seed in file4Settings
@@ -821,7 +862,7 @@ struct sample_gen {
 
 		for (int ii = 0; ii < n_steps; ii++) {
 			x_test = ptest(value);
-			if ((dist_unif(rng)) < (pacc(prob(x_test) * trasfer_test_to_value(x_test, value) / (prob(value) * trasfer_value_to_test(x_test, value))))) {
+			if ((dist_unif(rng)) < (pacc(prob(x_test) * trasfer_test_to_value(x_test, value) / (prob(value) * trasfer_value_to_test(x_test, value))))){
 				n_acc++;
 				value = x_test;
 			}
@@ -861,14 +902,17 @@ struct sample_gen {
 
 		if (!file4data) {
 			cout << "Error opening file" << endl;
+			return 1;
 		}
+
+		file4data << setprecision(numeric_limits<T>::max_digits10);//This way, the output to the file will show the double values ​​with the greatest possible precision.
 
 		x_test = ptest(value);
 		if ((dist_unif(rng)) < (pacc(prob(x_test) * trasfer_test_to_value(x_test, value) / (prob(value) * trasfer_value_to_test(x_test, value))))) {
 			n_acc++;
 			value = x_test;
 		}
-
+		
 		file4data << value << endl;
 
 		file4data.close();
@@ -888,27 +932,27 @@ template <class D> D pacc(D x) {
 
 //Function to do the accept-reject step in Metropolis(-Hastings): (to provide an alternative to the previous one)
 template <class D> D pacc2(D x) {
-	return x / (1 + x);
+	return x/(1+x);
 }
 
 //-----------------------------------------------------------------
 //STATISTICAL ANALYSIS FUNCTIONS:
 
-//Function to compute sample mean and sample variance from a given file of data, with n_skip discarded lines.
-template <class T> int stats_indipendent_unbiased(T* mean, T* var_m, int n_skip, string name_input_file) {
+//Function to compute sample mean and sample variance of the sample mean from a given file of data, with n_skip discarded lines.
+template <class T> int stats_indipendent_unbiased(T * mean, T * var_m, int n_skip, string name_input_file) {
 	/*
 		-> *mean will contain sample mean value;
-		-> *var_m will contain sample variance value from the mean;
+		-> *var_m will contain sample variance value of the sample mean;
 		-> n_skip = number of discarded lines from the document start;
 		-> name_input_file = file from which we take data to analyze
-		-> return the number of draws on which we have done the statistics
+		-> return the number of draws on which we have done the statistics 
 		   if n_skip < number of lines in the document, 1 otherwise.
-
+		
 		NOTE FOR ME: page 115 of statnotes_3.3.0.pdf on Desktop.
 
-		Welford's algorithm was used: B. P. Welford. Note on a method for
-		calculating corrected sums of squares and products. Technometrics,
-		4(3):419�420, 1962.
+		Welford's algorithm was used: B. P. Welford. Note on a method for 
+		calculating corrected sums of squares and products. Technometrics, 
+		4(3):419–420, 1962.
 	*/
 
 	ifstream input_file; //declaration of input file
@@ -919,6 +963,7 @@ template <class T> int stats_indipendent_unbiased(T* mean, T* var_m, int n_skip,
 	input_file.open(name_input_file);
 	if (!input_file) {
 		cout << "Error opening file" << endl;
+		return 1;
 	}
 
 	for (int i = 0; i < n_skip; i++) {
@@ -941,17 +986,17 @@ template <class T> int stats_indipendent_unbiased(T* mean, T* var_m, int n_skip,
 	(*var_m) = (*var_m) / (index - 1);
 
 	(*var_m) = (*var_m) / index;
-
+	
 	input_file.close();
 
 	return index;
 }
 
-//Function to compute sample mean and sample variance from a given file of data, with n_skip discarded lines.
+//Function to compute sample mean and sample variance of the sample mean from a given file of data, with n_skip discarded lines.
 template <class T> int stats_indipendent_unbiased(T* mean, T* var_m, int n_skip, vector<T>& draws, string name_input_file) {
 	/*
 		-> *mean will contain sample mean value;
-		-> *var_m will contain sample variance value from the mean;
+		-> *var_m will contain sample variance value of the sample mean;
 		-> n_skip = number of discarded lines from the document start;
 		-> draws will contain all the draws which we are using in the mean and variance computations;
 		-> name_input_file = file from which we take data to analyze;
@@ -962,7 +1007,7 @@ template <class T> int stats_indipendent_unbiased(T* mean, T* var_m, int n_skip,
 
 		Welford's algorithm was used: B. P. Welford. Note on a method for
 		calculating corrected sums of squares and products. Technometrics,
-		4(3):419�420, 1962.
+		4(3):419–420, 1962.
 	*/
 
 	ifstream input_file; //declaration of input file
@@ -973,6 +1018,7 @@ template <class T> int stats_indipendent_unbiased(T* mean, T* var_m, int n_skip,
 	input_file.open(name_input_file);
 	if (!input_file) {
 		cout << "Error opening file" << endl;
+		return 1;
 	}
 
 	for (int i = 0; i < n_skip; i++) {
@@ -1002,20 +1048,20 @@ template <class T> int stats_indipendent_unbiased(T* mean, T* var_m, int n_skip,
 	return index;
 }
 
-//Function to compute sample mean and sample variance from a given vector of data, with autocorrelation estimated by the blocking techinque.
+//Function to compute sample mean and sample variance of the sample mean from a given vector of data, with autocorrelation estimated by the blocking techinque.
 template <class T> void blocking(T* mean, T* var_m, vector<T>& draws, int dim_block) {
-	/*
+	/*	
 		-> *mean will contain sample mean value;
-		-> *var_m will contain sample variance value from the mean;
+		-> *var_m will contain sample variance value of the sample mean;
 		-> draws contain all the draws which we are using in the mean and variance computations;
 		-> dim_block = block dimension used in blocking procedure.
 
 	Uses the Welford algorithm to avoid numerical errors due to divisions between large numbers.
-	This implies a slowdown. Therefore, a faster version of this function has also been also
+	This implies a slowdown. Therefore, a faster version of this function has also been also 
 	implemented in "blocking_faster", although it is subject to problems when large divisions
 	are present (for blocks of very large dimension).
 	If you need precision, use the "blocking" version, especially for numerically sensitive datasets.
-	If performance is more important and the data is not extremely sensitive to numerical errors,
+	If performance is more important and the data is not extremely sensitive to numerical errors, 
 	the "blocking_faster" version is a good choice.
 	*/
 
@@ -1045,17 +1091,17 @@ template <class T> void blocking(T* mean, T* var_m, vector<T>& draws, int dim_bl
 	}
 }
 
-//Function to compute sample mean and sample variance from a given vector of data, with autocorrelation estimated by the blocking techinque.
+//Function to compute sample mean and sample variance of the sample mean from a given vector of data, with autocorrelation estimated by the blocking techinque.
 //More fast than blocking, but less precise.
 template <class T> void blocking_faster(T* mean, T* var_m, vector<T>& draws, int dim_block) {
 	/*
 		-> *mean will contain sample mean value;
-		-> *var_m will contain sample variance value from the mean;
+		-> *var_m will contain sample variance value of the sample mean;
 		-> draws contain all the draws which we are using in the mean and variance computations;
 		-> dim_block = block dimension used in blocking procedure.
 
 	If you need precision, use the "blocking" version, especially for numerically sensitive datasets.
-	If performance is more important and the data is not extremely sensitive to numerical errors,
+	If performance is more important and the data is not extremely sensitive to numerical errors, 
 	the "blocking_faster" version is a good choice.
 	*/
 	(*mean) = 0;
@@ -1099,12 +1145,14 @@ template <class T> void read_column(int n_skip, vector<T>& draws, string name_in
 
 	input_file.open(name_input_file);
 	if (!input_file) {
-		cout << "Error opening file" << endl;
+		cout << "Error opening input file" << endl;
+		return;
 	}
 
 	for (int i = 0; i < n_skip; i++) {
 		if (!getline(input_file, line)) {
 			cerr << "Error: there are less than " << n_skip << " lines in the file." << endl;
+			return;
 		}
 	}
 
