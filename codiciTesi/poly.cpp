@@ -8,117 +8,416 @@
 
 const double hbar_c = 197.3269804; //MeV * fm
 
-void poly(double temp, string name_output_file, bool append_mode);
+//-----------------------------------------------------------------
+//DECLARATIONS:
 
-//0h/3h done: 
-//usa k = 50 per fare il binning: DONE
-// fai analisi anche del condensato chirale
+void read_file_LPC(
+	const string name_file_lpc,
+	const int Nt,
+	const int skipLines_file_lpc,
+	const double mpi,
+	vector<double> aml,
+	vector<double> beta,
+	vector<double> afm,
+	vector<double> temp,
+	vector<int> dim_block_modP,
+	vector<int> dim_block_reP,
+	vector<int> dim_block_imP,
+	vector<int> dim_block_modff,
+	vector<int> dim_block_reff,
+	vector<int> dim_block_imff
+);
+
+void read_file_list(
+	const string name_file_list,
+	const int skipLines_file_list,
+	vector<string> directories,
+	vector<string> gauge_files,
+	vector<string> fermion_files,
+	vector<int> n_copy,
+	vector<int> n_skip_rep,
+	vector<int> n_skip_imp,
+	vector<int> n_skip_reff,
+	vector<int> n_skip_imff
+);
+
+void stats(
+	const string& input_path,
+	const string& output_path,
+	const string& tipology, //fermion/gauge
+	const bool append_mode,
+	const double temp,
+	int n_skip_re,
+	int n_skip_im,
+	const int dim_block,
+	const int dim_block_re,
+	const int dim_block_im
+);
 
 //-----------------------------------------------------------------
 //MAIN:
 
 int main() {
 	int Nt = 8; //BE CAREFUL TO CHOOSE IT WELL;
+	int skipLines_file_lpc = 2, skipLines_file_list = 1, skipLines = 1;
 	double mpi = 800; //MeV //BE CAREFUL TO CHOOSE IT WELL;
+	bool bool_startFile_poly = 1, bool_startFile_ff = 1;//BE CAREFUL TO CHOOSE IT WELL;
 	double temp_value;
-	bool bool_startFile = 1;//BE CAREFUL TO CHOOSE IT WELL;
-	//vector<double> aml = { 0.081869, 0.075858, 0.073104, 0.065886, 0.061722, 0.057988, 0.054603, 0.051498, 0.048612, 0.045891, 0.043293, 0.040783, 0.038333, 0.035928, 0.033558, 0.031653 }; //a*m_l //BE CAREFUL TO CHOOSE IT WELL;
-
-	//vector<double> beta = { 3.80000, 3.82700, 3.84063, 3.88100, 3.90800, 3.93500, 3.96200, 3.98900, 4.01600, 4.04300, 4.07000, 4.09700, 4.12400, 4.15100, 4.17800, 4.20000 }; //BE CAREFUL TO CHOOSE IT WELL;
-
-	//vector<double> afm = { 0.1377037468, 0.1290036669, 0.1249189781, 0.1139049357, 0.1073456174, 0.1013484202, 0.0958468116, 0.0907797794, 0.0860918322, 0.0817329985, 0.0776588275, 0.0738303888, 0.0702142723, 0.0667825883, 0.0635129674, 0.0609567905 }; //a[fm] //BE CAREFUL TO CHOOSE IT WELL;
-
-	
-	vector<double> aml = { 0.073104 };//a*m_l //BE CAREFUL TO CHOOSE IT WELL;
-	vector<double> beta = { 3.84063 }; //BE CAREFUL TO CHOOSE IT WELL;
-	vector<double> afm = { 0.1249189781 }; //a[fm] //BE CAREFUL TO CHOOSE IT WELL;
-
-	vector<double> temp;//T = \hbar * c /(Nt * a[fm]) (1.60), Nt = 8; 
-	vector<int> append_mode = { 1 };//BE CAREFUL TO CHOOSE IT WELL;
-
+	vector<int> append_mode_poly = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };//16 entries (same size of beta);
+	vector<int> append_mode_ff = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };//16 entries (same size of beta);
+	vector<int> n_skip_rep, n_skip_imp, n_skip_reff, n_skip_imff, n_copy;
+	vector<int> dim_block_modP, dim_block_reP, dim_block_imP, dim_block_modff, dim_block_reff, dim_block_imff;
+	vector<double> aml, beta, afm, temp;//T = \hbar * c /(Nt * a[fm]) (1.60), Nt = 8; 
+	vector<string> directories, gauge_files, fermion_files;
 	ostringstream mpi_stream;//TO INTRODUCE ALSO IN NUMERICAL METHODS CODE: IT IS USEFUL;
 	mpi_stream << std::fixed << std::setprecision(1) << mpi; //set to 1 decimal place
 	string mpi_string = mpi_stream.str(); // conversion into string
+	string name_output_file_poly = mpi_string + "_poly_results.txt";
+	string name_output_file_ff = mpi_string + "_ff_results.txt";
+	string name_file_lpc = "11_05_2025/LCP_800MeV_dimblock.txt";
+	string name_file_list = "11_05_2025/file_list_therm.txt";
 
-	//string name_output_file = mpi_string + "_poly_results.txt";
-	string name_output_file = mpi_string + "_conversionToSeeTemp.txt";
+	read_file_LPC(
+		name_file_lpc,
+		Nt,
+		skipLines_file_lpc,
+		mpi,
+		aml,
+		beta,
+		afm,
+		temp,
+		dim_block_modP,
+		dim_block_reP,
+		dim_block_imP,
+		dim_block_modff,
+		dim_block_reff,
+		dim_block_imff
+	);
 
-	for (int ii = 0; ii < (beta.size()); ii++) {
-		temp_value = hbar_c / (Nt * afm[ii]);
-		temp.push_back(temp_value);
-		cout << temp_value << endl;
-	}
+	read_file_list(
+		name_file_list,
+		skipLines_file_list,
+		directories,
+		gauge_files,
+		fermion_files,
+		n_copy,
+		n_skip_rep, 
+		n_skip_imp,
+		n_skip_reff,
+		n_skip_imff
+	);
 
-	if (bool_startFile) {
+	if (bool_startFile_poly) {
 		ofstream output_file; //declaration of output file
-		output_file.open("results/" + name_output_file);
+		output_file.open("results/" + name_output_file_poly);
 		if (!output_file) {
-			cout << "Error opening output file" << endl;
+			cerr << "Error opening output file" << endl;
+			return 1;
 		}
-
-		output_file << "# T \t |<L* L^dag>| \t err(|<L* L^dag>|) \t Re{L} \t err(Re{L}) \t Im{L} \t err(Im{L})" << endl;
-
+		output_file << "# T \t |<P * P^dag>| \t err(|<P* P^dag>|) \t Re{P} \t err(Re{P}) \t Im{P} \t err(Im{P})" << endl;
 		output_file.close();
 	}
 	
+	if (bool_startFile_ff) {
+		ofstream output_file; //declaration of output file
+		output_file.open("results/" + name_output_file_ff);
+		if (!output_file) {
+			cerr << "Error opening output file" << endl;
+			return 1;
+		}
+		output_file << "# T \t |<ff * ff^dag>| \t err(|<ff * ff^dag>|) \t Re{ff} \t err(Re{ff}) \t Im{ff} \t err(Im{ff})" << endl;
+		output_file.close();
+	}
 
 
-	//poly(temp[0], name_output_file, append_mode[0]);
+	for (int ii = 0; ii < temp.size(); ii++) {
+		
+		stats(
+			directories[ii] + gauge_files[ii],
+			name_output_file_poly,
+			"gauge",
+			append_mode_poly[ii],
+			temp[ii],
+			n_skip_rep[ii],
+			n_skip_imp[ii],
+			dim_block_modP[ii],
+			dim_block_reP[ii],
+			dim_block_imP[ii],
+			1
+		);
+		cout << "poly n°" << ii << " DONE! T = " << temp[ii] << endl;
+		cout << endl;
+
+		stats(
+			directories[ii] + fermion_files[ii],
+			name_output_file_ff,
+			"fermion",
+			append_mode_ff[ii],
+			temp[ii],
+			n_skip_reff[ii],
+			n_skip_imff[ii],
+			dim_block_modff[ii],
+			dim_block_reff[ii],
+			dim_block_imff[ii],
+			n_copy[ii]
+		);
+		cout << "ff n°" << ii << " DONE! T = " << temp[ii] << endl;
+		cout << endl;
+	}
+	
 	return 0;
 }
 
-void poly(double temp, string name_output_file, bool append_mode) {
+//-----------------------------------------------------------------
+//FUNCTION DEFINITION:
 
-	int skipLines = 1; //= number of lines to skip while reading input file;
-	int dim_block = 50; //TO CHOOSE BEFORE COMPILATION;
-	vector<double> y; //to contain data distributed as gaussians
-	vector <double> poly_vec, polyr_vec, polyi_vec;
-	double poly, poly_re, poly_im, delta, delta_re, delta_im, value_tmp;
-	double mean = 0, var_m = 0, mean_re = 0, var_re = 0, mean_im = 0, var_im = 0;
-	int index = 0;
+void read_file_LPC(
+	const string name_file_lpc,
+	const int Nt,
+	const int skipLines_file_lpc,
+	const double mpi,
+	vector<double> aml,
+	vector<double> beta,
+	vector<double> afm,
+	vector<double> temp,
+	vector<int> dim_block_modP,
+	vector<int> dim_block_reP,
+	vector<int> dim_block_imP,
+	vector<int> dim_block_modff,
+	vector<int> dim_block_reff,
+	vector<int> dim_block_imff
+) {
 	string line;
-	ifstream input_file; //declaration of input file
-	ofstream output_file; //declaration of output file
-	string name_input_file = "gauge_obs2277865449.txt";
-
-	input_file.open("02_05_2025/" + name_input_file);
-	if (!input_file) {
-		cout << "Error opening input file" << endl;
+	ifstream file_lpc;
+	file_lpc.open(name_file_lpc);
+	if (!file_lpc) {
+		cerr << "Error opening file list" << endl;
+		return;
 	}
 
+	for (int i = 0; i < skipLines_file_lpc; i++) {
+		if (!getline(file_lpc, line)) {
+			cerr << "Error: there are less than " << skipLines_file_lpc << " lines in the lpc file." << endl;
+			return;
+		}
+	}
+	
+	while (getline(file_lpc, line)) {
+		istringstream iss(line);
+		double aml_value, beta_value, afm_value;
+		int dim_block_modP_value, dim_block_reP_value, dim_block_imP_value;
+		int dim_block_modff_value, dim_block_reff_value, dim_block_imff_value;
+		string dir, gauge, ferm;
+		if (iss >> aml_value >> beta_value >> afm_value >> dim_block_modP_value >> dim_block_reP_value >> dim_block_imP_value >> dim_block_modff_value >> dim_block_reff_value >> dim_block_imff_value) {
+			aml.push_back(aml_value);
+			beta.push_back(beta_value);
+			afm.push_back(afm_value);
+			dim_block_modP.push_back(skipLines_file_lpc + dim_block_modP_value);
+			dim_block_reP.push_back(skipLines_file_lpc + dim_block_reP_value);
+			dim_block_imP.push_back(skipLines_file_lpc + dim_block_imP_value);
+			dim_block_modff.push_back(skipLines_file_lpc + dim_block_modff_value);
+			dim_block_reff.push_back(skipLines_file_lpc + dim_block_reff_value);
+			dim_block_imff.push_back(skipLines_file_lpc + dim_block_imff_value);
+		}
+		else {
+			cerr << "Poorly formatted line: " << line << endl;
+		}
+	}
+	file_lpc.close();
+}
+
+void read_file_list(
+	const string name_file_list,
+	const int skipLines_file_list,
+	vector<string> directories,
+	vector<string> gauge_files,
+	vector<string> fermion_files,
+	vector<int> n_copy,
+	vector <int> n_skip_rep,
+	vector<int> n_skip_imp,
+	vector<int> n_skip_reff,
+	vector<int> n_skip_imff
+) {
+	string line;
+	ifstream file_list;
+	file_list.open(name_file_list);
+	if (!file_list) {
+		cout << "Error opening file list" << endl;
+		return;
+	}
+
+	for (int i = 0; i < skipLines_file_list; i++) {
+		if (!getline(file_list, line)) {
+			cerr << "Error: there are less than " << skipLines_file_list << " lines in the file list." << endl;
+			return;
+		}
+	}
+
+	while (getline(file_list, line)) {
+		istringstream iss(line);
+		string dir, gauge, ferm;
+		int n_therm_rep, n_therm_imp, n_therm_reff, n_therm_imff, n_copy_value;
+		if (iss >> dir >> gauge >> n_therm_rep >> n_therm_imp >> ferm >> n_therm_reff >> n_therm_imff >> n_copy_value) {
+			directories.push_back(dir);
+			gauge_files.push_back(gauge);
+			fermion_files.push_back(ferm);
+			n_skip_rep.push_back(skipLines_file_list + n_therm_rep);
+			n_skip_imp.push_back(skipLines_file_list + n_therm_imp);
+			n_skip_reff.push_back(skipLines_file_list + n_therm_reff * n_copy_value);
+			n_skip_imff.push_back(skipLines_file_list + n_therm_imff * n_copy_value);
+			n_copy.push_back(n_copy_value);
+		}
+		else {
+			cerr << "Poorly formatted line: " << line << endl;
+		}
+	}
+
+	file_list.close();
+}
+
+void stats(
+	const string& input_path,
+	const string& output_path,
+	const string& tipology, //fermion/gauge
+	const bool append_mode,
+	const double temp,
+	int n_skip_re,
+	int n_skip_im,
+	const int dim_block,
+	const int dim_block_re,
+	const int dim_block_im,
+	const int n_copy
+){
+	vector <double> y, yr, yi;
+	double value_tmp, obs, obs_re, obs_im;
+	double mean, mean_re, mean_im, var_m, var_re, var_im;
+	string line;
+
+	ifstream input_file; //declaration of input file
+	input_file.open(input_path);
+	if (!input_file) {
+		cout << "Error opening input file: " << input_path << endl;
+		return;
+	}
+
+	ofstream output_file; //declaration of output file
 	if (append_mode) {
-		output_file.open("results/" + name_output_file, ios::app);
+		output_file.open(output_path, ios::app);
 	}
 	else
 	{
-		output_file.open("results/" + name_output_file);
+		output_file.open(output_path);
 	}
-
 	if (!output_file) {
 		cout << "Error opening output file" << endl;
+		return;
 	}
 
-	for (int i = 0; i<skipLines; i++) {
+	for (int jj = 0; jj < min(n_skip_re, n_skip_im); jj++) {
 		if (!getline(input_file, line)) {
-			cerr << "Error: there are less than " << skipLines << " lines in the file." << endl;
+			cerr << "Error: there are less than " << min(n_skip_re, n_skip_im) << " lines in the file: " << input_path << endl;
+			return;
 		}
-	} 
-
-	while(input_file >> value_tmp >> value_tmp >> value_tmp >> value_tmp >> poly_re >> poly_im) {//DEVI CORREGGEERE ERRORI
-		index++;
-		poly = poly_re * poly_re + poly_im * poly_im;//poly = |poly|^2 = poly_re^2 + poly_im^2;
-		poly_vec.push_back(poly);
-		polyr_vec.push_back(poly_re);
-		polyi_vec.push_back(poly_im);
 	}
 
-	blocking_faster(&mean, &var_m, poly_vec, dim_block);
-	blocking_faster(&mean_re, &var_re, polyr_vec, dim_block);
-	blocking_faster(&mean_im, &var_im, polyi_vec, dim_block);
+	if (n_copy == 1) {
+		if (n_skip_re < n_skip_im) {
+			for (int jj = 0; jj < (n_skip_im - n_skip_re); jj++) {
+				getline(input_file, line);
+				istringstream iss(line);
+				if (iss >> value_tmp >> value_tmp >> value_tmp >> value_tmp >> obs_re >> obs_im) {
+					yr.push_back(obs_re);
+				}
+				else {
+					cerr << "Skipped line (badly formatted) from" << input_path << ": " << line << endl;
+				}
+			}
+		}
+		else if (n_skip_im < n_skip_re) {
 
-	cout << "|<L * L^dag>| = " << mean << " +- " << sqrt(var_m) << endl;
-	cout << "<Re{L}> = " << mean_re << " +- " << sqrt(var_re) << endl;
-	cout << "<Im{L}> = " << mean_im << " +- " << sqrt(var_im) << endl;
+			for (int jj = 0; jj < (n_skip_re - n_skip_im); jj++) {
+				getline(input_file, line);
+				istringstream iss(line);
+				if (iss >> value_tmp >> value_tmp >> value_tmp >> value_tmp >> obs_re >> obs_im) {
+					yi.push_back(obs_im);
+				}
+				else {
+					cerr << "Skipped line (badly formatted) from" << input_path << ": " << line << endl;
+				}
+			}
+		}
+
+		while (input_file >> value_tmp >> value_tmp >> value_tmp >> value_tmp >> obs_re >> obs_im) {
+			obs = obs_re * obs_re + obs_im * obs_im;//obs = |obs|^2 = obs_re^2 + obs_im^2;
+			y.push_back(obs);
+			yr.push_back(obs_re);
+			yi.push_back(obs_im);
+		}
+	}
+	else
+	{
+		int index_re = 0, index_im = 0, meanr_tmp = 0, meani_tmp = 0, resto;
+		resto = n_skip_re % n_copy;
+		n_skip_re += resto;
+		resto = n_skip_im % n_copy;
+		n_skip_im += resto;
+
+		if (n_skip_re < n_skip_im) {
+			for (int jj = 0; jj < (n_skip_im - n_skip_re); jj++) {
+				getline(input_file, line);
+				istringstream iss(line);
+				if (iss >> value_tmp >> value_tmp >> value_tmp >> value_tmp >> obs_re >> obs_im) {
+					if (index_re == n_copy) {
+						meanr_tmp /= n_copy;
+						yr.push_back(meanr_tmp);
+						index_re = 0;
+					}
+					meanr_tmp += obs_re;
+					index_re++;
+				}
+				else {
+					cerr << "Skipped line (badly formatted) from" << input_path << ": " << line << endl;
+				}
+			}
+		}
+		else if (n_skip_im < n_skip_re) {
+
+			for (int jj = 0; jj < (n_skip_re - n_skip_im); jj++) {
+				getline(input_file, line);
+				istringstream iss(line);
+				if (index_im == n_copy) {
+					meani_tmp /= n_copy;
+					yi.push_back(meani_tmp);
+					index_im = 0;
+				}
+				meani_tmp += obs_im;
+				index_im++;
+			}
+		}
+
+		while (input_file >> value_tmp >> value_tmp >> value_tmp >> value_tmp >> obs_re >> obs_im) {//DEVI CORREGGEERE ERRORI
+			if (index_re == n_copy) {
+				meanr_tmp /= n_copy;
+				meani_tmp /= n_copy;
+				obs = meanr_tmp * meanr_tmp + meani_tmp * meani_tmp;//obs = |obs|^2 = obs_re^2 + obs_im^2;
+				y.push_back(obs);
+				yr.push_back(meanr_tmp);
+				yi.push_back(meani_tmp);
+				index_re = 0;
+			}
+			meanr_tmp += obs_re;
+			meani_tmp += obs_im;
+			index_re++;
+		}
+	}
+
+	blocking_faster(&mean, &var_m, y, dim_block);
+	blocking_faster(&mean_re, &var_re, yr, dim_block_re);
+	blocking_faster(&mean_im, &var_im, yi, dim_block_im);
+
+	cout << tipology << ": |<Obs * Obs^dag>| = " << mean << " +- " << sqrt(var_m) << endl;
+	cout << tipology << ": <Re{Obs}> = " << mean_re << " +- " << sqrt(var_re) << endl;
+	cout << tipology << ": <Im{Obs}> = " << mean_im << " +- " << sqrt(var_im) << endl;
 
 	output_file << temp << "\t" << mean << "\t" << sqrt(var_m) << "\t" << mean_re << "\t" << sqrt(var_re) << "\t" << mean_im << "\t" << sqrt(var_im) << endl;
 
