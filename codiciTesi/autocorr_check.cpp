@@ -7,32 +7,45 @@
 #include "../library.h"
 #include "../root_include.h"
 
+//-----------------------------------------------------------------
+//DECLARATIONS:
+
 void plot_points(vector<double>& x, vector<double>& y, string name_image, string title);
+
+void process_autocorr_block(
+	const string& input_path,
+	const string& output_file,
+	const string& prefix_img,
+	const string& title_mod,
+	const string& title_re,
+	const string& title_im,
+	const string& tipology, //fermion/gauge
+	const string& first_out_line,
+	int index_loop,
+	int n_skip_re,
+	int n_skip_im,
+	int n_sub_ratio
+);
 
 //-----------------------------------------------------------------
 //MAIN:
 
 int main() {
 	bool bool_long = 1; //1 if you want "_long" in the end of images names;
-	int Nt = 8; //BE CAREFUL TO CHOOSE IT WELL;
 	int skipLines = 1, skipLines_file_list_therm = 1; //= number of lines to skip while reading input file;
 	vector <int> n_skip_rep, n_skip_imp, n_skip_reff, n_skip_imff;
 	vector <int> n_sub;//will contain N°elements in each subset that we consider
-	vector<double> y, yr, yi;
-	vector<double> var_new, varr_new, vari_new;
 	vector<string> directories;
 	vector<string> gauge_files;
 	vector<string> fermion_files;
 	int n_sub_max;
 	int N_tmp;
 	double n_sub_ratio = 0.5;//0.03;//=0.5*len(data) -> you can modify this number from 0 to 1;
-	double mpi = 800; //MeV //BE CAREFUL TO CHOOSE IT WELL;
-	double poly, poly_re, poly_im, ff, ff_re, ff_im, delta, delta_re, delta_im, value_tmp;
-	double mean = 0, var_m = 0, mean_re = 0, var_re = 0, mean_im = 0, var_im = 0;
-	double mean_new = 0, meanr_new = 0, meani_new = 0;
 	string line, word, title1, title2, title3, var_dimblock_poly_image, var_dimblock_polyre_image, var_dimblock_polyim_image, name_output_file;
 	string var_dimblock_ff_image, var_dimblock_ffre_image, var_dimblock_ffim_image;
-	string name_file_list_therm = "11_05_2025/file_list_therm.txt";
+	const string name_file_list_therm = "11_05_2025/file_list_therm.txt";
+	const string first_out_line_gauge = "# N°elements in each subset \t var(|<P * P^dag>| ) \t var(Re{ P }) \t var(Im{ P }) :";
+	const string first_out_line_ferm = "# N°elements in each subset \t var(|<ff * ff^dag>|) \t var(Re{ff}) \t var(Im{ff}):";
 	
 	ifstream file_list;
 	file_list.open(name_file_list_therm);
@@ -75,253 +88,210 @@ int main() {
 		title2 = "Var(Re{P})";
 		title3 = "Var(Im{P})";
 
-		ifstream input_file; //declaration of input file
-		input_file.open(directories[ii] + gauge_files[ii]);
-		if (!input_file) {
-			cout << "Error opening " << gauge_files[ii] << endl;
-			return 1;
-		}
-
-		name_output_file = "results/autocorr_check_" + gauge_files[ii];
 		pos = gauge_files[ii].find_last_of(".");
 		if (pos != std::string::npos) {
-			gauge_files[ii] = gauge_files[ii].substr(0, pos); //I remove extension using substr
+			name_tmp = gauge_files[ii].substr(0, pos); //I remove extension using substr
 		}
 		
 		if (bool_long) {
-			var_dimblock_poly_image = "modP_" + gauge_files[ii] + "_long" + ".png";
-			var_dimblock_polyre_image = title2 + "_" + gauge_files[ii] + "_long" + ".png";
-			var_dimblock_polyim_image = title3 + "_" + gauge_files[ii] + "_long" + ".png";
+			var_dimblock_poly_image = "modP_" + name_tmp + "_long" + ".png";
+			var_dimblock_polyre_image = title2 + "_" + name_tmp + "_long" + ".png";
+			var_dimblock_polyim_image = title3 + "_" + name_tmp + "_long" + ".png";
 		}
 		else {
-			var_dimblock_poly_image = "modP_" + gauge_files[ii] + ".png";
-			var_dimblock_polyre_image = title2 + "_" + gauge_files[ii] + ".png";
-			var_dimblock_polyim_image = title3 + "_" + gauge_files[ii] + ".png";
+			var_dimblock_poly_image = "modP_" + name_tmp + ".png";
+			var_dimblock_polyre_image = title2 + "_" + name_tmp + ".png";
+			var_dimblock_polyim_image = title3 + "_" + name_tmp + ".png";
 		}
-		title1 = title1 + " " + gauge_files[ii] + ":";
-		title2 = title2 + " " + gauge_files[ii] + ":";
-		title3 = title3 + " " + gauge_files[ii] + ":";
+		title1 = title1 + " " + name_tmp + ":";
+		title2 = title2 + " " + name_tmp + ":";
+		title3 = title3 + " " + name_tmp + ":";
 		
-		for (int jj = 0; jj < min(n_skip_rep[ii], n_skip_imp[ii]); jj++) {
-			if (!getline(input_file, line)) {
-				cerr << "Error: there are less than " << min(n_skip_rep[ii], n_skip_imp[ii]) << " lines in the file: " << gauge_files[ii] << endl;
-				return 1;
-			}
-		}
+		process_autocorr_block(
+			directories[ii] + gauge_files[ii],
+			"results/autocorr_check_" + gauge_files[ii],
+			var_dimblock_poly_image,
+			var_dimblock_polyre_image,
+			var_dimblock_polyim_image,
+			title1,
+			title2,
+			title3,
+			"gauge", //fermion/gauge
+			first_out_line_gauge,
+			ii,
+			n_skip_rep[ii],
+			n_skip_imp[ii],
+			n_sub_ratio
+		);
 
-		if (n_skip_rep[ii] < n_skip_imp[ii]) {
-
-			for(int jj=0; jj < (n_skip_imp[ii] - n_skip_rep[ii]); jj++){
-				getline(input_file, line);
-				istringstream iss(line);
-				if (iss >> value_tmp >> value_tmp >> value_tmp >> value_tmp >> poly_re >> poly_im) {
-					yr.push_back(poly_re);
-				}
-				else {
-					cerr << "Skipped gauge line (badly formatted): " << line << endl;
-				}
-			}
-		}
-		else if (n_skip_imp[ii] < n_skip_rep[ii]) {
-			
-			for (int jj = 0; jj < (n_skip_rep[ii] - n_skip_imp[ii]); jj++) {
-				getline(input_file, line);
-				istringstream iss(line);
-				if (iss >> value_tmp >> value_tmp >> value_tmp >> value_tmp >> poly_re >> poly_im) {
-					yi.push_back(poly_im);
-				}
-				else {
-					cerr << "Skipped gauge line (badly formatted): " << line << endl;
-				}
-			}
-		}
-
-		while (getline(input_file, line)) {
-			istringstream iss(line);
-			if (iss >> value_tmp >> value_tmp >> value_tmp >> value_tmp >> poly_re >> poly_im) {
-				poly = poly_re * poly_re + poly_im * poly_im;//poly = |poly|^2 = poly_re^2 + poly_im^2;
-				y.push_back(poly);
-				yr.push_back(poly_re);
-				yi.push_back(poly_im);
-			}
-			else {
-				cerr << "Skipped gauge line (badly formatted): " << line << endl;
-			}
-		}
-
-		input_file.close();
-
-		ofstream output_file; //declaration of output file
-		output_file.open(name_output_file);
-		if (!output_file) {
-			cout << "Error opening output file " << name_output_file << endl;
-		}
-
-		n_sub_max = floor(n_sub_ratio * y.size());
-
-		output_file << "# N°elements in each subset \t var(|<P * P^dag>|) \t var(Re{P}) \t var(Im{P}):" << endl;
-		for (int dim_block = 1; dim_block <= n_sub_max; dim_block++) {
-			blocking_faster(&mean, &var_m, y, dim_block);
-			blocking_faster(&mean_re, &var_re, yr, dim_block);
-			blocking_faster(&mean_im, &var_im, yi, dim_block);
-			n_sub.push_back(dim_block);
-			var_new.push_back(var_m);
-			varr_new.push_back(var_re);
-			vari_new.push_back(var_im);
-			output_file << dim_block << "\t" << var_m << "\t" << var_re << "\t" << var_im << endl;
-		}
-
-		vector <double> n_sub_d;
-		copy(n_sub.begin(), n_sub.end(), std::back_inserter(n_sub_d));
-
-		//GRAPHIC REPRESENTATION:
-		plot_points(n_sub_d, var_new, var_dimblock_poly_image, title1);
-		cout << ii << ": P image DONE!" << endl;
-		plot_points(n_sub_d, varr_new, var_dimblock_polyre_image, title2);
-		cout << ii << ": Re{P} image DONE!" << endl;
-		plot_points(n_sub_d, vari_new, var_dimblock_polyim_image, title3);
-		cout << ii << ": Re{P} image DONE!" << endl;
-
-		output_file.close();
-		
-
-		y.clear();
-		yi.clear();
-		yr.clear();
-		n_sub.clear();
-		n_sub_d.clear();
-		var_new.clear();
-		varr_new.clear();
-		vari_new.clear();
-	}
-
-	int index = 0;
-	for (int ii = directories.size(); ii < 2 * directories.size(); ii++) {
-		index = ii - directories.size();
 		title1 = "|<ff * ff^dag>|";
 		title2 = "Var(Re{ff})";
 		title3 = "Var(Im{ff})";
 
-		ifstream input_file; //declaration of input file
-		input_file.open(directories[index] + fermion_files[index]);
-		if (!input_file) {
-			cout << "Error opening " << fermion_files[index] << endl;
-			return 1;
+		pos = fermion_files[ii].find_last_of(".");
+		if (pos != std::string::npos) {
+			name_tmp = fermion_files[ii].substr(0, pos); //I remove extension using substr
 		}
 
-		name_output_file = "results/autocorr_check_" + fermion_files[index];
-		pos = fermion_files[index].find_last_of(".");
-		if (pos != std::string::npos) {
-			fermion_files[index] = fermion_files[index].substr(0, pos); //I remove extension using substr
-		}
 		if (bool_long) {
-			var_dimblock_ff_image = "modff_" + fermion_files[index] + "_long" + ".png";
-			var_dimblock_ffre_image = title2 + "_" + fermion_files[index] + "_long" + ".png";
-			var_dimblock_ffim_image = title3 + "_" + fermion_files[index] + "_long" + ".png";
+			var_dimblock_ff_image = "modff_" + name_tmp + "_long" + ".png";
+			var_dimblock_ffre_image = title2 + "_" + name_tmp + "_long" + ".png";
+			var_dimblock_ffim_image = title3 + "_" + name_tmp + "_long" + ".png";
 		}
 		else {
-			var_dimblock_ff_image = "modff_" + fermion_files[index] + ".png";
-			var_dimblock_ffre_image = title2 + "_" + fermion_files[index] + ".png";
-			var_dimblock_ffim_image = title3 + "_" + fermion_files[index] + ".png";
+			var_dimblock_ff_image = "modff_" + name_tmp + ".png";
+			var_dimblock_ffre_image = title2 + "_" + name_tmp + ".png";
+			var_dimblock_ffim_image = title3 + "_" + name_tmp + ".png";
 		}
-		title1 = title1 + " " + fermion_files[index] + ":";
-		title2 = title2 + " " + fermion_files[index] + ":";
-		title3 = title3 + " " + fermion_files[index] + ":";
+		title1 = title1 + " " + name_tmp + ":";
+		title2 = title2 + " " + name_tmp + ":";
+		title3 = title3 + " " + name_tmp + ":";
 
-		for (int jj = 0; jj < min(n_skip_reff[index], n_skip_imff[index]); jj++) {
-			if (!getline(input_file, line)) {
-				cerr << "Error: there are less than " << min(n_skip_reff[index], n_skip_imff[index]) << " lines in the file: " << fermion_files[index] << endl;
-				return 1;
-			}
-		}
-
-		if (n_skip_rep[index] < n_skip_imp[index]) {
-
-			for (int jj = 0; jj < (n_skip_imp[index] - n_skip_rep[index]); jj++) {
-				getline(input_file, line);
-				istringstream iss(line);
-				if (iss >> value_tmp >> value_tmp >> value_tmp >> value_tmp >> ff_re >> ff_im) {
-					yr.push_back(ff_re);
-				}
-				else {
-					cerr << "Skipped fermion line (badly formatted): " << line << endl;
-				}
-			}
-		}
-		else if (n_skip_imff[index] < n_skip_reff[index]) {
-			for (int jj = 0; jj < (n_skip_rep[index] - n_skip_imp[index]); jj++) {
-				getline(input_file, line);
-				istringstream iss(line);
-				if (iss >> value_tmp >> value_tmp >> value_tmp >> value_tmp >> ff_re >> ff_im) {
-					yi.push_back(ff_im);
-				}
-				else {
-					cerr << "Skipped fermion line (badly formatted): " << line << endl;
-				}
-			}
-		}
-
-		while (getline(input_file, line)) {
-			istringstream iss(line);
-			if (iss >> value_tmp >> value_tmp >> value_tmp >> value_tmp >> ff_re >> ff_im) {
-				ff = ff_re * ff_re + ff_im * ff_im; //ff = |ff|^2 = ff_re^2 + ff_im^2;
-				y.push_back(ff);
-				yr.push_back(ff_re);
-				yi.push_back(ff_im);
-			}
-			else {
-				cerr << "Skipped fermion line (badly formatted): " << line << endl;
-			}
-		}
-
-		input_file.close();
-
-		ofstream output_file; //declaration of output file
-		output_file.open(name_output_file);
-		if (!output_file) {
-			cout << "Error opening output file " << name_output_file << endl;
-		}
-
-		n_sub_max = floor(n_sub_ratio * y.size());
-
-		output_file << "# N°elements in each subset \t var(|<ff * ff^dag>|) \t var(Re{ff}) \t var(Im{ff}):" << endl;
-		for (int dim_block = 1; dim_block <= n_sub_max; dim_block++) {
-			blocking_faster(&mean, &var_m, y, dim_block);
-			blocking_faster(&mean_re, &var_re, yr, dim_block);
-			blocking_faster(&mean_im, &var_im, yi, dim_block);
-			n_sub.push_back(dim_block);
-			var_new.push_back(var_m);
-			varr_new.push_back(var_re);
-			vari_new.push_back(var_im);
-			output_file << dim_block << "\t" << var_m << "\t" << var_re << "\t" << var_im << endl;
-		}
-
-		vector <double> n_sub_d;
-		copy(n_sub.begin(), n_sub.end(), std::back_inserter(n_sub_d));
-
-		//GRAPHIC REPRESENTATION:
-		plot_points(n_sub_d, var_new, var_dimblock_ff_image, title1);
-		cout << index << ": ff image DONE!" << endl;
-		plot_points(n_sub_d, varr_new, var_dimblock_ffre_image, title2);
-		cout << index << ": Re{ff} image DONE!" << endl;
-		plot_points(n_sub_d, vari_new, var_dimblock_ffim_image, title3);
-		cout << index << ": Im{ff} image DONE!" << endl;
-
-		output_file.close();
-
-
-		y.clear();
-		yi.clear();
-		yr.clear();
-		n_sub.clear();
-		n_sub_d.clear();
-		var_new.clear();
-		varr_new.clear();
-		vari_new.clear();
+		process_autocorr_block(
+			directories[ii] + fermion_files[ii],
+			"results/autocorr_check_" + fermion_files[ii],
+			var_dimblock_ff_image,
+			var_dimblock_ffre_image,
+			var_dimblock_ffim_image,
+			title1,
+			title2,
+			title3,
+			"fermion", //fermion/gauge
+			first_out_line_ferm,
+			ii,
+			n_skip_reff[ii],
+			n_skip_imff[ii],
+			n_sub_ratio
+		);
 	}
 
-
 	return 0;
+}
+
+//-----------------------------------------------------------------
+//FUNCTION DEFINITION:
+
+void process_autocorr_block(
+	const string& input_path,
+	const string& output_path,
+	const string& output_image_mod,
+	const string& output_image_re,
+	const string& output_image_im,
+	const string& title_mod,
+	const string& title_re,
+	const string& title_im,
+	const string& tipology, //fermion/gauge
+	const string& first_out_line,
+	int index_loop,
+	int n_skip_re,
+	int n_skip_im,
+	int n_sub_ratio
+) {
+	size_t pos;
+	string line;
+	double value_tmp, obs, obs_re, obs_im;
+	vector <double> y, yi, yr, var_new, varr_new, vari_new;
+	vector <int> n_sub;
+	double mean, mean_re, mean_im, var_m, var_re, var_im;
+
+	ifstream input_file; //declaration of input file
+	input_file.open(input_path);
+	if (!input_file) {
+		cout << "Error opening " << input_path << endl;
+		return;
+	}
+
+	for (int jj = 0; jj < min(n_skip_re, n_skip_im); jj++) {
+		if (!getline(input_file, line)) {
+			cerr << "Error: there are less than " << min(n_skip_re, n_skip_im) << " lines in the file: " << input_path << endl;
+			return;
+		}
+	}
+
+	if (n_skip_re < n_skip_im) {
+		for (int jj = 0; jj < (n_skip_im - n_skip_re); jj++) {
+			getline(input_file, line);
+			istringstream iss(line);
+			if (iss >> value_tmp >> value_tmp >> value_tmp >> value_tmp >> obs_re >> obs_im) {
+				yr.push_back(obs_re);
+			}
+			else {
+				cerr << "Skipped line (badly formatted) from" << input_path << ": " << line << endl;
+			}
+		}
+	}
+	else if (n_skip_im < n_skip_re) {
+
+		for (int jj = 0; jj < (n_skip_re - n_skip_im); jj++) {
+			getline(input_file, line);
+			istringstream iss(line);
+			if (iss >> value_tmp >> value_tmp >> value_tmp >> value_tmp >> obs_re >> obs_im) {
+				yi.push_back(obs_im);
+			}
+			else {
+				cerr << "Skipped line (badly formatted) from" << input_path << ": " << line << endl;
+			}
+		}
+	}
+
+	while (getline(input_file, line)) {
+		istringstream iss(line);
+		if (iss >> value_tmp >> value_tmp >> value_tmp >> value_tmp >> obs_re >> obs_im) {
+			obs = obs_re * obs_re + obs_im * obs_im;//obs = |obs|^2 = obs_re^2 + obs_im^2;
+			y.push_back(obs);
+			yr.push_back(obs_re);
+			yi.push_back(obs_im);
+		}
+		else {
+			cerr << "Skipped line (badly formatted) from" << input_path << ": " << line << endl;
+		}
+	}
+
+	input_file.close();
+
+	ofstream output_file; //declaration of output file
+	output_file.open(output_path);
+	if (!output_file) {
+		cout << "Error opening output file " << output_path << endl;
+	}
+
+	int n_sub_max = floor(n_sub_ratio * y.size());
+
+	output_file << first_out_line << endl;
+	for (int dim_block = 1; dim_block <= n_sub_max; dim_block++) {
+		blocking_faster(&mean, &var_m, y, dim_block);
+		blocking_faster(&mean_re, &var_re, yr, dim_block);
+		blocking_faster(&mean_im, &var_im, yi, dim_block);
+		n_sub.push_back(dim_block);
+		var_new.push_back(var_m);
+		varr_new.push_back(var_re);
+		vari_new.push_back(var_im);
+		output_file << dim_block << "\t" << var_m << "\t" << var_re << "\t" << var_im << endl;
+	}
+
+	vector <double> n_sub_d;
+	copy(n_sub.begin(), n_sub.end(), std::back_inserter(n_sub_d));
+
+	//GRAPHIC REPRESENTATION:
+	plot_points(n_sub_d, var_new, output_image_mod, title_mod);
+	cout << index_loop << ": " << tipology << " Obs image DONE!" << endl;
+	plot_points(n_sub_d, varr_new, output_image_re, title_re);
+	cout << index_loop << ": " << tipology << " Re{obs} image DONE!" << endl;
+	plot_points(n_sub_d, vari_new, output_image_im, title_im);
+	cout << index_loop << ": " << tipology << " Im{obs} image DONE!" << endl;
+
+
+	output_file.close();
+
+
+	y.clear();
+	yi.clear();
+	yr.clear();
+	n_sub.clear();
+	n_sub_d.clear();
+	var_new.clear();
+	varr_new.clear();
+	vari_new.clear();
 }
 
 
