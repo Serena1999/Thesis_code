@@ -26,7 +26,7 @@ void process_autocorr_block(
 	int index_loop,
 	int n_skip_re,
 	int n_skip_im,
-	int n_sub_ratio
+	double n_sub_ratio
 );
 
 //-----------------------------------------------------------------
@@ -185,7 +185,7 @@ void process_autocorr_block(
 	int index_loop,
 	int n_skip_re,
 	int n_skip_im,
-	int n_sub_ratio
+	double n_sub_ratio
 ) {
 	size_t pos;
 	string line;
