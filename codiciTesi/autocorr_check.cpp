@@ -40,7 +40,7 @@ int main() {
 	vector<string> directories;
 	vector<string> gauge_files;
 	vector<string> fermion_files;
-	double n_sub_ratio = 0.05;//0.03;//=0.5*len(data) -> you can modify this number from 0 to 1;
+	double n_sub_ratio = 0.08;//0.03;//=0.5*len(data) -> you can modify this number from 0 to 1;
 	string line, word, title1, title2, title3, var_dimblock_poly_image, var_dimblock_polyre_image, var_dimblock_polyim_image, name_output_file;
 	string var_dimblock_ff_image, var_dimblock_ffre_image, var_dimblock_ffim_image;
 	const string name_file_list_therm = "11_05_2025/file_list_therm.txt";
