@@ -112,7 +112,7 @@ int main() {
 		//GRAPHIC REPRESENTATION:
 		plot_points(time1, polyr_vec, polyre_image, title, y_name1, 0.47);
 		cout << ii << ": Re{P} image DONE!" << endl;
-		plot_points(time1, polyi_vec, polyim_image, title, y_name1, 0.47);
+		plot_points(time1, polyi_vec, polyim_image, title, y_name2, 0.47);
 		cout << ii << ": Im{P} image DONE!" << endl;
 		time1.clear();
 		polyr_vec.clear();
@@ -165,7 +165,7 @@ int main() {
 		//GRAPHIC REPRESENTATION:
 		plot_points(time2, reff_vec, reff_image, title, y_name1, 0.47);
 		cout << index << ": Re{ff} image DONE!" << endl;
-		plot_points(time2, imff_vec, imff_image, title, y_name1, 0.47);
+		plot_points(time2, imff_vec, imff_image, title, y_name2, 0.47);
 		cout << index << ": Im{ff} image DONE!" << endl;
 		time2.clear();
 		reff_vec.clear();
