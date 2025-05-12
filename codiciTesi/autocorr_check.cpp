@@ -15,7 +15,9 @@ void plot_points(vector<double>& x, vector<double>& y, string name_image, string
 void process_autocorr_block(
 	const string& input_path,
 	const string& output_file,
-	const string& prefix_img,
+	const string& output_image_mod,
+	const string& output_image_re,
+	const string& output_image_im,
 	const string& title_mod,
 	const string& title_re,
 	const string& title_im,
@@ -38,13 +40,11 @@ int main() {
 	vector<string> directories;
 	vector<string> gauge_files;
 	vector<string> fermion_files;
-	int n_sub_max;
-	int N_tmp;
 	double n_sub_ratio = 0.5;//0.03;//=0.5*len(data) -> you can modify this number from 0 to 1;
 	string line, word, title1, title2, title3, var_dimblock_poly_image, var_dimblock_polyre_image, var_dimblock_polyim_image, name_output_file;
 	string var_dimblock_ff_image, var_dimblock_ffre_image, var_dimblock_ffim_image;
 	const string name_file_list_therm = "11_05_2025/file_list_therm.txt";
-	const string first_out_line_gauge = "# N°elements in each subset \t var(|<P * P^dag>| ) \t var(Re{ P }) \t var(Im{ P }) :";
+	const string first_out_line_gauge = "# N°elements in each subset \t var(|<P * P^dag>| ) \t var(Re{ P }) \t var(Im{ P }):";
 	const string first_out_line_ferm = "# N°elements in each subset \t var(|<ff * ff^dag>|) \t var(Re{ff}) \t var(Im{ff}):";
 	
 	ifstream file_list;
@@ -69,7 +69,7 @@ int main() {
 			directories.push_back(dir);
 			gauge_files.push_back(gauge);
 			fermion_files.push_back(ferm);
-			n_skip_rep.push_back(skipLines+n_therm_rep);
+			n_skip_rep.push_back(skipLines + n_therm_rep);
 			n_skip_imp.push_back(skipLines + n_therm_imp);
 			n_skip_reff.push_back(skipLines + n_therm_reff * n_copy);
 			n_skip_imff.push_back(skipLines + n_therm_imff * n_copy);
@@ -280,9 +280,7 @@ void process_autocorr_block(
 	plot_points(n_sub_d, vari_new, output_image_im, title_im);
 	cout << index_loop << ": " << tipology << " Im{obs} image DONE!" << endl;
 
-
 	output_file.close();
-
 
 	y.clear();
 	yi.clear();
