@@ -1098,6 +1098,13 @@ template <class T> void blocking(T* mean, T* var_m, vector<T>& draws, int dim_bl
 	(*var_m) = 0;
 
 	int n_blocks = draws.size() / dim_block;//=number of blocks
+	if (n_blocks < 2) {
+		std::cerr << "Warning: not enough blocks (" << n_blocks << ") to estimate variance reliably. Returning NaN." << std::endl;
+		*mean = std::numeric_limits<T>::quiet_NaN();
+		*var_m = std::numeric_limits<T>::quiet_NaN();
+		return;
+	}
+	
 	int n_max = n_blocks * dim_block;//N_max to consider to compute variance
 	int index = 0;
 	T mean_tmp, delta;
@@ -1136,6 +1143,12 @@ template <class T> void blocking_faster(T* mean, T* var_m, vector<T>& draws, int
 	(*mean) = 0;
 	(*var_m) = 0;
 	int n_blocks = draws.size() / dim_block;//=number of blocks //be careful: it is a division between int and so decimals are discarded
+	if (n_blocks < 2) {
+		std::cerr << "Warning: not enough blocks (" << n_blocks << ") to estimate variance reliably. Returning NaN." << std::endl;
+		*mean = std::numeric_limits<T>::quiet_NaN();
+		*var_m = std::numeric_limits<T>::quiet_NaN();
+		return;
+	}
 	int n_max = n_blocks * dim_block;//N_max to consider to compute variance
 	int index = 0;
 	T mean_tmp, delta;
