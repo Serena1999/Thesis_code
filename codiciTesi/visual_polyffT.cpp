@@ -14,7 +14,17 @@ const string tipology = "fermion"; //gauge/fermion, CHOOSABLE --> to do the gaug
 //-----------------------------------------------------------------
 //ROOT MACRO TO DO FIT AND GRAPH:
 
-void plot_points(vector<double>& x, vector<double>& y, string name_image, string title, string y_name, double pos_title, double pos_y, double heigh_y);
+void plot_points_errors(
+	vector<double>& x,
+	vector<double>& y,
+	vector<double>& y_err,
+	string name_image,
+	string title,
+	string y_name,
+	double pos_title,
+	double pos_y,
+	double heigh_y
+);
 
 //-----------------------------------------------------------------
 //MAIN:
@@ -145,9 +155,9 @@ int main() {
 	input_file.close();
 
 	//GRAPHIC REPRESENTATION:
-	plot_points(temp, mod, name_image_mod, title_mod, y_name_mod, pos_title_mod, pos_ymod, height_mod);
-	plot_points(temp, re, name_image_re, title_re, y_name_re, pos_title_re, pos_yre, height_re);
-	plot_points(temp, im, name_image_im, title_im, y_name_im, pos_title_im, pos_yim, height_im);
+	plot_points_errors(temp, mod, mod_err, name_image_mod, title_mod, y_name_mod, pos_title_mod, pos_ymod, height_mod);
+	plot_points_errors(temp, re, re_err, name_image_re, title_re, y_name_re, pos_title_re, pos_yre, height_re);
+	plot_points_errors(temp, im, im_err, name_image_im, title_im, y_name_im, pos_title_im, pos_yim, height_im);
 
 	return 0;
 }
@@ -155,13 +165,30 @@ int main() {
 //-----------------------------------------------------------------
 //ROOT MACRO TO GRAPH:
 
-void plot_points(vector<double>& x, vector<double>& y, string name_image, string title, string y_name, double pos_title, double pos_y, double heigh_y) {
+void plot_points_errors(
+	vector<double>& x,
+	vector<double>& y,
+	vector<double>& y_err, 
+	string name_image, 
+	string title, 
+	string y_name, 
+	double pos_title, 
+	double pos_y, 
+	double heigh_y
+) {
 
+	if (x.size() != y.size() || y.size() != y_err.size()) {
+		cerr << "Error: mismatched vector sizes in plot_points_errors()." << endl;
+		return;
+	}
+	
 	//CANVAS creation: (to draw the graph)
 	TCanvas* canvas = new TCanvas("canvas", "Canvas for Drawing Points", 900, 600);
 	canvas->SetGrid();//to set grid
 
-	TGraph* g = new TGraph(y.size(), x.data(), y.data());
+	// 1. Grafico con solo le barre d'errore (in nero)
+	TGraphErrors* g_errors = new TGraphErrors(x.size(), x.data(), y.data(), nullptr, y_err.data());
+
 	//Using std::max_element: (useful to create my histogram object)
 	//	-> std::max_element takes two iterators that define the range of the array to operate on. 
 	//	-> returns an iterator that points to the maximum element found.
@@ -170,19 +197,23 @@ void plot_points(vector<double>& x, vector<double>& y, string name_image, string
 	auto max_x = *max_element(x.begin(), x.end());
 	auto min_y = *min_element(y.begin(), y.end());
 	auto max_y = *max_element(y.begin(), y.end());
+	
+	g_errors->SetLineColor(kBlack);  // Colore barre d'errore
+	g_errors->SetMarkerColor(kBlack);
+	g_errors->SetMarkerStyle(20);
+	g_errors->SetTitle("");
+	g_errors->GetXaxis()->SetLimits(min_x, max_x);
+	g_errors->GetYaxis()->SetRangeUser(min_y - 0.01 * fabs(min_y), max_y + 0.01 * fabs(max_y));
+	g_errors->Draw("AP");
 
-	g->SetTitle(""); //to clear default title
-	g->GetXaxis()->SetTitle(""); //to clear default X axis title
-	g->GetYaxis()->SetTitle(""); //to clear default Y axis title
+	// 2. Grafico con la spezzata (in rosso)
+	TGraph* g_line = new TGraph(x.size(), x.data(), y.data());
+	g_line->SetLineColor(kBlack);   // Colore spezzata
+	g_line->SetLineStyle(2);
+	g_line->Draw("LP SAME"); // Draw sovrapposto
 
-	g->SetLineColor(1);
-
-	g->GetYaxis()->SetRangeUser(min_y - 0.01 * abs(min_y), max_y + 0.01 * abs(max_y));//to set y axis range
-	g->GetXaxis()->SetLimits(min_x, max_x);//to set x axis range //SetLimits cannot be ignored by ROOT, while SetRangeUser yes.
-	g->SetMarkerStyle(20);
-	g->Draw("ALP");
 	gPad->Update();
-
+	
 	//LATEX: I add LaTeX titles and axis labels:
 	TLatex latex;
 	latex.SetNDC(); //sets the use of Normalized Device Coordinates (NDC).
@@ -197,7 +228,11 @@ void plot_points(vector<double>& x, vector<double>& y, string name_image, string
 	//SAVE: I save the canvas as an image
 	canvas->SaveAs(name_image.c_str());
 
+	//to save also in vectorial pdf form:
+	canvas->SaveAs((name_image.substr(0, name_image.find_last_of(".")) + ".pdf").c_str());
+
 	//DELETE:
-	delete g;
+	delete g_line;
+	delete g_errors;
 	delete canvas;
 }
