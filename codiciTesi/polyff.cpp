@@ -1,5 +1,11 @@
 ﻿/*<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 ****                        polyff.cpp:                       ****
+****  this script takes the fermionic and bosonic measurement ****
+****  files for each temperature and returns a file with the  ****
+****  temperature along with the mean and standard deviation  ****
+****                  for these observables.                  ****
+****    When selected, blocking is applied with block sizes   ****
+****             selectable from an external file.            ****
 ****                (author = Serena Bruzzesi)                ****
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
 
