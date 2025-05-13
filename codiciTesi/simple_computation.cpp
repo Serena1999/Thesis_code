@@ -1,5 +1,6 @@
 /*<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 ****                  simple_computation.cpp:                 ****
+****       simple script to compute mass of quark in MeV      ****
 ****                (author = Serena Bruzzesi)                ****
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
 

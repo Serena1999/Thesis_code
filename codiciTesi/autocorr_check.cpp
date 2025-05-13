@@ -1,6 +1,9 @@
 /*<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 ****                    autocorr_check.cpp:                   ****
-****               using the blocking technique               ****
+****     implements the blocking technique and ranges over    ****
+****             different block sizes dim_block,             **** 
+****    returning the plot of variance vs dim_block for all   ****
+****            files specified in file_list_therm.           ****
 ****                (author = Serena Bruzzesi)                ****
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
 

@@ -9,7 +9,7 @@
 #include "../library.h"
 #include "../root_include.h"
 
-const string tipology = "fermion"; //gauge/fermion, CHOOSABLE --> to do the gauge/fermion observables graph
+const string tipology = "gauge"; //gauge/fermion, CHOOSABLE --> to do the gauge/fermion observables graph
 
 //-----------------------------------------------------------------
 //ROOT MACRO TO DO FIT AND GRAPH:
@@ -75,12 +75,12 @@ int main() {
 		name_image_mod = output_directory + "modPvsT_" + name_tmp + ".png";
 		name_image_re = output_directory + "rePvsT_" + name_tmp + ".png";
 		name_image_im = output_directory + "imPvsT_" + name_tmp + ".png";
-		title_mod = "<|<P* P^dag>|> vs temperature:";
-		title_re = "<Re{P}> vs temperature:";
-		title_im = "<Im{P}> vs temperature:";
-		y_name_mod = "<|<P* P^dag>|>";
-		y_name_re = "<Re{P}>";
-		y_name_im = "<Im{P}>";
+		title_mod = "#LT|PP^{+}|#GT vs temperature:";
+		title_re = "#LTRe{P}#GT vs temperature :";
+		title_im = "#LTRe{P}#GT vs temperature:";
+		y_name_mod = "#LT|PP^{+}|#GT";
+		y_name_re = "#LTRe{P}#GT";
+		y_name_im = "#LTIm{P}#GT";
 		pos_ymod = 0.02;
 		pos_yre = 0.03;
 		pos_yim = 0.03;
@@ -101,12 +101,12 @@ int main() {
 		name_image_mod = output_directory + "modffvsT_" + name_tmp + ".png";
 		name_image_re = output_directory + "reffvsT_" + name_tmp + ".png";
 		name_image_im = output_directory + "imffvsT_" + name_tmp + ".png";
-		title_mod = "<|<ff* ff^dag>|> vs temperature:";
-		title_re = "<Re{ff}> vs temperature:";
-		title_im = "<Im{ff}> vs temperature:";
-		y_name_mod = "<|<ff* ff^dag>|>";
-		y_name_re = "<Re{ff}>";
-		y_name_im = "<Im{ff}>";
+		title_mod = "#LT|(#bar{#psi}#psi)(#bar{#psi}#psi)^{+}|#GT vs temperature:";
+		title_re = "#LTRe{#bar{#psi}#psi}#GT vs temperature :";
+		title_im = "#LTRe{#bar{#psi}#psi}#GT vs temperature:";
+		y_name_mod = "#LT|(#bar{#psi}#psi)(#bar{#psi}#psi)^{+}|#GT";
+		y_name_re = "#LTRe{#bar{#psi}#psi}#GT";
+		y_name_im = "#LTIm{#bar{#psi}#psi}#GT";
 		pos_ymod = 0.03;
 		pos_yre = 0.03;
 		pos_yim = 0.04;
