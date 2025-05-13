@@ -8,7 +8,7 @@ find_package(ROOT REQUIRED COMPONENTS RIO Net Hist Graf Graf3d Gpad Tree Rint Po
 include_directories(${ROOT_INCLUDE_DIRS})
 
 # Aggiungere l'origine all'eseguibile di questo progetto.
-add_executable(poly "poly.cpp")
+add_executable(polyff "polyff.cpp")
 add_executable(autocorr_check "autocorr_check.cpp")
 add_executable(simple_computation "simple_computation.cpp")
 add_executable(visual_monte_carlo_history "visual_monte_carlo_history.cpp")
