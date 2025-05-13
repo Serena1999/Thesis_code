@@ -186,7 +186,7 @@ void plot_points_errors(
 	TCanvas* canvas = new TCanvas("canvas", "Canvas for Drawing Points", 900, 600);
 	canvas->SetGrid();//to set grid
 
-	// 1. Grafico con solo le barre d'errore (in nero)
+	// 1. Graph with only error bars:
 	TGraphErrors* g_errors = new TGraphErrors(x.size(), x.data(), y.data(), nullptr, y_err.data());
 
 	//Using std::max_element: (useful to create my histogram object)
@@ -198,7 +198,7 @@ void plot_points_errors(
 	auto min_y = *min_element(y.begin(), y.end());
 	auto max_y = *max_element(y.begin(), y.end());
 	
-	g_errors->SetLineColor(kBlack);  // Colore barre d'errore
+	g_errors->SetLineColor(kBlack);//color of error bars
 	g_errors->SetMarkerColor(kBlack);
 	g_errors->SetMarkerStyle(20);
 	g_errors->SetTitle("");
@@ -206,11 +206,11 @@ void plot_points_errors(
 	g_errors->GetYaxis()->SetRangeUser(min_y - 0.01 * fabs(min_y), max_y + 0.01 * fabs(max_y));
 	g_errors->Draw("AP");
 
-	// 2. Grafico con la spezzata (in rosso)
+	// 2. Graph with only the line joining the points:
 	TGraph* g_line = new TGraph(x.size(), x.data(), y.data());
-	g_line->SetLineColor(kBlack);   // Colore spezzata
+	g_line->SetLineColor(kBlack);
 	g_line->SetLineStyle(2);
-	g_line->Draw("LP SAME"); // Draw sovrapposto
+	g_line->Draw("LP SAME"); 
 
 	gPad->Update();
 	
