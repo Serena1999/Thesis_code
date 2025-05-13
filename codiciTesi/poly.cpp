@@ -12,33 +12,33 @@ const double hbar_c = 197.3269804; //MeV * fm
 //DECLARATIONS:
 
 void read_file_LPC(
-	const string name_file_lpc,
+	const string& name_file_lpc,
 	const int Nt,
 	const int skipLines_file_lpc,
 	const double mpi,
-	vector<double> aml,
-	vector<double> beta,
-	vector<double> afm,
-	vector<double> temp,
-	vector<int> dim_block_modP,
-	vector<int> dim_block_reP,
-	vector<int> dim_block_imP,
-	vector<int> dim_block_modff,
-	vector<int> dim_block_reff,
-	vector<int> dim_block_imff
+	vector<double>& aml,
+	vector<double>& beta,
+	vector<double>& afm,
+	vector<double>& temp,
+	vector<int>& dim_block_modP,
+	vector<int>& dim_block_reP,
+	vector<int>& dim_block_imP,
+	vector<int>& dim_block_modff,
+	vector<int>& dim_block_reff,
+	vector<int>& dim_block_imff
 );
 
 void read_file_list(
-	const string name_file_list,
+	const string& name_file_list,
 	const int skipLines_file_list,
-	vector<string> directories,
-	vector<string> gauge_files,
-	vector<string> fermion_files,
-	vector<int> n_copy,
-	vector<int> n_skip_rep,
-	vector<int> n_skip_imp,
-	vector<int> n_skip_reff,
-	vector<int> n_skip_imff
+	vector<string>& directories,
+	vector<string>& gauge_files,
+	vector<string>& fermion_files,
+	vector<int>& n_copy,
+	vector<int>& n_skip_rep,
+	vector<int>& n_skip_imp,
+	vector<int>& n_skip_reff,
+	vector<int>& n_skip_imff
 );
 
 void stats(
@@ -51,7 +51,8 @@ void stats(
 	int n_skip_im,
 	const int dim_block,
 	const int dim_block_re,
-	const int dim_block_im
+	const int dim_block_im,
+	const int n_copy
 );
 
 //-----------------------------------------------------------------
@@ -72,8 +73,8 @@ int main() {
 	ostringstream mpi_stream;//TO INTRODUCE ALSO IN NUMERICAL METHODS CODE: IT IS USEFUL;
 	mpi_stream << std::fixed << std::setprecision(1) << mpi; //set to 1 decimal place
 	string mpi_string = mpi_stream.str(); // conversion into string
-	string name_output_file_poly = mpi_string + "_poly_results.txt";
-	string name_output_file_ff = mpi_string + "_ff_results.txt";
+	string name_output_file_poly = "results/" + mpi_string + "_poly_results.txt";
+	string name_output_file_ff = "results/" +  mpi_string + "_ff_results.txt";
 	string name_file_lpc = "11_05_2025/LCP_800MeV_dimblock.txt";
 	string name_file_list = "11_05_2025/file_list_therm.txt";
 
@@ -109,7 +110,7 @@ int main() {
 
 	if (bool_startFile_poly) {
 		ofstream output_file; //declaration of output file
-		output_file.open("results/" + name_output_file_poly);
+		output_file.open(name_output_file_poly);
 		if (!output_file) {
 			cerr << "Error opening output file" << endl;
 			return 1;
@@ -120,7 +121,7 @@ int main() {
 	
 	if (bool_startFile_ff) {
 		ofstream output_file; //declaration of output file
-		output_file.open("results/" + name_output_file_ff);
+		output_file.open(name_output_file_ff);
 		if (!output_file) {
 			cerr << "Error opening output file" << endl;
 			return 1;
@@ -172,23 +173,24 @@ int main() {
 //FUNCTION DEFINITION:
 
 void read_file_LPC(
-	const string name_file_lpc,
+	const string& name_file_lpc,
 	const int Nt,
 	const int skipLines_file_lpc,
 	const double mpi,
-	vector<double> aml,
-	vector<double> beta,
-	vector<double> afm,
-	vector<double> temp,
-	vector<int> dim_block_modP,
-	vector<int> dim_block_reP,
-	vector<int> dim_block_imP,
-	vector<int> dim_block_modff,
-	vector<int> dim_block_reff,
-	vector<int> dim_block_imff
+	vector<double>& aml,
+	vector<double>& beta,
+	vector<double>& afm,
+	vector<double>& temp,
+	vector<int>& dim_block_modP,
+	vector<int>& dim_block_reP,
+	vector<int>& dim_block_imP,
+	vector<int>& dim_block_modff,
+	vector<int>& dim_block_reff,
+	vector<int>& dim_block_imff
 ) {
 	string line;
 	ifstream file_lpc;
+
 	file_lpc.open(name_file_lpc);
 	if (!file_lpc) {
 		cerr << "Error opening file list" << endl;
@@ -223,20 +225,25 @@ void read_file_LPC(
 			cerr << "Poorly formatted line: " << line << endl;
 		}
 	}
+
+	for (int ii = 0; ii < (beta.size()); ii++) {
+		temp.push_back(hbar_c / (Nt * afm[ii]));
+	}
+
 	file_lpc.close();
 }
 
 void read_file_list(
-	const string name_file_list,
+	const string& name_file_list,
 	const int skipLines_file_list,
-	vector<string> directories,
-	vector<string> gauge_files,
-	vector<string> fermion_files,
-	vector<int> n_copy,
-	vector <int> n_skip_rep,
-	vector<int> n_skip_imp,
-	vector<int> n_skip_reff,
-	vector<int> n_skip_imff
+	vector<string>& directories,
+	vector<string>& gauge_files,
+	vector<string>& fermion_files,
+	vector<int>& n_copy,
+	vector<int>& n_skip_rep,
+	vector<int>& n_skip_imp,
+	vector<int>& n_skip_reff,
+	vector<int>& n_skip_imff
 ) {
 	string line;
 	ifstream file_list;
@@ -324,6 +331,10 @@ void stats(
 		if (n_skip_re < n_skip_im) {
 			for (int jj = 0; jj < (n_skip_im - n_skip_re); jj++) {
 				getline(input_file, line);
+				if (line.empty()) {
+					cerr << "Skipped empty line in file: " << input_path << endl;
+					continue;
+				}
 				istringstream iss(line);
 				if (iss >> value_tmp >> value_tmp >> value_tmp >> value_tmp >> obs_re >> obs_im) {
 					yr.push_back(obs_re);
@@ -334,8 +345,11 @@ void stats(
 			}
 		}
 		else if (n_skip_im < n_skip_re) {
-
 			for (int jj = 0; jj < (n_skip_re - n_skip_im); jj++) {
+				if (line.empty()) {
+					cerr << "Skipped empty line in file: " << input_path << endl;
+					continue;
+				}
 				getline(input_file, line);
 				istringstream iss(line);
 				if (iss >> value_tmp >> value_tmp >> value_tmp >> value_tmp >> obs_re >> obs_im) {
@@ -347,30 +361,42 @@ void stats(
 			}
 		}
 
-		while (input_file >> value_tmp >> value_tmp >> value_tmp >> value_tmp >> obs_re >> obs_im) {
-			obs = obs_re * obs_re + obs_im * obs_im;//obs = |obs|^2 = obs_re^2 + obs_im^2;
-			y.push_back(obs);
-			yr.push_back(obs_re);
-			yi.push_back(obs_im);
+		while(getline(input_file, line)){
+			if (line.empty()) {
+				cerr << "Skipped empty line in file: " << input_path << endl;
+				continue;
+			}
+			istringstream iss(line);
+			if (input_file >> value_tmp >> value_tmp >> value_tmp >> value_tmp >> obs_re >> obs_im) {
+				obs = obs_re * obs_re + obs_im * obs_im;//obs = |obs|^2 = obs_re^2 + obs_im^2;
+				y.push_back(obs);
+				yr.push_back(obs_re);
+				yi.push_back(obs_im);
+			}
+			else {
+				cerr << "Skipped line (badly formatted) from" << input_path << ": " << line << endl;
+			}
 		}
 	}
 	else
 	{
-		int index_re = 0, index_im = 0, meanr_tmp = 0, meani_tmp = 0, resto;
-		resto = n_skip_re % n_copy;
-		n_skip_re += resto;
-		resto = n_skip_im % n_copy;
-		n_skip_im += resto;
+		int index_re = 0, index_im = 0;
+		double meanr_tmp = 0, meani_tmp = 0;
 
 		if (n_skip_re < n_skip_im) {
 			for (int jj = 0; jj < (n_skip_im - n_skip_re); jj++) {
 				getline(input_file, line);
+				if (line.empty()) {
+					cerr << "Skipped empty line in file: " << input_path << endl;
+					continue;
+				}
 				istringstream iss(line);
 				if (iss >> value_tmp >> value_tmp >> value_tmp >> value_tmp >> obs_re >> obs_im) {
 					if (index_re == n_copy) {
 						meanr_tmp /= n_copy;
 						yr.push_back(meanr_tmp);
 						index_re = 0;
+						meanr_tmp = 0;
 					}
 					meanr_tmp += obs_re;
 					index_re++;
@@ -384,36 +410,85 @@ void stats(
 
 			for (int jj = 0; jj < (n_skip_re - n_skip_im); jj++) {
 				getline(input_file, line);
-				istringstream iss(line);
-				if (index_im == n_copy) {
-					meani_tmp /= n_copy;
-					yi.push_back(meani_tmp);
-					index_im = 0;
+				if (line.empty()) {
+					cerr << "Skipped empty line in file: " << input_path << endl;
+					continue;
 				}
-				meani_tmp += obs_im;
-				index_im++;
+				istringstream iss(line);
+				if (iss >> value_tmp >> value_tmp >> value_tmp >> value_tmp >> obs_re >> obs_im) {
+					if (index_im == n_copy) {
+						meani_tmp /= n_copy;
+						yi.push_back(meani_tmp);
+						index_im = 0;
+						meani_tmp = 0;
+					}
+					meani_tmp += obs_im;
+					index_im++;
+				}
+				else {
+					cerr << "Skipped line (badly formatted) from" << input_path << ": " << line << endl;
+				}
 			}
 		}
 
-		while (input_file >> value_tmp >> value_tmp >> value_tmp >> value_tmp >> obs_re >> obs_im) {//DEVI CORREGGEERE ERRORI
-			if (index_re == n_copy) {
-				meanr_tmp /= n_copy;
-				meani_tmp /= n_copy;
-				obs = meanr_tmp * meanr_tmp + meani_tmp * meani_tmp;//obs = |obs|^2 = obs_re^2 + obs_im^2;
-				y.push_back(obs);
-				yr.push_back(meanr_tmp);
-				yi.push_back(meani_tmp);
-				index_re = 0;
+		while (getline(input_file, line)) {
+			if (line.empty()) {
+				cerr << "Skipped empty line in file: " << input_path << endl;
+				continue;
 			}
-			meanr_tmp += obs_re;
-			meani_tmp += obs_im;
-			index_re++;
+			istringstream iss(line);
+			if (input_file >> value_tmp >> value_tmp >> value_tmp >> value_tmp >> obs_re >> obs_im) {
+				if (index_re == n_copy) {
+					meanr_tmp /= n_copy;
+					meani_tmp /= n_copy;
+					obs = meanr_tmp * meanr_tmp + meani_tmp * meani_tmp;//obs = |obs|^2 = obs_re^2 + obs_im^2;
+					y.push_back(obs);
+					yr.push_back(meanr_tmp);
+					yi.push_back(meani_tmp);
+					index_re = 0;
+					meanr_tmp = 0;
+					meani_tmp = 0;
+				}
+				meanr_tmp += obs_re;
+				meani_tmp += obs_im;
+				index_re++;
+			}
+			else {
+				cerr << "Skipped line (badly formatted) from" << input_path << ": " << line << endl;
+			}
+		}
+
+		if (line.empty()) {
+			cerr << "Skipped empty line in file: " << input_path << endl;
+		}
+		else if (index_re == n_copy) {
+			meanr_tmp /= n_copy;
+			meani_tmp /= n_copy;
+			obs = meanr_tmp * meanr_tmp + meani_tmp * meani_tmp;//obs = |obs|^2 = obs_re^2 + obs_im^2;
+			y.push_back(obs);
+			yr.push_back(meanr_tmp);
+			yi.push_back(meani_tmp);
 		}
 	}
-
-	blocking_faster(&mean, &var_m, y, dim_block);
-	blocking_faster(&mean_re, &var_re, yr, dim_block_re);
-	blocking_faster(&mean_im, &var_im, yi, dim_block_im);
+	if (dim_block == 1) {
+		stats_indipendent_unbiased(&mean, &var_m, y);
+	}
+	else {
+		blocking(&mean, &var_m, y, dim_block);
+	}
+	if (dim_block_re) {
+		stats_indipendent_unbiased(&mean_re, &var_re, yr);
+	}
+	else {
+		blocking(&mean_re, &var_re, yr, dim_block_re);
+	}
+	if (dim_block_im) {
+		stats_indipendent_unbiased(&mean_im, &var_im, yi);
+	}
+	else
+	{
+		blocking(&mean_im, &var_im, yi, dim_block_im);
+	}
 
 	cout << tipology << ": |<Obs * Obs^dag>| = " << mean << " +- " << sqrt(var_m) << endl;
 	cout << tipology << ": <Re{Obs}> = " << mean_re << " +- " << sqrt(var_re) << endl;

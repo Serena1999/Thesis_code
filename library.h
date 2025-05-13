@@ -1048,6 +1048,35 @@ template <class T> int stats_indipendent_unbiased(T* mean, T* var_m, int n_skip,
 	return index;
 }
 
+//Function to compute sample mean and sample variance of the sample mean from a given array draws of data.
+template <class T> void stats_indipendent_unbiased(T* mean, T* var_m, vector<T>& draws) {
+	/*
+		-> *mean will contain sample mean value;
+		-> *var_m will contain sample variance value of the sample mean;
+		-> draws contain all the draws which we are using in the mean and variance computations;
+		
+		NOTE FOR ME: page 115 of statnotes_3.3.0.pdf on Desktop.
+
+		Welford's algorithm was used: B. P. Welford. Note on a method for
+		calculating corrected sums of squares and products. Technometrics,
+		4(3):419–420, 1962.
+	*/
+
+	int index = draws.size();
+	T delta;
+
+	(*mean) = 0;
+	(*var_m) = 0;
+	for (int ii = 0; ii < index; ii++) {
+		delta = draws[ii] - (*mean);
+		(*mean) = (*mean) + delta / index;
+		(*var_m) = (*var_m) + delta * (draws[ii] - (*mean));
+	}
+		
+	(*var_m) = (*var_m) / (index - 1);
+	(*var_m) = (*var_m) / index;
+}
+
 //Function to compute sample mean and sample variance of the sample mean from a given vector of data, with autocorrelation estimated by the blocking techinque.
 template <class T> void blocking(T* mean, T* var_m, vector<T>& draws, int dim_block) {
 	/*	
