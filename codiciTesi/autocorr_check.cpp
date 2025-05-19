@@ -34,14 +34,15 @@ void process_autocorr_block(
 	int n_skip_file,
 	int n_skip_re,
 	int n_skip_im,
-	double n_sub_ratio
+	double n_sub_ratio,
+	int step_sample
 );
 
 //-----------------------------------------------------------------
 //MAIN:
 
 int main() {
-	bool bool_long = 0; //1 if you want "_long" in the end of images names;
+	bool bool_long = 1; //1 if you want "_long" in the end of images names;
 	int skipLines_g = 1, skipLines_f = 1, skipLines_file_list_therm = 1; //= number of lines to skip while reading input file;
 	int step_sample_fermion = 10;
 	int step_sample_gauge = 1;
@@ -50,7 +51,7 @@ int main() {
 	vector<string> directories;
 	vector<string> gauge_files;
 	vector<string> fermion_files;
-	double n_sub_ratio = 0.05;//=0.5*len(data) -> you can modify this number from 0 to 1;
+	double n_sub_ratio = 0.5;//=0.5*len(data) -> you can modify this number from 0 to 1;
 	string line, word, title1, title2, title3, var_dimblock_poly_image, var_dimblock_polyre_image, var_dimblock_polyim_image, name_output_file;
 	string var_dimblock_ff_image, var_dimblock_ffre_image, var_dimblock_ffim_image;
 	const string name_file_list_therm = "19_05_2025/file_list_therm.txt";
@@ -134,7 +135,8 @@ int main() {
 				skipLines_g,
 				n_skip_rep[ii],
 				n_skip_imp[ii],
-				n_sub_ratio
+				n_sub_ratio,
+				step_sample_gauge
 			);
 		}
 		if (fermion_mode) {
@@ -176,7 +178,8 @@ int main() {
 				skipLines_f,
 				n_skip_reff[ii],
 				n_skip_imff[ii],
-				n_sub_ratio
+				n_sub_ratio,
+				step_sample_fermion
 			);
 		}
 		
@@ -203,7 +206,8 @@ void process_autocorr_block(
 	int n_skip_file,
 	int n_skip_re,
 	int n_skip_im,
-	double n_sub_ratio
+	double n_sub_ratio,
+	int step_sample
 ) {
 	if (tipology == "fermion") {
 		size_t pos;
@@ -254,7 +258,7 @@ void process_autocorr_block(
 						counter++;
 						conf_tmp = conf_id;
 						value_re_tmp /= (double) n_copy_accum_r;
-						yr.push_back(value_re_tmp);
+						yr.push_back(value_re_tmp * step_sample);
 						value_re_tmp = 0;
 						n_copy_accum_r = 0;
 					}
@@ -275,7 +279,7 @@ void process_autocorr_block(
 						counter++;
 						conf_tmp = conf_id;
 						value_im_tmp /= (double) n_copy_accum_i;
-						yi.push_back(value_im_tmp);
+						yi.push_back(value_im_tmp * step_sample);
 						value_im_tmp = 0;
 						n_copy_accum_i = 0;
 					}
@@ -306,9 +310,9 @@ void process_autocorr_block(
 					value_re_tmp /= (double) n_copy_accum_r;
 					value_im_tmp /= (double) n_copy_accum_i;
 					value_mod_tmp /= (double) n_copy_accum_m;
-					y.push_back(value_mod_tmp);
-					yr.push_back(value_re_tmp);
-					yi.push_back(value_im_tmp);
+					y.push_back(value_mod_tmp * step_sample * step_sample);
+					yr.push_back(value_re_tmp * step_sample);
+					yi.push_back(value_im_tmp * step_sample);
 					if (debug_mode) {
 						cout << "Some acculumulated data in fermion file: " << cnt << "\t" << value_mod_tmp << "\t" << value_re_tmp << "\t" << value_im_tmp << endl;
 					}
@@ -335,9 +339,9 @@ void process_autocorr_block(
 			value_re_tmp /= n_copy_accum_r;
 			value_im_tmp /= n_copy_accum_i;
 			value_mod_tmp /= n_copy_accum_m;
-			y.push_back(value_mod_tmp);
-			yr.push_back(value_re_tmp);
-			yi.push_back(value_im_tmp);
+			y.push_back(value_mod_tmp * step_sample * step_sample);
+			yr.push_back(value_re_tmp * step_sample);
+			yi.push_back(value_im_tmp * step_sample);
 		}
 
 		input_file.close();
@@ -421,7 +425,7 @@ void process_autocorr_block(
 			getline(input_file, line);
 			istringstream iss(line);
 			if (iss >> value_tmp >> value_tmp >> value_tmp >> value_tmp >> obs_re >> obs_im) {
-				yr.push_back(obs_re);
+				yr.push_back(obs_re * step_sample);
 			}
 			else {
 				cerr << "Skipped line (badly formatted) from" << input_path << ": " << line << endl;
@@ -434,7 +438,7 @@ void process_autocorr_block(
 			getline(input_file, line);
 			istringstream iss(line);
 			if (iss >> value_tmp >> value_tmp >> value_tmp >> value_tmp >> obs_re >> obs_im) {
-				yi.push_back(obs_im);
+				yi.push_back(obs_im * step_sample);
 			}
 			else {
 				cerr << "Skipped line (badly formatted) from" << input_path << ": " << line << endl;
@@ -446,9 +450,9 @@ void process_autocorr_block(
 		istringstream iss(line);
 		if (iss >> value_tmp >> value_tmp >> value_tmp >> value_tmp >> obs_re >> obs_im) {
 			obs = obs_re * obs_re + obs_im * obs_im;//obs = |obs|^2 = obs_re^2 + obs_im^2;
-			y.push_back(obs);
-			yr.push_back(obs_re);
-			yi.push_back(obs_im);
+			y.push_back(obs * step_sample * step_sample);
+			yr.push_back(obs_re * step_sample);
+			yi.push_back(obs_im * step_sample);
 		}
 		else {
 			cerr << "Skipped line (badly formatted) from" << input_path << ": " << line << endl;
