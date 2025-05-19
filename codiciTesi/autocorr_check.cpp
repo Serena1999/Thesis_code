@@ -43,6 +43,8 @@ void process_autocorr_block(
 int main() {
 	bool bool_long = 0; //1 if you want "_long" in the end of images names;
 	int skipLines_g = 1, skipLines_f = 1, skipLines_file_list_therm = 1; //= number of lines to skip while reading input file;
+	int step_sample_fermion = 10;
+	int step_sample_gauge = 1;
 	vector <int> n_skip_rep, n_skip_imp, n_skip_reff, n_skip_imff;
 	vector <int> n_sub;//will contain N°elements in each subset that we consider
 	vector<string> directories;
@@ -72,15 +74,15 @@ int main() {
 	while (getline(file_list, line)) {
 		istringstream iss(line);
 		string dir, gauge, ferm;
-		int n_therm_rep, n_therm_imp, n_therm_reff, n_therm_imff, n_copy;
-		if (iss >> dir >> gauge >> n_therm_rep >> n_therm_imp  >> ferm >> n_therm_reff >> n_therm_imff >> n_copy) {
+		int n_therm_rep, n_therm_imp, n_therm_reff, n_therm_imff;
+		if (iss >> dir >> gauge >> n_therm_rep >> n_therm_imp  >> ferm >> n_therm_reff >> n_therm_imff) {
 			directories.push_back(dir);
 			gauge_files.push_back(gauge);
 			fermion_files.push_back(ferm);
-			n_skip_rep.push_back(n_therm_rep);
-			n_skip_imp.push_back(n_therm_imp);
-			n_skip_reff.push_back(n_therm_reff);
-			n_skip_imff.push_back(n_therm_imff);
+			n_skip_rep.push_back(n_therm_rep / step_sample_gauge);
+			n_skip_imp.push_back(n_therm_imp / step_sample_gauge);
+			n_skip_reff.push_back(n_therm_reff / step_sample_fermion);
+			n_skip_imff.push_back(n_therm_imff / step_sample_fermion);
 		}
 		else {
 			cerr << "Poorly formatted line: " << line << endl;
