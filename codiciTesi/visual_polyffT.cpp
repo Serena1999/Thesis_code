@@ -9,7 +9,7 @@
 #include "../library.h"
 #include "../root_include.h"
 
-const string tipology = "gauge"; //gauge/fermion, CHOOSABLE --> to do the gauge/fermion observables graph
+const string tipology = "fermion"; //gauge/fermion, CHOOSABLE --> to do the gauge/fermion observables graph
 
 //-----------------------------------------------------------------
 //ROOT MACRO TO DO FIT AND GRAPH:
@@ -77,7 +77,7 @@ int main() {
 		name_image_im = output_directory + "imPvsT_" + name_tmp + ".png";
 		title_mod = "#LT|PP^{+}|#GT vs temperature:";
 		title_re = "#LTRe{P}#GT vs temperature :";
-		title_im = "#LTRe{P}#GT vs temperature:";
+		title_im = "#LTIm{P}#GT vs temperature:";
 		y_name_mod = "#LT|PP^{+}|#GT";
 		y_name_re = "#LTRe{P}#GT";
 		y_name_im = "#LTIm{P}#GT";
@@ -103,7 +103,7 @@ int main() {
 		name_image_im = output_directory + "imffvsT_" + name_tmp + ".png";
 		title_mod = "#LT|(#bar{#psi}#psi)(#bar{#psi}#psi)^{+}|#GT vs temperature:";
 		title_re = "#LTRe{#bar{#psi}#psi}#GT vs temperature :";
-		title_im = "#LTRe{#bar{#psi}#psi}#GT vs temperature:";
+		title_im = "#LTIm{#bar{#psi}#psi}#GT vs temperature:";
 		y_name_mod = "#LT|(#bar{#psi}#psi)(#bar{#psi}#psi)^{+}|#GT";
 		y_name_re = "#LTRe{#bar{#psi}#psi}#GT";
 		y_name_im = "#LTIm{#bar{#psi}#psi}#GT";

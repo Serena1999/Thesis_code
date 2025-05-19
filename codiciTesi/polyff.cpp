@@ -71,8 +71,8 @@ int main() {
 	double mpi = 800; //MeV //BE CAREFUL TO CHOOSE IT WELL;
 	bool bool_startFile_poly = 1, bool_startFile_ff = 1;//BE CAREFUL TO CHOOSE IT WELL;
 	double temp_value;
-	vector<int> append_mode_poly = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };//16 entries (same size of beta);
-	vector<int> append_mode_ff = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };//16 entries (same size of beta);
+	vector<int> append_mode_poly = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };//20 entries (same size of beta);
+	vector<int> append_mode_ff = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 , 1, 1, 1, 1};//20 entries (same size of beta);
 	vector<int> n_skip_rep, n_skip_imp, n_skip_reff, n_skip_imff, n_copy;
 	vector<int> dim_block_modP, dim_block_reP, dim_block_imP, dim_block_modff, dim_block_reff, dim_block_imff;
 	vector<double> aml, beta, afm, temp;//T = \hbar * c /(Nt * a[fm]) (1.60), Nt = 8; 
@@ -82,8 +82,8 @@ int main() {
 	string mpi_string = mpi_stream.str(); // conversion into string
 	string name_output_file_poly = "results/" + mpi_string + "_poly_results.txt";
 	string name_output_file_ff = "results/" +  mpi_string + "_ff_results.txt";
-	string name_file_lpc = "11_05_2025/LCP_800MeV_dimblock.txt";
-	string name_file_list = "11_05_2025/file_list_therm.txt";
+	string name_file_lpc = "11_05_2025/LCP_800MeV_dimblock_extended.txt";
+	string name_file_list = "11_05_2025/file_list_therm_extended.txt";
 
 	read_file_LPC(
 		name_file_lpc,
@@ -156,6 +156,8 @@ int main() {
 		);
 		cout << "poly n°" << ii << " DONE! T = " << temp[ii] << endl;
 		cout << endl;
+
+		if (fermion_files[ii] == "NONE") continue;
 
 		stats_thesis(
 			directories[ii] + fermion_files[ii],
