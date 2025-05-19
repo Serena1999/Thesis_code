@@ -1129,7 +1129,7 @@ template <class T> void blocking(T* mean, T* var_m, vector<T>& draws, int dim_bl
 
 //Function to compute sample mean and sample variance of the sample mean from a given vector of data, with autocorrelation estimated by the blocking techinque.
 //More fast than blocking, but less precise.
-template <class T> void blocking_faster(T* mean, T* var_m, vector<T>& draws, int dim_block) {
+template <class T> int blocking_faster(T* mean, T* var_m, vector<T>& draws, int dim_block) {
 	/*
 		-> *mean will contain sample mean value;
 		-> *var_m will contain sample variance value of the sample mean;
@@ -1147,7 +1147,7 @@ template <class T> void blocking_faster(T* mean, T* var_m, vector<T>& draws, int
 		std::cerr << "Warning: not enough blocks (" << n_blocks << ") to estimate variance reliably. Returning NaN." << std::endl;
 		*mean = std::numeric_limits<T>::quiet_NaN();
 		*var_m = std::numeric_limits<T>::quiet_NaN();
-		return;
+		return 0;
 	}
 	int n_max = n_blocks * dim_block;//N_max to consider to compute variance
 	int index = 0;
@@ -1168,6 +1168,7 @@ template <class T> void blocking_faster(T* mean, T* var_m, vector<T>& draws, int
 		delta = draws[ii - 1] - (*mean);
 		(*mean) = (*mean) + delta / ii;
 	}
+	return 1;
 }
 
 

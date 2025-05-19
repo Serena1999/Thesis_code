@@ -33,7 +33,7 @@ int main() {
 	string reff_image;
 	string imff_image;
 	string title;
-	string name_file_list = "11_05_2025/file_list_pt2.txt";
+	string name_file_list = "19_05_2025/file_list.txt";
 	
 	ifstream file_list;
 	file_list.open(name_file_list);
