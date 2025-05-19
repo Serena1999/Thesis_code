@@ -13,6 +13,7 @@
 #include "../root_include.h"
 
 const double hbar_c = 197.3269804; //MeV * fm
+const bool debug_mode = 0;
 
 //-----------------------------------------------------------------
 //DECLARATIONS:
@@ -41,7 +42,6 @@ void read_file_list(
 	vector<string>& directories,
 	vector<string>& gauge_files,
 	vector<string>& fermion_files,
-	vector<int>& n_copy,
 	vector<int>& n_skip_rep,
 	vector<int>& n_skip_imp,
 	vector<int>& n_skip_reff,
@@ -59,7 +59,8 @@ void stats_thesis(
 	int dim_block,
 	int dim_block_re,
 	int dim_block_im,
-	int n_copy
+	int n_skip_file,
+	int step_sample
 );
 
 //-----------------------------------------------------------------
@@ -68,12 +69,14 @@ void stats_thesis(
 int main() {
 	int Nt = 8; //BE CAREFUL TO CHOOSE IT WELL;
 	int skipLines_file_lpc = 2, skipLines_file_list = 1, skipLines = 1;
-	double mpi = 800; //MeV //BE CAREFUL TO CHOOSE IT WELL;
+	int step_sample_fermion = 10;
+	int step_sample_gauge = 1;
+	double mpi = 1500; //MeV //BE CAREFUL TO CHOOSE IT WELL;
 	bool bool_startFile_poly = 1, bool_startFile_ff = 1;//BE CAREFUL TO CHOOSE IT WELL;
 	double temp_value;
-	vector<int> append_mode_poly = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };//20 entries (same size of beta);
-	vector<int> append_mode_ff = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 , 1, 1, 1, 1};//20 entries (same size of beta);
-	vector<int> n_skip_rep, n_skip_imp, n_skip_reff, n_skip_imff, n_copy;
+	vector<int> append_mode_poly = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };//16 entries (same size of beta);
+	vector<int> append_mode_ff = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };//16 entries (same size of beta);
+	vector<int> n_skip_rep, n_skip_imp, n_skip_reff, n_skip_imff;
 	vector<int> dim_block_modP, dim_block_reP, dim_block_imP, dim_block_modff, dim_block_reff, dim_block_imff;
 	vector<double> aml, beta, afm, temp;//T = \hbar * c /(Nt * a[fm]) (1.60), Nt = 8; 
 	vector<string> directories, gauge_files, fermion_files;
@@ -82,8 +85,8 @@ int main() {
 	string mpi_string = mpi_stream.str(); // conversion into string
 	string name_output_file_poly = "results/" + mpi_string + "_poly_results.txt";
 	string name_output_file_ff = "results/" +  mpi_string + "_ff_results.txt";
-	string name_file_lpc = "11_05_2025/LCP_800MeV_dimblock_extended.txt";
-	string name_file_list = "11_05_2025/file_list_therm_extended.txt";
+	string name_file_lpc = "19_05_2025/LCP_1500MeV_dimblock.txt";
+	string name_file_list = "19_05_2025/file_list_therm.txt";
 
 	read_file_LPC(
 		name_file_lpc,
@@ -109,7 +112,6 @@ int main() {
 		directories,
 		gauge_files,
 		fermion_files,
-		n_copy,
 		n_skip_rep, 
 		n_skip_imp,
 		n_skip_reff,
@@ -152,7 +154,9 @@ int main() {
 			dim_block_modP[ii],
 			dim_block_reP[ii],
 			dim_block_imP[ii],
-			1
+			skipLines,
+			step_sample_gauge
+
 		);
 		cout << "poly n°" << ii << " DONE! T = " << temp[ii] << endl;
 		cout << endl;
@@ -170,7 +174,8 @@ int main() {
 			dim_block_modff[ii],
 			dim_block_reff[ii],
 			dim_block_imff[ii],
-			n_copy[ii]
+			skipLines,
+			step_sample_fermion
 		);
 		cout << "ff n°" << ii << " DONE! T = " << temp[ii] << endl;
 		cout << endl;
@@ -254,7 +259,6 @@ void read_file_list(
 	vector<string>& directories,
 	vector<string>& gauge_files,
 	vector<string>& fermion_files,
-	vector<int>& n_copy,
 	vector<int>& n_skip_rep,
 	vector<int>& n_skip_imp,
 	vector<int>& n_skip_reff,
@@ -282,16 +286,15 @@ void read_file_list(
 		}
 		istringstream iss(line);
 		string dir, gauge, ferm;
-		int n_therm_rep, n_therm_imp, n_therm_reff, n_therm_imff, n_copy_value;
-		if (iss >> dir >> gauge >> n_therm_rep >> n_therm_imp >> ferm >> n_therm_reff >> n_therm_imff >> n_copy_value) {
+		int n_therm_rep, n_therm_imp, n_therm_reff, n_therm_imff;
+		if (iss >> dir >> gauge >> n_therm_rep >> n_therm_imp >> ferm >> n_therm_reff >> n_therm_imff) {
 			directories.push_back(dir);
 			gauge_files.push_back(gauge);
 			fermion_files.push_back(ferm);
-			n_skip_rep.push_back(skipLines + n_therm_rep);
-			n_skip_imp.push_back(skipLines + n_therm_imp);
-			n_skip_reff.push_back(skipLines + n_therm_reff * n_copy_value);
-			n_skip_imff.push_back(skipLines + n_therm_imff * n_copy_value);
-			n_copy.push_back(n_copy_value);
+			n_skip_rep.push_back(n_therm_rep);
+			n_skip_imp.push_back(n_therm_imp);
+			n_skip_reff.push_back(n_therm_reff);
+			n_skip_imff.push_back(n_therm_imff);
 		}
 		else {
 			cerr << "Poorly formatted line: " << line << endl;
@@ -312,12 +315,13 @@ void stats_thesis(
 	int dim_block,
 	int dim_block_re,
 	int dim_block_im,
-	int n_copy
+	int n_skip_file,
+	int step_sample
 ){
 	vector <double> y, yr, yi;
-	double discard1, discard2, discard3, discard4;
 	double obs, obs_re, obs_im;
 	double mean, mean_re, mean_im, var_m, var_re, var_im;
+	string discard1, discard2, discard3, discard4;
 	string line;
 
 	ifstream input_file; //declaration of input file
@@ -340,38 +344,65 @@ void stats_thesis(
 		return;
 	}
 
-	for (int jj = 0; jj < min(n_skip_re, n_skip_im); jj++) {
-		if (!getline(input_file, line)) {
-			cerr << "Error: there are less than " << min(n_skip_re, n_skip_im) << " lines in the file: " << input_path << endl;
-			return;
-		}
-	}
+	if (tipology == "gauge") {
 
-	if (n_skip_re < n_skip_im) {
-		for (int jj = 0; jj < (n_skip_im - n_skip_re); jj++) {
-			getline(input_file, line);
-			if (line.empty()) {
-				cerr << "Skipped blank/whitespace-only line in file: " << input_path << endl;
-				continue;
-			}
-			istringstream iss(line);
-			if (iss >> discard1 >> discard2 >> discard3 >> discard4 >> obs_re >> obs_im) {
-				yr.push_back(obs_re);
-			}
-			else {
-				cerr << "Skipped line (badly formatted) from" << input_path << ": " << line << endl;
+		for (int jj = 0; jj < n_skip_file; jj++) {
+			if (!getline(input_file, line)) {
+				cerr << "Error: there are less than " << n_skip_file << " lines in the file: " << input_path << endl;
+				return;
 			}
 		}
-	}
-	else if (n_skip_im < n_skip_re) {
-		for (int jj = 0; jj < (n_skip_re - n_skip_im); jj++) {
-			getline(input_file, line);
+
+		for (int jj = 0; jj < min(n_skip_re, n_skip_im); jj++) {
+			if (!getline(input_file, line)) {
+				cerr << "Error: there are less than " << min(n_skip_re, n_skip_im) << " lines in the file: " << input_path << endl;
+				return;
+			}
+		}
+
+		if (n_skip_re < n_skip_im) {
+			for (int jj = 0; jj < (n_skip_im - n_skip_re); jj++) {
+				getline(input_file, line);
+				if (line.empty()) {
+					cerr << "Skipped blank/whitespace-only line in file: " << input_path << endl;
+					continue;
+				}
+				istringstream iss(line);
+				if (iss >> discard1 >> discard2 >> discard3 >> discard4 >> obs_re >> obs_im) {
+					yr.push_back(obs_re);
+				}
+				else {
+					cerr << "Skipped line (badly formatted) from" << input_path << ": " << line << endl;
+				}
+			}
+		}
+		else if (n_skip_im < n_skip_re) {
+			for (int jj = 0; jj < (n_skip_re - n_skip_im); jj++) {
+				getline(input_file, line);
+				if (line.empty()) {
+					cerr << "Skipped blank/whitespace-only line in file: " << input_path << endl;
+					continue;
+				}
+				istringstream iss(line);
+				if (iss >> discard1 >> discard2 >> discard3 >> discard4 >> obs_re >> obs_im) {
+					yi.push_back(obs_im);
+				}
+				else {
+					cerr << "Skipped line (badly formatted) from" << input_path << ": " << line << endl;
+				}
+			}
+		}
+
+		while (getline(input_file, line)) {
 			if (line.empty()) {
 				cerr << "Skipped blank/whitespace-only line in file: " << input_path << endl;
 				continue;
 			}
 			istringstream iss(line);
 			if (iss >> discard1 >> discard2 >> discard3 >> discard4 >> obs_re >> obs_im) {
+				obs = obs_re * obs_re + obs_im * obs_im;//obs = |obs|^2 = obs_re^2 + obs_im^2;
+				y.push_back(obs);
+				yr.push_back(obs_re);
 				yi.push_back(obs_im);
 			}
 			else {
@@ -379,27 +410,131 @@ void stats_thesis(
 			}
 		}
 	}
+	else if (tipology == "fermion") {
 
-	while (getline(input_file, line)) {
-		if (line.empty()) {
-			cerr << "Skipped blank/whitespace-only line in file: " << input_path << endl;
-			continue;
+		double  value_re_tmp = 0, value_im_tmp = 0, value_mod_tmp = 0;
+		double conf_id = -999, conf_tmp = 999, n_copy_accum_r = 0, n_copy_accum_i = 0, n_copy_accum_m = 0, flag = 0, counter = 0;
+		int cnt = 0, flag_start = 0;
+
+		for (int jj = 0; jj < n_skip_file; jj++) {
+			if (!getline(input_file, line)) {
+				cerr << "Error: there are less than " << n_skip_file << " lines in the file: " << input_path << endl;
+				return;
+			}
 		}
-		istringstream iss(line);
-		if (iss >> discard1 >> discard2 >> discard3 >> discard4 >> obs_re >> obs_im) {
-			obs = obs_re * obs_re + obs_im * obs_im;//obs = |obs|^2 = obs_re^2 + obs_im^2;
-			y.push_back(obs);
-			yr.push_back(obs_re);
-			yi.push_back(obs_im);
+
+		for (int jj = 0; jj < min(n_skip_re, n_skip_im); jj++) {
+			while (conf_id != conf_tmp) {
+				if (!getline(input_file, line)) {
+					cerr << "Error: there are less than " << min(n_skip_re, n_skip_im) + n_skip_file << " lines in the file: " << input_path << endl;
+					return;
+				}
+				istringstream iss(line);
+				if (iss >> conf_id) {
+					if (jj == 0) {
+						conf_tmp = conf_id;
+					}
+				}
+			}
 		}
-		else {
-			cerr << "Skipped line (badly formatted) from" << input_path << ": " << line << endl;
+
+		if (n_skip_re < n_skip_im) {
+			while (counter < (n_skip_im - n_skip_re)) {
+				if (!getline(input_file, line)) break;
+				istringstream iss(line);
+				if (iss >> conf_id >> discard1 >> discard2 >> discard3 >> obs_re >> obs_im) {
+					if (conf_id != conf_tmp) {
+						counter++;
+						conf_tmp = conf_id;
+						value_re_tmp /= (double)n_copy_accum_r;
+						yr.push_back(value_re_tmp * step_sample);
+						value_re_tmp = 0;
+						n_copy_accum_r = 0;
+					}
+					n_copy_accum_r++;
+					value_re_tmp += obs_re;
+				}
+				else {
+					cerr << "Skipped line (badly formatted) from" << input_path << ": " << line << endl;
+				}
+			}
+		}
+		else if (n_skip_im < n_skip_re) {
+			while (counter < (n_skip_re - n_skip_im)) {
+				if (!getline(input_file, line)) break;
+				istringstream iss(line);
+				if (iss >> conf_id >> discard1 >> discard2 >> discard3 >> obs_re >> obs_im) {
+					if (conf_id != conf_tmp) {
+						counter++;
+						conf_tmp = conf_id;
+						value_im_tmp /= (double)n_copy_accum_i;
+						yi.push_back(value_im_tmp * step_sample);
+						value_im_tmp = 0;
+						n_copy_accum_i = 0;
+					}
+					n_copy_accum_i++;
+					value_im_tmp += obs_im;
+				}
+				else {
+					cerr << "Skipped line (badly formatted) from" << input_path << ": " << line << endl;
+				}
+			}
+		}
+
+		if (n_skip_im == n_skip_re) flag_start = 1;
+		while (getline(input_file, line)) {
+			istringstream iss(line);
+			if (iss >> conf_id >> discard1 >> discard2 >> discard3 >> obs_re >> obs_im) {
+				if (flag_start) {
+					conf_tmp = conf_id;
+				}
+				flag = 0;
+				if (debug_mode) {
+					cout << "(conf_id, conf_tmp) = (" << conf_id << ", " << conf_tmp << ")" << endl;
+				}
+				if (conf_id != conf_tmp) {
+					cnt++;
+					conf_tmp = conf_id;
+					value_re_tmp /= (double)n_copy_accum_r;
+					value_im_tmp /= (double)n_copy_accum_i;
+					value_mod_tmp /= (double)n_copy_accum_m;
+					y.push_back(value_mod_tmp * step_sample * step_sample);
+					yr.push_back(value_re_tmp * step_sample);
+					yi.push_back(value_im_tmp * step_sample);
+					if (debug_mode) {
+						cout << "Some acculumulated data in fermion file: " << cnt << "\t" << value_mod_tmp << "\t" << value_re_tmp << "\t" << value_im_tmp << endl;
+					}
+					value_mod_tmp = 0;
+					value_re_tmp = 0;
+					value_im_tmp = 0;
+					n_copy_accum_m = 0;
+					n_copy_accum_r = 0;
+					n_copy_accum_i = 0;
+				}
+				n_copy_accum_m++;
+				n_copy_accum_r++;
+				n_copy_accum_i++;
+				value_mod_tmp += obs_re * obs_re + obs_im * obs_im;//obs = |obs|^2 = obs_re^2 + obs_im^2;
+				value_re_tmp += obs_re;
+				value_im_tmp += obs_im;
+			}
+			else {
+				flag = 1;
+				cerr << "Skipped line (badly formatted) from" << input_path << ": " << line << endl;
+			}
+		}
+		if ((conf_id == conf_tmp) && (!flag)) {
+			value_re_tmp /= n_copy_accum_r;
+			value_im_tmp /= n_copy_accum_i;
+			value_mod_tmp /= n_copy_accum_m;
+			y.push_back(value_mod_tmp * step_sample * step_sample);
+			yr.push_back(value_re_tmp * step_sample);
+			yi.push_back(value_im_tmp * step_sample);
 		}
 	}
-
-	dim_block *= n_copy;
-	dim_block_re *= n_copy;
-	dim_block_im *= n_copy;
+	else {
+		cerr << "Not acceptable tipology. You can choose either \"fermion\" or \"gauge\".";
+	}
 
 	if (dim_block == 1) {
 		stats_indipendent_unbiased(&mean, &var_m, y);
