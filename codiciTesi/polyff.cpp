@@ -45,7 +45,9 @@ void read_file_list(
 	vector<int>& n_skip_rep,
 	vector<int>& n_skip_imp,
 	vector<int>& n_skip_reff,
-	vector<int>& n_skip_imff
+	vector<int>& n_skip_imff,
+	int step_sample_gauge,
+	int step_sample_fermion
 );
 
 void stats_thesis(
@@ -59,8 +61,7 @@ void stats_thesis(
 	int dim_block,
 	int dim_block_re,
 	int dim_block_im,
-	int n_skip_file,
-	int step_sample
+	int n_skip_file
 );
 
 //-----------------------------------------------------------------
@@ -115,7 +116,9 @@ int main() {
 		n_skip_rep, 
 		n_skip_imp,
 		n_skip_reff,
-		n_skip_imff
+		n_skip_imff,
+		step_sample_gauge,
+		step_sample_fermion
 	);
 
 	if (bool_startFile_poly) {
@@ -154,8 +157,7 @@ int main() {
 			dim_block_modP[ii],
 			dim_block_reP[ii],
 			dim_block_imP[ii],
-			skipLines,
-			step_sample_gauge
+			skipLines
 
 		);
 		cout << "poly n°" << ii << " DONE! T = " << temp[ii] << endl;
@@ -174,8 +176,7 @@ int main() {
 			dim_block_modff[ii],
 			dim_block_reff[ii],
 			dim_block_imff[ii],
-			skipLines,
-			step_sample_fermion
+			skipLines
 		);
 		cout << "ff n°" << ii << " DONE! T = " << temp[ii] << endl;
 		cout << endl;
@@ -262,7 +263,9 @@ void read_file_list(
 	vector<int>& n_skip_rep,
 	vector<int>& n_skip_imp,
 	vector<int>& n_skip_reff,
-	vector<int>& n_skip_imff
+	vector<int>& n_skip_imff,
+	int step_sample_gauge,
+	int step_sample_fermion
 ) {
 	string line;
 	ifstream file_list;
@@ -291,10 +294,19 @@ void read_file_list(
 			directories.push_back(dir);
 			gauge_files.push_back(gauge);
 			fermion_files.push_back(ferm);
-			n_skip_rep.push_back(n_therm_rep);
-			n_skip_imp.push_back(n_therm_imp);
-			n_skip_reff.push_back(n_therm_reff);
-			n_skip_imff.push_back(n_therm_imff);
+			n_skip_rep.push_back(n_therm_rep/ step_sample_gauge);
+			n_skip_imp.push_back(n_therm_imp / step_sample_gauge);
+			n_skip_reff.push_back(n_therm_reff / step_sample_fermion);
+			n_skip_imff.push_back(n_therm_imff / step_sample_fermion);
+			if ((debug_mode) && (0)) {
+				cout << dir << endl;
+				cout << gauge << endl;
+				cout << ferm << endl;
+				cout << n_therm_rep << endl;
+				cout << n_therm_imp << endl;
+				cout << n_therm_reff << endl;
+				cout << n_therm_imff << endl;
+			}
 		}
 		else {
 			cerr << "Poorly formatted line: " << line << endl;
@@ -315,8 +327,7 @@ void stats_thesis(
 	int dim_block,
 	int dim_block_re,
 	int dim_block_im,
-	int n_skip_file,
-	int step_sample
+	int n_skip_file
 ){
 	vector <double> y, yr, yi;
 	double obs, obs_re, obs_im;
@@ -447,7 +458,7 @@ void stats_thesis(
 						counter++;
 						conf_tmp = conf_id;
 						value_re_tmp /= (double)n_copy_accum_r;
-						yr.push_back(value_re_tmp * step_sample);
+						yr.push_back(value_re_tmp);
 						value_re_tmp = 0;
 						n_copy_accum_r = 0;
 					}
@@ -468,7 +479,7 @@ void stats_thesis(
 						counter++;
 						conf_tmp = conf_id;
 						value_im_tmp /= (double)n_copy_accum_i;
-						yi.push_back(value_im_tmp * step_sample);
+						yi.push_back(value_im_tmp);
 						value_im_tmp = 0;
 						n_copy_accum_i = 0;
 					}
@@ -489,7 +500,7 @@ void stats_thesis(
 					conf_tmp = conf_id;
 				}
 				flag = 0;
-				if (debug_mode) {
+				if ((debug_mode) && (input_path == "19_05_2025/build_good_mpi1500_12_out/ferm_obs230875197.txt")) {
 					cout << "(conf_id, conf_tmp) = (" << conf_id << ", " << conf_tmp << ")" << endl;
 				}
 				if (conf_id != conf_tmp) {
@@ -498,10 +509,10 @@ void stats_thesis(
 					value_re_tmp /= (double)n_copy_accum_r;
 					value_im_tmp /= (double)n_copy_accum_i;
 					value_mod_tmp /= (double)n_copy_accum_m;
-					y.push_back(value_mod_tmp * step_sample * step_sample);
-					yr.push_back(value_re_tmp * step_sample);
-					yi.push_back(value_im_tmp * step_sample);
-					if (debug_mode) {
+					y.push_back(value_mod_tmp);
+					yr.push_back(value_re_tmp);
+					yi.push_back(value_im_tmp);
+					if ((debug_mode) && (input_path == "19_05_2025/build_good_mpi1500_12_out/ferm_obs230875197.txt")) {
 						cout << "Some acculumulated data in fermion file: " << cnt << "\t" << value_mod_tmp << "\t" << value_re_tmp << "\t" << value_im_tmp << endl;
 					}
 					value_mod_tmp = 0;
@@ -527,14 +538,22 @@ void stats_thesis(
 			value_re_tmp /= n_copy_accum_r;
 			value_im_tmp /= n_copy_accum_i;
 			value_mod_tmp /= n_copy_accum_m;
-			y.push_back(value_mod_tmp * step_sample * step_sample);
-			yr.push_back(value_re_tmp * step_sample);
-			yi.push_back(value_im_tmp * step_sample);
+			y.push_back(value_mod_tmp);
+			yr.push_back(value_re_tmp);
+			yi.push_back(value_im_tmp);
 		}
 	}
 	else {
 		cerr << "Not acceptable tipology. You can choose either \"fermion\" or \"gauge\".";
 	}
+
+	cout << "DEBUG [" << tipology << "] T = " << temp << endl;
+	cout << " -> y.size() = " << y.size() << ", dim_block = " << dim_block
+		<< ", n_blocks = " << (y.size() / dim_block) << endl;
+	cout << " -> yr.size() = " << yr.size() << ", dim_block_re = " << dim_block_re
+		<< ", n_blocks_re = " << (yr.size() / dim_block_re) << endl;
+	cout << " -> yi.size() = " << yi.size() << ", dim_block_im = " << dim_block_im
+		<< ", n_blocks_im = " << (yi.size() / dim_block_im) << endl;
 
 	if (dim_block == 1) {
 		stats_indipendent_unbiased(&mean, &var_m, y);

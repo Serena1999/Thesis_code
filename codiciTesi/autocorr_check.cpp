@@ -34,8 +34,7 @@ void process_autocorr_block(
 	int n_skip_file,
 	int n_skip_re,
 	int n_skip_im,
-	double n_sub_ratio,
-	int step_sample
+	double n_sub_ratio
 );
 
 //-----------------------------------------------------------------
@@ -55,8 +54,8 @@ int main() {
 	string line, word, title1, title2, title3, var_dimblock_poly_image, var_dimblock_polyre_image, var_dimblock_polyim_image, name_output_file;
 	string var_dimblock_ff_image, var_dimblock_ffre_image, var_dimblock_ffim_image;
 	const string name_file_list_therm = "19_05_2025/file_list_therm.txt";
-	const string first_out_line_gauge = "# N°elements in each subset \t var(|<P * P^dag>| ) \t var(Re{ P }) \t var(Im{ P }):";
-	const string first_out_line_ferm = "# N°elements in each subset \t var(|<ff * ff^dag>|) \t var(Re{ff}) \t var(Im{ff}):";
+	const string first_out_line_gauge = "# N°elements in each subset \t	mean(|<P * P^dag>|) \t var(|<P * P^dag>| ) \t mean(Re{ P }) \t var(Re{ P }) \t mean(Im{P}) \t var(Im{ P }):";
+	const string first_out_line_ferm = "# N°elements in each subset \t mean(|<ff * ff^dag>|) \t var(|<ff * ff^dag>|) \t mean(Re{ff}) \t var(Re{ff}) \t mean(Im{ff}) \t var(Im{ff}):";
 	
 	ifstream file_list;
 	file_list.open(name_file_list_therm);
@@ -135,8 +134,7 @@ int main() {
 				skipLines_g,
 				n_skip_rep[ii],
 				n_skip_imp[ii],
-				n_sub_ratio,
-				step_sample_gauge
+				n_sub_ratio
 			);
 		}
 		if (fermion_mode) {
@@ -178,8 +176,7 @@ int main() {
 				skipLines_f,
 				n_skip_reff[ii],
 				n_skip_imff[ii],
-				n_sub_ratio,
-				step_sample_fermion
+				n_sub_ratio
 			);
 		}
 		
@@ -206,8 +203,7 @@ void process_autocorr_block(
 	int n_skip_file,
 	int n_skip_re,
 	int n_skip_im,
-	double n_sub_ratio,
-	int step_sample
+	double n_sub_ratio
 ) {
 	if (tipology == "fermion") {
 		size_t pos;
@@ -258,7 +254,7 @@ void process_autocorr_block(
 						counter++;
 						conf_tmp = conf_id;
 						value_re_tmp /= (double) n_copy_accum_r;
-						yr.push_back(value_re_tmp * step_sample);
+						yr.push_back(value_re_tmp);
 						value_re_tmp = 0;
 						n_copy_accum_r = 0;
 					}
@@ -279,7 +275,7 @@ void process_autocorr_block(
 						counter++;
 						conf_tmp = conf_id;
 						value_im_tmp /= (double) n_copy_accum_i;
-						yi.push_back(value_im_tmp * step_sample);
+						yi.push_back(value_im_tmp);
 						value_im_tmp = 0;
 						n_copy_accum_i = 0;
 					}
@@ -310,9 +306,9 @@ void process_autocorr_block(
 					value_re_tmp /= (double) n_copy_accum_r;
 					value_im_tmp /= (double) n_copy_accum_i;
 					value_mod_tmp /= (double) n_copy_accum_m;
-					y.push_back(value_mod_tmp * step_sample * step_sample);
-					yr.push_back(value_re_tmp * step_sample);
-					yi.push_back(value_im_tmp * step_sample);
+					y.push_back(value_mod_tmp);
+					yr.push_back(value_re_tmp);
+					yi.push_back(value_im_tmp);
 					if (debug_mode) {
 						cout << "Some acculumulated data in fermion file: " << cnt << "\t" << value_mod_tmp << "\t" << value_re_tmp << "\t" << value_im_tmp << endl;
 					}
@@ -339,9 +335,9 @@ void process_autocorr_block(
 			value_re_tmp /= n_copy_accum_r;
 			value_im_tmp /= n_copy_accum_i;
 			value_mod_tmp /= n_copy_accum_m;
-			y.push_back(value_mod_tmp * step_sample * step_sample);
-			yr.push_back(value_re_tmp * step_sample);
-			yi.push_back(value_im_tmp * step_sample);
+			y.push_back(value_mod_tmp);
+			yr.push_back(value_re_tmp);
+			yi.push_back(value_im_tmp);
 		}
 
 		input_file.close();
@@ -367,7 +363,7 @@ void process_autocorr_block(
 			var_new.push_back(var_m);
 			varr_new.push_back(var_re);
 			vari_new.push_back(var_im);
-			output_file << dim_block << "\t" << var_m << "\t" << var_re << "\t" << var_im << endl;
+			output_file << dim_block << "\t" << mean << "\t" << var_m << "\t" << mean_re << "\t" << var_re << "\t" << mean_im << "\t" << var_im << endl;
 		}
 		
 		vector <double> n_sub_d;
@@ -425,7 +421,7 @@ void process_autocorr_block(
 			getline(input_file, line);
 			istringstream iss(line);
 			if (iss >> value_tmp >> value_tmp >> value_tmp >> value_tmp >> obs_re >> obs_im) {
-				yr.push_back(obs_re * step_sample);
+				yr.push_back(obs_re);
 			}
 			else {
 				cerr << "Skipped line (badly formatted) from" << input_path << ": " << line << endl;
@@ -438,7 +434,7 @@ void process_autocorr_block(
 			getline(input_file, line);
 			istringstream iss(line);
 			if (iss >> value_tmp >> value_tmp >> value_tmp >> value_tmp >> obs_re >> obs_im) {
-				yi.push_back(obs_im * step_sample);
+				yi.push_back(obs_im);
 			}
 			else {
 				cerr << "Skipped line (badly formatted) from" << input_path << ": " << line << endl;
@@ -450,9 +446,9 @@ void process_autocorr_block(
 		istringstream iss(line);
 		if (iss >> value_tmp >> value_tmp >> value_tmp >> value_tmp >> obs_re >> obs_im) {
 			obs = obs_re * obs_re + obs_im * obs_im;//obs = |obs|^2 = obs_re^2 + obs_im^2;
-			y.push_back(obs * step_sample * step_sample);
-			yr.push_back(obs_re * step_sample);
-			yi.push_back(obs_im * step_sample);
+			y.push_back(obs);
+			yr.push_back(obs_re);
+			yi.push_back(obs_im);
 		}
 		else {
 			cerr << "Skipped line (badly formatted) from" << input_path << ": " << line << endl;
