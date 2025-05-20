@@ -9,7 +9,7 @@
 #include "../library.h"
 #include "../root_include.h"
 
-const string tipology = "fermion"; //gauge/fermion, CHOOSABLE --> to do the gauge/fermion observables graph
+const string tipology = "gauge"; //gauge/fermion, CHOOSABLE --> to do the gauge/fermion observables graph
 
 //-----------------------------------------------------------------
 //ROOT MACRO TO DO FIT AND GRAPH:
@@ -39,7 +39,7 @@ int main() {
 	vector <double> temp, mod, mod_err, re, re_err, im, im_err;
 	size_t pos;
 	string line, name_tmp;
-	string input_directory = "19_05_2025/polyff_results/";
+	string input_directory = "11_05_2025/polyff_results/";
 	string output_directory = "results/";
 	string name_input_file;
 	pos = name_input_file.find_last_of(".");
@@ -66,7 +66,7 @@ int main() {
 	double pos_title_im;
 
 	if (tipology == "gauge") {
-		name_input_file = "1500.0_poly_results.txt";
+		name_input_file = "800.0_poly_results.txt";
 		pos = name_input_file.find_last_of(".");
 		if (pos != string::npos) {
 			name_tmp = name_input_file.substr(0, pos); //I remove extension using substr
@@ -92,7 +92,7 @@ int main() {
 		pos_title_im = 0.3;
 	}
 	else if (tipology == "fermion") {
-		name_input_file = "1500.0_ff_results.txt";
+		name_input_file = "800.0_ff_results.txt";
 		pos = name_input_file.find_last_of(".");
 		if (pos != string::npos) {
 			name_tmp = name_input_file.substr(0, pos); //I remove extension using substr
@@ -173,7 +173,7 @@ void plot_points_errors(
 	string title, 
 	string y_name, 
 	double pos_title, 
-	double pos_y, 
+	double pos_y,
 	double heigh_y
 ) {
 

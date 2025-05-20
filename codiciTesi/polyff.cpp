@@ -72,11 +72,11 @@ int main() {
 	int skipLines_file_lpc = 2, skipLines_file_list = 1, skipLines = 1;
 	int step_sample_fermion = 10;
 	int step_sample_gauge = 1;
-	double mpi = 1500; //MeV //BE CAREFUL TO CHOOSE IT WELL;
+	double mpi = 800; //MeV //BE CAREFUL TO CHOOSE IT WELL;
 	bool bool_startFile_poly = 1, bool_startFile_ff = 1;//BE CAREFUL TO CHOOSE IT WELL;
 	double temp_value;
-	vector<int> append_mode_poly = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };//16 entries (same size of beta);
-	vector<int> append_mode_ff = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };//16 entries (same size of beta);
+	vector<int> append_mode_poly = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };//20 entries (same size of beta);
+	vector<int> append_mode_ff = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };//20 entries (same size of beta);
 	vector<int> n_skip_rep, n_skip_imp, n_skip_reff, n_skip_imff;
 	vector<int> dim_block_modP, dim_block_reP, dim_block_imP, dim_block_modff, dim_block_reff, dim_block_imff;
 	vector<double> aml, beta, afm, temp;//T = \hbar * c /(Nt * a[fm]) (1.60), Nt = 8; 
@@ -86,8 +86,8 @@ int main() {
 	string mpi_string = mpi_stream.str(); // conversion into string
 	string name_output_file_poly = "results/" + mpi_string + "_poly_results.txt";
 	string name_output_file_ff = "results/" +  mpi_string + "_ff_results.txt";
-	string name_file_lpc = "19_05_2025/LCP_1500MeV_dimblock.txt";
-	string name_file_list = "19_05_2025/file_list_therm.txt";
+	string name_file_lpc = "11_05_2025/LCP_800MeV_dimblock_extended.txt";
+	string name_file_list = "11_05_2025/file_list_therm_extended.txt";
 
 	read_file_LPC(
 		name_file_lpc,
@@ -425,7 +425,7 @@ void stats_thesis(
 
 		double  value_re_tmp = 0, value_im_tmp = 0, value_mod_tmp = 0;
 		double conf_id = -999, conf_tmp = 999, n_copy_accum_r = 0, n_copy_accum_i = 0, n_copy_accum_m = 0, flag = 0, counter = 0;
-		int cnt = 0, flag_start = 0;
+		int cnt = 0, flag_init = 0;
 
 		for (int jj = 0; jj < n_skip_file; jj++) {
 			if (!getline(input_file, line)) {
@@ -444,6 +444,7 @@ void stats_thesis(
 				if (iss >> conf_id) {
 					if (jj == 0) {
 						conf_tmp = conf_id;
+						flag_init = 1;
 					}
 				}
 			}
@@ -454,6 +455,10 @@ void stats_thesis(
 				if (!getline(input_file, line)) break;
 				istringstream iss(line);
 				if (iss >> conf_id >> discard1 >> discard2 >> discard3 >> obs_re >> obs_im) {
+					if (!flag_init) {
+						conf_tmp = conf_id;
+						flag_init = 1;
+					}
 					if (conf_id != conf_tmp) {
 						counter++;
 						conf_tmp = conf_id;
@@ -475,6 +480,10 @@ void stats_thesis(
 				if (!getline(input_file, line)) break;
 				istringstream iss(line);
 				if (iss >> conf_id >> discard1 >> discard2 >> discard3 >> obs_re >> obs_im) {
+					if (!flag_init) {
+						conf_tmp = conf_id;
+						flag_init = 1;
+					}
 					if (conf_id != conf_tmp) {
 						counter++;
 						conf_tmp = conf_id;
@@ -492,12 +501,12 @@ void stats_thesis(
 			}
 		}
 
-		if (n_skip_im == n_skip_re) flag_start = 1;
 		while (getline(input_file, line)) {
 			istringstream iss(line);
 			if (iss >> conf_id >> discard1 >> discard2 >> discard3 >> obs_re >> obs_im) {
-				if (flag_start) {
+				if (!flag_init) {
 					conf_tmp = conf_id;
+					flag_init = 1;
 				}
 				flag = 0;
 				if ((debug_mode) && (input_path == "19_05_2025/build_good_mpi1500_12_out/ferm_obs230875197.txt")) {

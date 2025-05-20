@@ -53,7 +53,7 @@ int main() {
 	double n_sub_ratio = 0.5;//=0.5*len(data) -> you can modify this number from 0 to 1;
 	string line, word, title1, title2, title3, var_dimblock_poly_image, var_dimblock_polyre_image, var_dimblock_polyim_image, name_output_file;
 	string var_dimblock_ff_image, var_dimblock_ffre_image, var_dimblock_ffim_image;
-	const string name_file_list_therm = "19_05_2025/file_list_therm.txt";
+	const string name_file_list_therm = "11_05_2025/file_list_therm.txt";
 	const string first_out_line_gauge = "# N°elements in each subset \t	mean(|<P * P^dag>|) \t var(|<P * P^dag>| ) \t mean(Re{ P }) \t var(Re{ P }) \t mean(Im{P}) \t var(Im{ P }):";
 	const string first_out_line_ferm = "# N°elements in each subset \t mean(|<ff * ff^dag>|) \t var(|<ff * ff^dag>|) \t mean(Re{ff}) \t var(Re{ff}) \t mean(Im{ff}) \t var(Im{ff}):";
 	
@@ -83,6 +83,12 @@ int main() {
 			n_skip_imp.push_back(n_therm_imp / step_sample_gauge);
 			n_skip_reff.push_back(n_therm_reff / step_sample_fermion);
 			n_skip_imff.push_back(n_therm_imff / step_sample_fermion);
+			if (debug_mode) {
+				//cout << n_therm_rep / step_sample_gauge << endl;
+				//cout << n_therm_imp / step_sample_gauge << endl;
+				//cout << n_therm_reff / step_sample_fermion << endl;
+				//cout << n_therm_imff / step_sample_fermion << endl;
+			}
 		}
 		else {
 			cerr << "Poorly formatted line: " << line << endl;
@@ -213,7 +219,7 @@ void process_autocorr_block(
 		vector <int> n_sub;
 		double mean, mean_re, mean_im, var_m, var_re, var_im, value_re_tmp = 0, value_im_tmp = 0, value_mod_tmp = 0;
 		string value_tmp;
-		int conf_id = -999, conf_tmp = 999, n_copy_accum_r = 0, n_copy_accum_i = 0, n_copy_accum_m = 0, flag = 0;
+		int conf_id = -999, conf_tmp = 999, n_copy_accum_r = 0, n_copy_accum_i = 0, n_copy_accum_m = 0, flag = 0, flag_init = 0;
 		double counter = 0;
 
 		ifstream input_file; //declaration of input file
@@ -240,6 +246,7 @@ void process_autocorr_block(
 				if (iss >> conf_id) {
 					if (jj == 0) {
 						conf_tmp = conf_id;
+						flag_init = 1;
 					}
 				}
 			}
@@ -250,11 +257,22 @@ void process_autocorr_block(
 				if(!getline(input_file, line)) break;
 				istringstream iss(line);
 				if (iss >> conf_id >> value_tmp >> value_tmp >> value_tmp >> obs_re >> obs_im) {
+					if (!flag_init) {
+						conf_tmp = conf_id;
+						flag_init = 1;
+					}
 					if (conf_id != conf_tmp) {
 						counter++;
 						conf_tmp = conf_id;
 						value_re_tmp /= (double) n_copy_accum_r;
+						if (debug_mode) {
+							if (n_copy_accum_i == 0) cout << "NAN HERE 1!" << endl;
+						}
 						yr.push_back(value_re_tmp);
+						if (debug_mode) {
+							//cout << "n_accumulated" << n_copy_accum_m << "\t" << n_copy_accum_r << "\t" << n_copy_accum_i << endl;
+							//cout << "values" << value_mod_tmp << "\t" << value_re_tmp << "\t" << value_im_tmp << endl;
+						}
 						value_re_tmp = 0;
 						n_copy_accum_r = 0;
 					}
@@ -271,11 +289,22 @@ void process_autocorr_block(
 				if (!getline(input_file, line)) break;
 				istringstream iss(line);
 				if (iss >> conf_id >> value_tmp >> value_tmp >> value_tmp >> obs_re >> obs_im) {
+					if (!flag_init) {
+						conf_tmp = conf_id;
+						flag_init = 1;
+					}
 					if (conf_id != conf_tmp) {
 						counter++;
 						conf_tmp = conf_id;
 						value_im_tmp /= (double) n_copy_accum_i;
+						if (debug_mode) {
+							if (n_copy_accum_i == 0) cout << "NAN HERE 2!" << endl;
+						}
 						yi.push_back(value_im_tmp);
+						if (debug_mode) {
+							//cout << "n_accumulated" << n_copy_accum_m << "\t" << n_copy_accum_r << "\t" << n_copy_accum_i << endl;
+							//cout << "values" << value_mod_tmp << "\t" << value_re_tmp << "\t" << value_im_tmp << endl;
+						}
 						value_im_tmp = 0;
 						n_copy_accum_i = 0;
 					}
@@ -288,21 +317,24 @@ void process_autocorr_block(
 			}
 		}
 
-		int cnt = 0, flag_start = 0;
-		if (n_skip_im == n_skip_re) flag_start = 1;
+		int cnt = 0;
 		while (getline(input_file, line)) {
 			istringstream iss(line);
 			if (iss >> conf_id >> value_tmp >> value_tmp >> value_tmp >> obs_re >> obs_im) {
-				if (flag_start) {
+				if (!flag_init) {
 					conf_tmp = conf_id;
+					flag_init = 1;
 				}
 				flag = 0;
-				if (debug_mode) {
+				if ((debug_mode) && (0)) {
 					cout << "(conf_id, conf_tmp) = (" << conf_id << ", " << conf_tmp << ")" << endl;
 				}
 				if (conf_id != conf_tmp) {
 					cnt++;
 					conf_tmp = conf_id;
+					if (debug_mode) {
+						if (n_copy_accum_i == 0) cout << "NAN HERE 3!" << endl;
+					}
 					value_re_tmp /= (double) n_copy_accum_r;
 					value_im_tmp /= (double) n_copy_accum_i;
 					value_mod_tmp /= (double) n_copy_accum_m;
@@ -310,6 +342,10 @@ void process_autocorr_block(
 					yr.push_back(value_re_tmp);
 					yi.push_back(value_im_tmp);
 					if (debug_mode) {
+						//cout << "n_accumulated" << n_copy_accum_m << "\t" << n_copy_accum_r << "\t" << n_copy_accum_i << endl;
+						//cout << "values" << value_mod_tmp << "\t" << value_re_tmp << "\t" << value_im_tmp << endl;
+					}
+					if ((debug_mode) && (0)) {
 						cout << "Some acculumulated data in fermion file: " << cnt << "\t" << value_mod_tmp << "\t" << value_re_tmp << "\t" << value_im_tmp << endl;
 					}
 					value_mod_tmp = 0;
@@ -332,9 +368,12 @@ void process_autocorr_block(
 			}
 		}
 		if ((conf_id == conf_tmp) && (!flag)) {
-			value_re_tmp /= n_copy_accum_r;
-			value_im_tmp /= n_copy_accum_i;
-			value_mod_tmp /= n_copy_accum_m;
+			if (debug_mode) {
+				if (n_copy_accum_i == 0) cout << "NAN HERE 4!" << endl;
+			}
+			value_re_tmp /= (double) n_copy_accum_r;
+			value_im_tmp /= (double) n_copy_accum_i;
+			value_mod_tmp /= (double) n_copy_accum_m;
 			y.push_back(value_mod_tmp);
 			yr.push_back(value_re_tmp);
 			yi.push_back(value_im_tmp);
@@ -364,6 +403,12 @@ void process_autocorr_block(
 			varr_new.push_back(var_re);
 			vari_new.push_back(var_im);
 			output_file << dim_block << "\t" << mean << "\t" << var_m << "\t" << mean_re << "\t" << var_re << "\t" << mean_im << "\t" << var_im << endl;
+			if (debug_mode) {
+				cout << dim_block << "\t" << mean << "\t" << var_m << "\t" << mean_re << "\t" << var_re << "\t" << mean_im << "\t" << var_im << endl;
+				//cout << "y size = " << y.size() << endl;
+				//cout << "yr size = " << yr.size() << endl;
+				//cout << "yi size = " << yi.size() << endl;
+			}
 		}
 		
 		vector <double> n_sub_d;
