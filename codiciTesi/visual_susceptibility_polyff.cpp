@@ -41,7 +41,7 @@ int main() {
 	vector <double> temp, chi_mod, chi_re, chi_im;
 	size_t pos;
 	string line, name_tmp;
-	string input_directory = "11_05_2025/polyff_results/";
+	string input_directory = "19_05_2025/polyff_results/";
 	string output_directory = "results/";
 	string name_input_file;
 	pos = name_input_file.find_last_of(".");
@@ -68,7 +68,7 @@ int main() {
 	double pos_title_im;
 
 	if (tipology == "gauge") {
-		name_input_file = "800.0_poly_results.txt";
+		name_input_file = "1500.0_poly_results.txt";
 		pos = name_input_file.find_last_of(".");
 		if (pos != string::npos) {
 			name_tmp = name_input_file.substr(0, pos); //I remove extension using substr
@@ -83,18 +83,18 @@ int main() {
 		y_name_mod = "#chi_{|PP^{+}|}";
 		y_name_re = "#chi_{|Re(P)|}";
 		y_name_im = "#chi_{|Im(P)|}";
-		pos_ymod = 0.02;
+		pos_ymod = 0.03;
 		pos_yre = 0.03;
-		pos_yim = 0.03;
-		height_mod = 0.4;
+		pos_yim = 0.04;
+		height_mod = 0.45;
 		height_re = 0.45;
 		height_im = 0.45;
-		pos_title_mod = 0.3;
-		pos_title_re = 0.3;
-		pos_title_im = 0.3;
+		pos_title_mod = 0.35;
+		pos_title_re = 0.35;
+		pos_title_im = 0.35;
 	}
 	else if (tipology == "fermion") {
-		name_input_file = "800.0_ff_results.txt";
+		name_input_file = "1500.0_ff_results.txt";
 		pos = name_input_file.find_last_of(".");
 		if (pos != string::npos) {
 			name_tmp = name_input_file.substr(0, pos); //I remove extension using substr
@@ -104,20 +104,20 @@ int main() {
 		name_image_re = output_directory + "CHIreffvsT_" + name_tmp + ".png";
 		name_image_im = output_directory + "CHIimffvsT_" + name_tmp + ".png";
 		title_mod = "#chi_{|(#bar{#psi}#psi)(#bar{#psi}#psi)^{+}|} vs temperature:";
-		title_re = "#chi_{Re{#bar{#psi}#psi}} vs temperature:";
-		title_im = "#chi_{Im{#bar{#psi}#psi}} vs temperature:";
+		title_re = "#chi_{Re(#bar{#psi}#psi)} vs temperature:";
+		title_im = "#chi_{Im(#bar{#psi}#psi)} vs temperature:";
 		y_name_mod = "#chi_{|(#bar{#psi}#psi)(#bar{#psi}#psi)^{+}|}";
-		y_name_re = "#chi_{Re{#bar{#psi}#psi}}";
-		y_name_im = "chi_{Im{#bar{#psi}#psi}}";
-		pos_ymod = 0.03;
+		y_name_re = "#chi_{Re(#bar{#psi}#psi)}";
+		y_name_im = "#chi_{Im(#bar{#psi}#psi)}";
+		pos_ymod = 0.04;
 		pos_yre = 0.03;
 		pos_yim = 0.04;
-		height_mod = 0.4;
+		height_mod = 0.45;
 		height_re = 0.45;
 		height_im = 0.45;
-		pos_title_mod = 0.3;
-		pos_title_re = 0.3;
-		pos_title_im = 0.3;
+		pos_title_mod = 0.35;
+		pos_title_re = 0.35;
+		pos_title_im = 0.35;
 	}
 	else {
 		cerr << "Invalid tipology: you must write gauge or fermion";
@@ -219,7 +219,7 @@ void plot_points(
 	TLatex latex;
 	latex.SetNDC(); //sets the use of Normalized Device Coordinates (NDC).
 	latex.SetTextSize(0.05); //changes text size for title
-	latex.DrawLatex(pos_title, 0.92, title.c_str());
+	latex.DrawLatex(pos_title, 0.94, title.c_str());
 	latex.SetTextSize(0.04); //changes text size for axis labels
 	latex.DrawLatex(0.45, 0.03, "T[MeV]");
 	latex.SetTextAngle(90);
