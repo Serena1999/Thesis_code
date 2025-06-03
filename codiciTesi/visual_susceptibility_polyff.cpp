@@ -28,7 +28,8 @@ void plot_points(
 	string y_name,
 	double pos_title,
 	double pos_y,
-	double heigh_y
+	double heigh_y,
+	double width_canvas
 );
 
 //-----------------------------------------------------------------
@@ -66,6 +67,9 @@ int main() {
 	double pos_title_mod;
 	double pos_title_re;
 	double pos_title_im;
+	double width_canvas_mod;
+	double width_canvas_re;
+	double width_canvas_im;
 
 	if (tipology == "gauge") {
 		name_input_file = "1500.0_poly_results.txt";
@@ -84,7 +88,7 @@ int main() {
 		y_name_re = "#chi_{|Re(P)|}";
 		y_name_im = "#chi_{|Im(P)|}";
 		pos_ymod = 0.03;
-		pos_yre = 0.03;
+		pos_yre = 0.02;
 		pos_yim = 0.04;
 		height_mod = 0.45;
 		height_re = 0.45;
@@ -92,6 +96,10 @@ int main() {
 		pos_title_mod = 0.35;
 		pos_title_re = 0.35;
 		pos_title_im = 0.35;
+		width_canvas_mod = 900;
+		width_canvas_re = 1100;
+		width_canvas_im = 900;
+
 	}
 	else if (tipology == "fermion") {
 		name_input_file = "1500.0_ff_results.txt";
@@ -118,6 +126,9 @@ int main() {
 		pos_title_mod = 0.35;
 		pos_title_re = 0.35;
 		pos_title_im = 0.35;
+		width_canvas_mod = 900;
+		width_canvas_re = 900;
+		width_canvas_im = 900;
 	}
 	else {
 		cerr << "Invalid tipology: you must write gauge or fermion";
@@ -157,9 +168,9 @@ int main() {
 	input_file.close();
 
 	//GRAPHIC REPRESENTATION:
-	plot_points(temp, chi_mod, name_image_mod, title_mod, y_name_mod, pos_title_mod, pos_ymod, height_mod);
-	plot_points(temp, chi_re, name_image_re, title_re, y_name_re, pos_title_re, pos_yre, height_re);
-	plot_points(temp, chi_im, name_image_im, title_im, y_name_im, pos_title_im, pos_yim, height_im);
+	plot_points(temp, chi_mod, name_image_mod, title_mod, y_name_mod, pos_title_mod, pos_ymod, height_mod, width_canvas_mod);
+	plot_points(temp, chi_re, name_image_re, title_re, y_name_re, pos_title_re, pos_yre, height_re, width_canvas_re);
+	plot_points(temp, chi_im, name_image_im, title_im, y_name_im, pos_title_im, pos_yim, height_im, width_canvas_im);
 
 	return 0;
 }
@@ -175,7 +186,8 @@ void plot_points(
 	string y_name,
 	double pos_title,
 	double pos_y,
-	double heigh_y
+	double heigh_y,
+	double width_canvas
 ) {
 
 	if (x.size() != y.size()) {
@@ -184,7 +196,7 @@ void plot_points(
 	}
 
 	//CANVAS creation: (to draw the graph)
-	TCanvas* canvas = new TCanvas("canvas", "Canvas for Drawing Points", 900, 600);
+	TCanvas* canvas = new TCanvas("canvas", "Canvas for Drawing Points", width_canvas, 600);
 	canvas->SetGrid();//to set grid
 
 	// 1. Graph with only error bars:
