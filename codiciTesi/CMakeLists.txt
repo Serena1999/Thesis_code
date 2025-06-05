@@ -14,6 +14,8 @@ add_executable(simple_computation "simple_computation.cpp")
 add_executable(visual_monte_carlo_history "visual_monte_carlo_history.cpp")
 add_executable(visual_polyffT "visual_polyffT.cpp")
 add_executable(visual_susceptibility_polyff "visual_susceptibility_polyff.cpp")
+add_executable(converter_into_obs "converter_into_obs.cpp")
+add_executable(susceptibility_with_errors "susceptibility_with_errors.cpp")
 
 target_link_libraries(polyff ${ROOT_LIBRARIES})
 target_link_libraries(autocorr_check ${ROOT_LIBRARIES})
