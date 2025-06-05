@@ -11,7 +11,7 @@
 //OBSERVABLE TO COMPUTE:
 
 double obs(double x) {
-	return x * x;
+	return x;
 }
 
 //-----------------------------------------------------------------
@@ -21,10 +21,10 @@ int main() {
 
 	int skip_in_lines = 1;
 
-	int col_index = 5;//CAMBIA SECONDO NECESSITà: 5 per re, 6 oer im
-	string directory_in_file = "19_05_2025/build_good_mpi1500_16_out/";//CAMBIA SECONDO NECESSITà
-	string name_in_file = "ferm_obs2239384639.txt";//CAMBIA SECONDO NECESSITà
-	string obs_name = "reff2";//CAMBIA SECONDO NECESSITà: usa (re/im)P2 per ((re/im)loop di Pol)^2 e (re/im)ff2 per ((re/im)cond
+	int col_index = 5;//CAMBIA SECONDO NECESSITà: 5 per re, 6 oer im (numerazione a partire da 1)
+	string directory_in_file = "11_05_2025/build_good_020_out/";//CAMBIA SECONDO NECESSITà
+	string name_in_file = "ferm_obs3624614669.txt";//CAMBIA SECONDO NECESSITà
+	string obs_name = "reff";//CAMBIA SECONDO NECESSITà: usa (re/im)P2 per ((re/im)loop di Pol)^2 e (re/im)ff2 per ((re/im)cond
 
 	string path_in_file = directory_in_file + name_in_file;
 	string directory_out_file = "results/";
