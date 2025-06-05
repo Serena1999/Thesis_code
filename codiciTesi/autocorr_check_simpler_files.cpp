@@ -16,7 +16,11 @@ const bool debug_mode = 0;
 //-----------------------------------------------------------------
 //DECLARATIONS:
 
-void plot_points(vector<double>& x, vector<double>& y, string name_image, string title);
+void plot_points(
+	vector<double>& x,
+	vector<double>& y, 
+	string name_image, 
+	string title);
 
 void process_autocorr_block(
 	const string& input_path,
@@ -34,14 +38,14 @@ void process_autocorr_block(
 //MAIN:
 
 int main() {
-	bool bool_long = 1; //1 if you want "_long" in the end of images names;
-	int skipLines_file = 1, skipLines_file_list_therm = 1; //= number of lines to skip while reading input file;
+	bool bool_long = 0; //1 if you want "_long" in the end of images names;
+	int skipLines_file = 0, skipLines_file_list_therm = 1; //= number of lines to skip while reading input file;
 	//int step_sample_fermion = 10;
 	//int step_sample_gauge = 1;
 	vector <int> n_skip;
 	vector <int> n_sub;//will contain N°elements in each subset that we consider
 	vector<string> directories, files, titles;
-	double n_sub_ratio = 0.5;//=0.5*len(data) -> you can modify this number from 0 to 1;
+	double n_sub_ratio = 0.05;//=0.5*len(data) -> you can modify this number from 0 to 1;
 	string line, word, title, var_dimblock_poly_image, var_dimblock_polyre_image, var_dimblock_polyim_image, name_output_file;
 	string image;
 	const string name_file_list_therm = "11_05_2025/data_square/file_list_therm.txt";
@@ -63,7 +67,7 @@ int main() {
 //ATTENTA!
 	while (getline(file_list, line)) {
 		istringstream iss(line);
-		string dir, file, title_tmp;//title = title of the graph;
+		string dir, file, title_tmp;//title_tmp = title of the graph;
 		int n_therm, step_sample;//n_therm: da scartare per la termalizzazione, step_sample: le configurazioni sono numerate a passi di step_sample
 		if (iss >> dir >> file >> title_tmp >> n_therm >> step_sample) {
 			directories.push_back(dir);
@@ -87,10 +91,10 @@ int main() {
 			name_tmp = files[ii].substr(0, pos); //I remove extension using substr
 		}
 		if (bool_long) {
-			image = title + "_" + name_tmp + "_long" + ".png";
+			image = "autocorr_" + name_tmp + "_long" + ".png";
 		}
 		else {
-			image = title + "_" + name_tmp + ".png";
+			image = "autocorr_" + name_tmp + ".png";
 		}
 		
 		title = title + " " + name_tmp + ":";
@@ -106,8 +110,7 @@ int main() {
 			n_skip[ii],
 			n_sub_ratio
 			);
-		}
-		
+
 	}
 
 	return 0;
@@ -194,7 +197,7 @@ void process_autocorr_block(
 		}
 		else {
 			flag = 1;
-				cerr << "Skipped line (badly formatted) from" << input_path << ": " << line << endl;
+			cerr << "Skipped line (badly formatted) from" << input_path << ": " << line << endl;
 		}
 	}
 	if ((conf_id == conf_tmp) && (!flag)) {
@@ -217,7 +220,7 @@ void process_autocorr_block(
 	}
 
 	output_file << first_out_line << endl;
-	output_file << std::setprecision(std::numeric_limits<double>::max_digits10);
+	output_file << setprecision(numeric_limits<double>::max_digits10);
 	for (int dim_block = 1; dim_block <= n_sub_max; dim_block++) {
 		if(!blocking_faster(&mean, &var_m, y, dim_block)) break;
 		n_sub.push_back(dim_block);
@@ -244,7 +247,12 @@ void process_autocorr_block(
 //-----------------------------------------------------------------
 //ROOT MACRO TO GRAPH:
 
-void plot_points(vector<double>& x, vector<double>& y, string name_image, string title) {
+void plot_points(
+	vector<double>& x, 
+	vector<double>& y, 
+	string name_image, 
+	string title
+) {
 	
 	//CANVAS creation: (to draw the graph)
 	TCanvas* canvas = new TCanvas("canvas", "Canvas for Drawing Points", 800, 600);
