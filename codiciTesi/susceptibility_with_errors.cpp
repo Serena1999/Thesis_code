@@ -15,7 +15,7 @@
 const double hbar_c = 197.3269804; //MeV * fm
 
 const bool debug_mode = 0;
-const string tipology = "reff";//YOU CAN CHOOSE BETWEEN reP, imP, reff, imff;
+const string tipology = "imff";//YOU CAN CHOOSE BETWEEN reP, imP, reff, imff;
 
 //-----------------------------------------------------------------
 //DECLARATIONS:

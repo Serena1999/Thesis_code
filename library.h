@@ -1172,6 +1172,52 @@ template <class T> int blocking_faster(T* mean, T* var_m, vector<T>& draws, int 
 	return 1;
 }
 
+template <class T> int blocking_more_faster(T* mean, T* var_m, vector<T>& draws, int dim_block) {
+	/*
+		-> *mean will contain sample mean value;
+		-> *var_m will contain sample variance value of the sample mean;
+		-> draws contain all the draws which we are using in the mean and variance computations;
+		-> dim_block = block dimension used in blocking procedure.
+
+	If you need precision, use the "blocking" version, especially for numerically sensitive datasets.
+	If performance is more important and the data is not extremely sensitive to numerical errors,
+	the "blocking_faster" version is a good choice.
+	*/
+	(*mean) = 0;
+	(*var_m) = 0;
+	int n_blocks = draws.size() / dim_block;//=number of blocks //be careful: it is a division between int and so decimals are discarded
+	if (n_blocks < 2) {
+		std::cerr << "Warning: not enough blocks (" << n_blocks << ") to estimate variance reliably. Returning NaN." << std::endl;
+		*mean = std::numeric_limits<T>::quiet_NaN();
+		*var_m = std::numeric_limits<T>::quiet_NaN();
+		return 0;
+	}
+	int n_max = n_blocks * dim_block;//N_max to consider to compute variance
+	int index = 0;
+	T mean_tmp, delta, mean2_tmp, mean2;
+	for (int jj = 0; jj < n_max; jj += dim_block) {
+		index++;
+		mean_tmp = 0;
+		mean2_tmp = 0;
+		for (int kk = 0; kk < dim_block; kk++) {
+			delta = draws[jj + kk]
+			mean_tmp += delta;
+			mean2_tmp += (delta * delta);
+		}
+		mean_tmp /= (double) dim_block;
+		mean2_tmp /= (double) dim_block;
+		(*mean) += mean_tmp;
+		mean2 += mean2_tmp;
+	}
+	(*var_m) = mean2 - (*mean) * (*mean);
+	(*var_m) = (*var_m) / (n_blocks - 1);
+	for (int ii = n_max + 1; ii < draws.size(); ii++) {
+		delta = draws[ii - 1] - (*mean);
+		(*mean) = (*mean) + delta / (double) ii;
+	}
+	return 1;
+}
+
 
 //-----------------------------------------------------------------
 //I/O FUNCTIONS:
