@@ -1238,13 +1238,13 @@ template <class T> int blocking_more_faster(T* mean, T* var_m, vector<T>& draws,
 		for (int kk = 0; kk < dim_block; kk++) {
 			delta = draws[jj + kk];
 			mean_tmp += delta;
-			mean2_tmp += (delta * delta);
 		}
 		mean_tmp /= (double) dim_block;
-		mean2_tmp /= (double) dim_block;
 		(*mean) += mean_tmp;
-		mean2 += mean2_tmp;
+		mean2 += (mean_tmp * mean_tmp);
 	}
+	(*mean) /= index;
+	mean2 /= index;
 	(*var_m) = mean2 - (*mean) * (*mean);
 	(*var_m) = (*var_m) / (n_blocks - 1);
 	for (int ii = n_max + 1; ii < draws.size(); ii++) {
