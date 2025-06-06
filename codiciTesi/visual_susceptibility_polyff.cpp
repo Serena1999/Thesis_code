@@ -13,7 +13,7 @@
 #include "../library.h"
 #include "../root_include.h"
 
-const string tipology = "gauge"; //gauge/fermion, CHOOSABLE --> to do the gauge/fermion observables graph
+const string tipology = "fermion"; //gauge/fermion, CHOOSABLE --> to do the gauge/fermion observables graph
 const int N_s = 32; //number of sites along each spatial direction
 const int V_s = N_s * N_s * N_s;
 
