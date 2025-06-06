@@ -1232,12 +1232,12 @@ template <class T> void read_1from2columns(bool which_column, int n_skip, vector
 	}
 
 	if (which_column) {
-		while (input_file >> value_tmp >> value) {
+		while (input_file >> discard >> value) {
 			draws.push_back(value);
 		}
 	}
 	else {
-		while (input_file >> value >> value_tmp) {
+		while (input_file >> value >> discard) {
 			draws.push_back(value);
 		}
 	}

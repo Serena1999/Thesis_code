@@ -50,6 +50,7 @@ void susceptibility_with_errors(
 	const string& output_path,
 	const bool append_mode,
 	const double temp,
+	const double prefactor,
 	int n_skip,
 	int dim_block,
 	int n_skip_file
@@ -65,20 +66,20 @@ template <class T> int blocking_sample(
 //MAIN:
 
 int main() {
-	int n_steps = 100;//TO CHOOSE: NUMBER OF BOOSTRAP STEPS 
-	int Nt = 8; //BE CAREFUL TO CHOOSE IT WELL;
-	int Ns = 32; //BE CAREFUL TO CHOOSE IT WELL;
+	int n_steps = 1e4;//TO CHOOSE: NUMBER OF BOOSTRAP STEPS 
+	const int Nt = 8; //BE CAREFUL TO CHOOSE IT WELL;
+	const int Ns = 32; //BE CAREFUL TO CHOOSE IT WELL;
+	const int Vs = Ns * Ns * Ns;
 	int skipLines_file_lpc = 2, skipLines_file_list = 1, skipLines = 0;
 	double mpi = 800; //MeV //BE CAREFUL TO CHOOSE IT WELL;
 	bool bool_startFile = 1;//BE CAREFUL TO CHOOSE IT WELL;
-	vector<int> append_mode(20, 1); //20 entries with value = 1 (same size of beta);
+	vector<int> append_mode(20, 1); //80 entries with value = 1 (same size of beta); 
 	ostringstream mpi_stream;//TO INTRODUCE ALSO IN NUMERICAL METHODS CODE: IT IS USEFUL;
 	mpi_stream << std::fixed << std::setprecision(1) << mpi; //set to 1 decimal place
 	string mpi_string = mpi_stream.str(); // conversion into string
 	string name_output_file = "results/" + mpi_string + "_" + tipology + "_results.txt";
-	string name_file_lpc = "11_05_2025/LCP_800MeV_dimblock_extended.txt";
-	string name_file_list = "11_05_2025/file_list_therm_extended.txt";
-	string name_file_list2 = "";
+	string name_file_lpc = "11_05_2025/data_value/lcp_data_value.txt";
+	string name_file_list = "11_05_2025/data_value/file_list_therm.txt";
 
 	double temp_value;
 	vector<int> n_skip, n_skip2, dim_block, dim_block2;
@@ -94,7 +95,7 @@ int main() {
 		beta,
 		afm,
 		temp
-	);///////////////////////////
+	);
 
 	//per i file di value;
 	read_file_list(
@@ -106,7 +107,7 @@ int main() {
 		n_skip,
 		dim_block,
 		tipology
-	);///////////////////////////
+	);
 
 	if (bool_startFile) {
 
@@ -130,18 +131,20 @@ int main() {
 			output_file << "# T \t Chi_imff \t err(Chi_imff)" << endl;
 		}
 		else {
-			cout << "PROBLEM OR IN FILE LIST OR IN TIPOLOGY";
+			cerr << "PROBLEM OR IN FILE LIST OR IN TIPOLOGY";
+			return 1;
 		}
 		output_file.close();
 	}
 
-	for (int ii = 0; ii < temp.size(); ii++) {
+	for (int ii = 0; ii < directories.size(); ii++) {
 		susceptibility_with_errors(
 			n_steps,
 			directories[ii] + files[ii],
 			name_output_file,
 			append_mode[ii],
 			temp[ii],
+			Vs,
 			n_skip[ii],
 			dim_block[ii],
 			skipLines
@@ -193,9 +196,8 @@ void read_file_LPC(
 		}
 		istringstream iss(line);
 		double aml_value, beta_value, afm_value;
-		int dim_block_value;
 		string dir, gauge, ferm;
-		if (iss >> aml_value >> beta_value >> afm_value >> dim_block_value) {
+		if (iss >> aml_value >> beta_value >> afm_value) {
 			aml.push_back(aml_value);
 			beta.push_back(beta_value);
 			afm.push_back(afm_value);
@@ -267,6 +269,7 @@ void susceptibility_with_errors(
 	const string& output_path,
 	const bool append_mode,
 	const double temp,
+	const double prefactor,
 	int n_skip,
 	int dim_block,
 	int n_skip_file
@@ -313,36 +316,49 @@ void susceptibility_with_errors(
 		return;
 	}
 
-	uniform_int_distribution<> dist_int(0, blocked_draws.size());
+	uniform_int_distribution<> dist_int(0, blocked_draws.size() - 1);
 
 	for (int ii = 0; ii < n_steps; ii++) {
+
+		mean_tmp = 0;
+		mean_tmp2 = 0;
+		
 		for (int jj = 0; jj < blocked_draws.size(); jj++) {
 			
 			index = dist_int(sampler.rng);
 			
 			value = blocked_draws[index];
 			delta = value - mean_tmp;
-			mean_tmp = mean_tmp + delta / (jj+1);
+			mean_tmp = mean_tmp + delta / (double) (jj+1);
 
 			value = blocked_draws2[index];
 			delta2 = value - mean_tmp2;
-			mean_tmp2 = mean_tmp2 + delta2 / (jj + 1);
+			mean_tmp2 = mean_tmp2 + delta2 / (double)(jj + 1);
 
 		}
 
 		delta = mean_tmp - mean;
-		mean = mean + delta / (ii+1);
+		mean = mean + delta / (double) (ii+1);
 		delta2 = mean_tmp2 - mean2;
-		mean2 = mean2 + delta2 / (ii + 1);
+		mean2 = mean2 + delta2 / (double) (ii + 1);
 
 		value = obs_function(mean, mean2);
 		delta_chi = value - mean_chi;
-		mean_chi = mean_chi + delta_chi / (ii + 1);
+		mean_chi = mean_chi + delta_chi / (double) (ii + 1);
 		var_chi = var_chi + delta * (value - mean_chi);
 
 	}
 
-	var_chi = (var_chi / (n_steps - 1)) / n_steps;
+	var_chi /= (double) (n_steps - 1);
+	var_chi /= (double) n_steps;
+
+	mean_chi *= prefactor;
+	var_chi = var_chi * prefactor * prefactor;
+
+	if (var_chi < 0) {
+		cout << "[WARNING] var_chi problem at T = " << temp << ", var_chi = " << var_chi << endl;
+	}
+
 
 	cout << tipology << ": <Chi> = " << mean_chi << " +- " << sqrt(var_chi) << endl;
 	
@@ -372,7 +388,7 @@ template <class T> int blocking_sample(
 		mean_tmp = 0;
 		for (int kk = 1; kk <= dim_block; kk++) {
 			delta = original_draws[jj + kk - 1] - mean_tmp;
-			mean_tmp = mean_tmp + delta / kk;
+			mean_tmp = mean_tmp + delta / (double) kk;
 		}
 		blocked_draws.push_back(mean_tmp);
 	}
