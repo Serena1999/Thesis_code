@@ -42,7 +42,8 @@ int main() {
 	vector <double> temp, chi_mod, chi_re, chi_im;
 	size_t pos;
 	string line, name_tmp;
-	string input_directory = "19_05_2025/polyff_results/";
+	//string input_directory = "19_05_2025/polyff_results/";
+	string input_directory = "results/";
 	string output_directory = "results/";
 	string name_input_file;
 	pos = name_input_file.find_last_of(".");

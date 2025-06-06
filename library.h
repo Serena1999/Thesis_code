@@ -1230,13 +1230,13 @@ template <class T> int blocking_more_faster(T* mean, T* var_m, vector<T>& draws,
 	}
 	int n_max = n_blocks * dim_block;//N_max to consider to compute variance
 	int index = 0;
-	T mean_tmp, delta, mean2_tmp, mean2;
+	T mean_tmp, delta, mean2_tmp, mean2 = 0;
 	for (int jj = 0; jj < n_max; jj += dim_block) {
 		index++;
 		mean_tmp = 0;
 		mean2_tmp = 0;
 		for (int kk = 0; kk < dim_block; kk++) {
-			delta = draws[jj + kk]
+			delta = draws[jj + kk];
 			mean_tmp += delta;
 			mean2_tmp += (delta * delta);
 		}

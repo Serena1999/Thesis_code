@@ -86,7 +86,7 @@ int main() {
 	string mpi_string = mpi_stream.str(); // conversion into string
 	string name_output_file_poly = "results/" + mpi_string + "_poly_results.txt";
 	string name_output_file_ff = "results/" +  mpi_string + "_ff_results.txt";
-	string name_file_lpc = "19_05_2025/LCP_1500MeV_dimblock_extended.txt";
+	string name_file_lpc = "19_05_2025/LCP_1500MeV_dimblock.txt";
 	string name_file_list = "19_05_2025/file_list_therm.txt";
 
 	read_file_LPC(
