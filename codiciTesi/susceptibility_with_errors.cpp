@@ -1,9 +1,9 @@
 /*<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-****                        polyff.cpp:                       ****
-****  this script takes the fermionic and bosonic measurement ****
+****              susceptibility_with_errors.cpp:              ****
+****    this script takes the "data_vale"-style measurement   ****
 ****  files for each temperature and returns a file with the  ****
 ****  temperature along with the mean and standard deviation  ****
-****                  for these observables.                  ****
+****        of the suscebility of the wanted variable.        ****
 ****    When selected, blocking is applied with block sizes   ****
 ****             selectable from an external file.            ****
 ****                (author = Serena Bruzzesi)                ****
@@ -15,12 +15,12 @@
 const double hbar_c = 197.3269804; //MeV * fm
 
 const bool debug_mode = 0;
-const string tipology = "reP";//YOU CAN CHOOSE BETWEEN reP, imP, reff, imff;
+const string tipology = "reff";//YOU CAN CHOOSE BETWEEN reP, imP, reff, imff;
 
 //-----------------------------------------------------------------
 //DECLARATIONS:
 
-double obs_function(double x_mean, double x2_mean);
+double obs_function(double prefactor, double x_mean, double x2_mean);
 
 void read_file_LPC(
 	const string& name_file_lpc,
@@ -66,7 +66,7 @@ template <class T> int blocking_sample(
 //MAIN:
 
 int main() {
-	int n_steps = 1e4;//TO CHOOSE: NUMBER OF BOOSTRAP STEPS 
+	int n_steps = 1e3;//TO CHOOSE: NUMBER OF BOOSTRAP STEPS 
 	const int Nt = 8; //BE CAREFUL TO CHOOSE IT WELL;
 	const int Ns = 32; //BE CAREFUL TO CHOOSE IT WELL;
 	const int Vs = Ns * Ns * Ns;
@@ -159,8 +159,8 @@ int main() {
 //-----------------------------------------------------------------
 //FUNCTION DEFINITION:
 
-double obs_function(double x_mean, double x2_mean) {
-	return x2_mean - x_mean * x_mean; // <x^2> - <x>^2
+double obs_function(double prefactor, double x_mean, double x2_mean) {
+	return prefactor * (x2_mean - x_mean * x_mean); // Vs*<x^2> - <x>^2
 }
 
 void read_file_LPC(
@@ -277,9 +277,12 @@ void susceptibility_with_errors(
 
 	int index;
 	double value;
-	double mean_chi = 0, var_chi = 0, mean_tmp_chi, delta_chi;
-	double mean = 0, mean_tmp, delta;
-	double mean2 = 0, mean_tmp2, delta2;
+	double mean_chi = 0, var_chi = 0, delta_chi;
+	double mean = 0, mean_tmp = 0, delta;
+	double mean2 = 0, mean_tmp2 = 0, delta2;
+
+	double mean_chi2 = 0;
+
 	sample_gen sampler;
 	vector <double> original_draws, blocked_draws;
 	vector <double> original_draws2, blocked_draws2;
@@ -326,37 +329,59 @@ void susceptibility_with_errors(
 		for (int jj = 0; jj < blocked_draws.size(); jj++) {
 			
 			index = dist_int(sampler.rng);
-			
+			//cout << index << "\t";
 			value = blocked_draws[index];
-			delta = value - mean_tmp;
-			mean_tmp = mean_tmp + delta / (double) (jj+1);
+			mean_tmp += value;//
+			//delta = value - mean_tmp;
+			//mean_tmp = mean_tmp + delta / (double) (jj + 1);
 
 			value = blocked_draws2[index];
-			delta2 = value - mean_tmp2;
-			mean_tmp2 = mean_tmp2 + delta2 / (double)(jj + 1);
+			mean_tmp2 += value;//
+			//delta2 = value - mean_tmp2;
+			//mean_tmp2 = mean_tmp2 + delta2 / (double)(jj + 1);
 
 		}
 
-		delta = mean_tmp - mean;
-		mean = mean + delta / (double) (ii+1);
-		delta2 = mean_tmp2 - mean2;
-		mean2 = mean2 + delta2 / (double) (ii + 1);
+		mean_tmp /= (double)blocked_draws.size();
+		mean_tmp2 /= (double)blocked_draws.size();
 
-		value = obs_function(mean, mean2);
-		delta_chi = value - mean_chi;
-		mean_chi = mean_chi + delta_chi / (double) (ii + 1);
-		var_chi = var_chi + delta * (value - mean_chi);
+		//cout << endl;
+
+		//delta = mean_tmp - mean;
+		//mean = mean + delta / (double) (ii + 1);
+		//delta2 = mean_tmp2 - mean2;
+		//mean2 = mean2 + delta2 / (double) (ii + 1);
+
+		mean = mean_tmp;//
+		mean2 = mean_tmp2;
+
+		value = obs_function(prefactor, mean, mean2);
+		//delta_chi = value - mean_chi;
+		//mean_chi = mean_chi + delta_chi / (double) (ii + 1);
+		mean_chi += value;//
+		mean_chi2 += value * value;
+		//assert(var_chi >= 0);
+		//cout << var_chi << endl;
+		//var_chi = var_chi + delta * (value - mean_chi);
+		//assert(isnan(var_chi) == false);
+		//assert(var_chi < 0);
+		//assert(var_chi >= 0);
 
 	}
 
+	mean_chi /= (double)n_steps;
+	mean_chi2 /= (double)n_steps;
+	var_chi = mean_chi2 - mean_chi * mean_chi;
+	assert(var_chi > 0);
 	var_chi /= (double) (n_steps - 1);
 	var_chi /= (double) n_steps;
-
-	mean_chi *= prefactor;
-	var_chi = var_chi * prefactor * prefactor;
+	assert(var_chi > 0);
 
 	if (var_chi < 0) {
 		cout << "[WARNING] var_chi problem at T = " << temp << ", var_chi = " << var_chi << endl;
+		cout << "dim_block = " << dim_block << endl;
+		cout << "len original = " << original_draws.size() << endl;
+		cout << "len blocked = " << blocked_draws.size() << endl;
 	}
 
 
@@ -364,6 +389,11 @@ void susceptibility_with_errors(
 	
 	output_file << setprecision(numeric_limits<double>::max_digits10);
 	output_file << temp << "\t" << mean_chi << "\t" << sqrt(var_chi) << endl;
+
+	original_draws.clear();
+	original_draws2.clear();
+	blocked_draws.clear();
+	blocked_draws2.clear();
 
 	output_file.close();
 }
