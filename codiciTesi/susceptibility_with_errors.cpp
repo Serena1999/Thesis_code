@@ -55,10 +55,11 @@ void susceptibility_with_errors(
 	int n_skip_file
 );
 
-int blocking_sample(
-	vector <double> original_draws,
-	vector <double> blocked_draws, 
-	const int dim_block);
+template <class T> int blocking_sample(
+	vector <T>& original_draws,
+	vector <T>& blocked_draws,
+	const int dim_block
+);
 
 //-----------------------------------------------------------------
 //MAIN:
@@ -67,11 +68,10 @@ int main() {
 	int n_steps = 100;//TO CHOOSE: NUMBER OF BOOSTRAP STEPS 
 	int Nt = 8; //BE CAREFUL TO CHOOSE IT WELL;
 	int Ns = 32; //BE CAREFUL TO CHOOSE IT WELL;
-	int skipLines_file_lpc = 2, skipLines_file_list = 1, skipLines_file_list2 = 1, skipLines = 0, skipLines2 = 0;
+	int skipLines_file_lpc = 2, skipLines_file_list = 1, skipLines = 0;
 	double mpi = 800; //MeV //BE CAREFUL TO CHOOSE IT WELL;
 	bool bool_startFile = 1;//BE CAREFUL TO CHOOSE IT WELL;
 	vector<int> append_mode(20, 1); //20 entries with value = 1 (same size of beta);
-	vector<int> append_mode2(20, 1); //20 entries with value = 1 (same size of beta);
 	ostringstream mpi_stream;//TO INTRODUCE ALSO IN NUMERICAL METHODS CODE: IT IS USEFUL;
 	mpi_stream << std::fixed << std::setprecision(1) << mpi; //set to 1 decimal place
 	string mpi_string = mpi_stream.str(); // conversion into string
@@ -157,7 +157,7 @@ int main() {
 //FUNCTION DEFINITION:
 
 double obs_function(double x_mean, double x2_mean) {
-	return x2_mean - x_mean;
+	return x2_mean - x_mean * x_mean; // <x^2> - <x>^2
 }
 
 void read_file_LPC(
@@ -281,13 +281,6 @@ void susceptibility_with_errors(
 	vector <double> original_draws, blocked_draws;
 	vector <double> original_draws2, blocked_draws2;
 
-	ifstream input_file1; //declaration of input file
-	input_file1.open(input_path);
-	if (!input_file1) {
-		cout << "Error opening input file: " << input_path << endl;
-		return;
-	}
-
 	ofstream output_file; //declaration of output file
 	if (append_mode) {
 		output_file.open(output_path, ios::app);
@@ -302,14 +295,23 @@ void susceptibility_with_errors(
 	}
 
 	read_1from2columns(1, n_skip + n_skip_file, original_draws, input_path);
-	blocking_sample(original_draws, blocked_draws, dim_block);
+	
+	if (blocking_sample(original_draws, blocked_draws, dim_block)) {
+		cout << "Problem in blocking of original_draws" << endl;
+		output_file.close();
+		return;
+	}
 
 	for (int ii = 0; ii < original_draws.size(); ii++) {
 		value = original_draws[ii];
 		original_draws2.push_back(value * value);
 	}
 
-	blocking_sample(original_draws2, blocked_draws2, dim_block);
+	if(blocking_sample(original_draws2, blocked_draws2, dim_block)) {
+		cout << "Problem in blocking of original_draws2" << endl;
+		output_file.close();
+		return;
+	}
 
 	uniform_int_distribution<> dist_int(0, blocked_draws.size());
 
@@ -348,20 +350,17 @@ void susceptibility_with_errors(
 	output_file << temp << "\t" << mean_chi << "\t" << sqrt(var_chi) << endl;
 
 	output_file.close();
-	input_file1.close();
 }
 
 template <class T> int blocking_sample(
-	vector <T> original_draws,
-	vector <T> blocked_draws,
+	vector <T>& original_draws,
+	vector <T>& blocked_draws,
 	const int dim_block
 ) {
 
 	int n_blocks = original_draws.size() / dim_block;//=number of blocks
 	if (n_blocks < 2) {
 		std::cerr << "Warning: not enough blocks (" << n_blocks << ") to estimate variance reliably. Returning NaN." << std::endl;
-		*mean = std::numeric_limits<T>::quiet_NaN();
-		*var_m = std::numeric_limits<T>::quiet_NaN();
 		return 1;
 	}
 
@@ -372,7 +371,7 @@ template <class T> int blocking_sample(
 		index++;
 		mean_tmp = 0;
 		for (int kk = 1; kk <= dim_block; kk++) {
-			delta = draws[jj + kk - 1] - mean_tmp;
+			delta = original_draws[jj + kk - 1] - mean_tmp;
 			mean_tmp = mean_tmp + delta / kk;
 		}
 		blocked_draws.push_back(mean_tmp);
