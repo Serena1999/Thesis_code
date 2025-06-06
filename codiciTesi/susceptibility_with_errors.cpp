@@ -1,0 +1,382 @@
+/*<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+****                        polyff.cpp:                       ****
+****  this script takes the fermionic and bosonic measurement ****
+****  files for each temperature and returns a file with the  ****
+****  temperature along with the mean and standard deviation  ****
+****                  for these observables.                  ****
+****    When selected, blocking is applied with block sizes   ****
+****             selectable from an external file.            ****
+****                (author = Serena Bruzzesi)                ****
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
+
+#include "../library.h"
+#include "../root_include.h"
+
+const double hbar_c = 197.3269804; //MeV * fm
+
+const bool debug_mode = 0;
+const string tipology = "reP";//YOU CAN CHOOSE BETWEEN reP, imP, reff, imff;
+
+//-----------------------------------------------------------------
+//DECLARATIONS:
+
+double obs_function(double x_mean, double x2_mean);
+
+void read_file_LPC(
+	const string& name_file_lpc,
+	const int Nt,
+	const int skipLines_file_lpc,
+	const double mpi,
+	vector<double>& aml,
+	vector<double>& beta,
+	vector<double>& afm,
+	vector<double>& temp
+);
+
+void read_file_list(
+	const string& name_file_list,
+	const int skipLines_file_list,
+	const int skipLines,
+	vector<string>& directories,
+	vector<string>& files,
+	vector<int>& n_skip,
+	vector<int>& dim_block,
+	const string tipology
+);
+
+void susceptibility_with_errors(
+	const int n_steps,
+	const string& input_path,
+	const string& output_path,
+	const bool append_mode,
+	const double temp,
+	int n_skip,
+	int dim_block,
+	int n_skip_file
+);
+
+int blocking_sample(
+	vector <double> original_draws,
+	vector <double> blocked_draws, 
+	const int dim_block);
+
+//-----------------------------------------------------------------
+//MAIN:
+
+int main() {
+	int n_steps = 100;//TO CHOOSE: NUMBER OF BOOSTRAP STEPS 
+	int Nt = 8; //BE CAREFUL TO CHOOSE IT WELL;
+	int Ns = 32; //BE CAREFUL TO CHOOSE IT WELL;
+	int skipLines_file_lpc = 2, skipLines_file_list = 1, skipLines_file_list2 = 1, skipLines = 0, skipLines2 = 0;
+	double mpi = 800; //MeV //BE CAREFUL TO CHOOSE IT WELL;
+	bool bool_startFile = 1;//BE CAREFUL TO CHOOSE IT WELL;
+	vector<int> append_mode(20, 1); //20 entries with value = 1 (same size of beta);
+	vector<int> append_mode2(20, 1); //20 entries with value = 1 (same size of beta);
+	ostringstream mpi_stream;//TO INTRODUCE ALSO IN NUMERICAL METHODS CODE: IT IS USEFUL;
+	mpi_stream << std::fixed << std::setprecision(1) << mpi; //set to 1 decimal place
+	string mpi_string = mpi_stream.str(); // conversion into string
+	string name_output_file = "results/" + mpi_string + "_" + tipology + "_results.txt";
+	string name_file_lpc = "11_05_2025/LCP_800MeV_dimblock_extended.txt";
+	string name_file_list = "11_05_2025/file_list_therm_extended.txt";
+	string name_file_list2 = "";
+
+	double temp_value;
+	vector<int> n_skip, n_skip2, dim_block, dim_block2;
+	vector<double> aml, beta, afm, temp;//T = \hbar * c /(Nt * a[fm]) (1.60), Nt = 8; 
+	vector<string> directories, directories2, files, files2;
+
+	read_file_LPC(
+		name_file_lpc,
+		Nt,
+		skipLines_file_lpc,
+		mpi,
+		aml,
+		beta,
+		afm,
+		temp
+	);///////////////////////////
+
+	//per i file di value;
+	read_file_list(
+		name_file_list,
+		skipLines_file_list,
+		skipLines,
+		directories,
+		files,
+		n_skip,
+		dim_block,
+		tipology
+	);///////////////////////////
+
+	if (bool_startFile) {
+
+		ofstream output_file; //declaration of output file
+		output_file.open(name_output_file);
+		if (!output_file) {
+			cerr << "Error opening output file" << endl;
+			return 1;
+		}
+
+		if (tipology == "reP") {
+			output_file << "# T \t Chi_reP \t err(Chi_reP)" << endl;
+		}
+		else if (tipology == "imP") {
+			output_file << "# T \t Chi_imP \t err(Chi_imP)" << endl;
+		}
+		else if (tipology == "reff") {
+			output_file << "# T \t Chi_reff \t err(Chi_reff)" << endl;
+		}
+		else if (tipology == "imff") {
+			output_file << "# T \t Chi_imff \t err(Chi_imff)" << endl;
+		}
+		else {
+			cout << "PROBLEM OR IN FILE LIST OR IN TIPOLOGY";
+		}
+		output_file.close();
+	}
+
+	for (int ii = 0; ii < temp.size(); ii++) {
+		susceptibility_with_errors(
+			n_steps,
+			directories[ii] + files[ii],
+			name_output_file,
+			append_mode[ii],
+			temp[ii],
+			n_skip[ii],
+			dim_block[ii],
+			skipLines
+		);
+		cout << "file n°" << ii << " DONE! T = " << temp[ii] << endl;
+		cout << endl;
+	}
+
+	return 0;
+}
+
+//-----------------------------------------------------------------
+//FUNCTION DEFINITION:
+
+double obs_function(double x_mean, double x2_mean) {
+	return x2_mean - x_mean;
+}
+
+void read_file_LPC(
+	const string& name_file_lpc,
+	const int Nt,
+	const int skipLines_file_lpc,
+	const double mpi,
+	vector<double>& aml,
+	vector<double>& beta,
+	vector<double>& afm,
+	vector<double>& temp
+) {
+	string line;
+	ifstream file_lpc;
+
+	file_lpc.open(name_file_lpc);
+	if (!file_lpc) {
+		cerr << "Error opening file list" << endl;
+		return;
+	}
+
+	for (int i = 0; i < skipLines_file_lpc; i++) {
+		if (!getline(file_lpc, line)) {
+			cerr << "Error: there are less than " << skipLines_file_lpc << " lines in the lpc file." << endl;
+			return;
+		}
+	}
+
+	while (getline(file_lpc, line)) {
+		if (line.empty()) {
+			cerr << "Skipped blank/whitespace-only line in file: " << name_file_lpc << endl;
+			continue;
+		}
+		istringstream iss(line);
+		double aml_value, beta_value, afm_value;
+		int dim_block_value;
+		string dir, gauge, ferm;
+		if (iss >> aml_value >> beta_value >> afm_value >> dim_block_value) {
+			aml.push_back(aml_value);
+			beta.push_back(beta_value);
+			afm.push_back(afm_value);
+		}
+		else {
+			cerr << "Poorly formatted line: " << line << endl;
+		}
+	}
+
+	for (int ii = 0; ii < (beta.size()); ii++) {
+		temp.push_back(hbar_c / (Nt * afm[ii]));
+	}
+
+	file_lpc.close();
+}
+
+void read_file_list(
+	const string& name_file_list,
+	const int skipLines_file_list,
+	const int skipLines,
+	vector<string>& directories,
+	vector<string>& files,
+	vector<int>& n_skip,
+	vector<int>& dim_block,
+	const string tipology
+) {
+	string line;
+	ifstream file_list;
+	file_list.open(name_file_list);
+	if (!file_list) {
+		cout << "Error opening file list" << endl;
+		return;
+	}
+
+	for (int i = 0; i < skipLines_file_list; i++) {
+		if (!getline(file_list, line)) {
+			cerr << "Error: there are less than " << skipLines_file_list << " lines in the file list." << endl;
+			return;
+		}
+	}
+
+	while (getline(file_list, line)) {
+		if (line.empty()) {
+			cerr << "Skipped blank/whitespace-only line in file: " << name_file_list << endl;
+			continue;
+		}
+		istringstream iss(line);
+		string dir, group_name, file_name;
+		int n_therm_value, step_sample, dim_block_value;
+		if (iss >> dir >> file_name >> group_name >> n_therm_value >> step_sample >> dim_block_value) {
+			if (group_name == tipology) {
+				directories.push_back(dir);
+				files.push_back(file_name);
+				n_skip.push_back(n_therm_value / step_sample);
+				dim_block.push_back(dim_block_value);
+			}
+		}
+		else {
+			cerr << "Poorly formatted line: " << line << endl;
+		}
+	}
+
+	file_list.close();
+}
+
+void susceptibility_with_errors(
+	const int n_steps,
+	const string& input_path,
+	const string& output_path,
+	const bool append_mode,
+	const double temp,
+	int n_skip,
+	int dim_block,
+	int n_skip_file
+) {
+
+	int index;
+	double value;
+	double mean_chi = 0, var_chi = 0, mean_tmp_chi, delta_chi;
+	double mean = 0, mean_tmp, delta;
+	double mean2 = 0, mean_tmp2, delta2;
+	sample_gen sampler;
+	vector <double> original_draws, blocked_draws;
+	vector <double> original_draws2, blocked_draws2;
+
+	ifstream input_file1; //declaration of input file
+	input_file1.open(input_path);
+	if (!input_file1) {
+		cout << "Error opening input file: " << input_path << endl;
+		return;
+	}
+
+	ofstream output_file; //declaration of output file
+	if (append_mode) {
+		output_file.open(output_path, ios::app);
+	}
+	else
+	{
+		output_file.open(output_path);
+	}
+	if (!output_file) {
+		cout << "Error opening output file" << endl;
+		return;
+	}
+
+	read_1from2columns(1, n_skip + n_skip_file, original_draws, input_path);
+	blocking_sample(original_draws, blocked_draws, dim_block);
+
+	for (int ii = 0; ii < original_draws.size(); ii++) {
+		value = original_draws[ii];
+		original_draws2.push_back(value * value);
+	}
+
+	blocking_sample(original_draws2, blocked_draws2, dim_block);
+
+	uniform_int_distribution<> dist_int(0, blocked_draws.size());
+
+	for (int ii = 0; ii < n_steps; ii++) {
+		for (int jj = 0; jj < blocked_draws.size(); jj++) {
+			
+			index = dist_int(sampler.rng);
+			
+			value = blocked_draws[index];
+			delta = value - mean_tmp;
+			mean_tmp = mean_tmp + delta / (jj+1);
+
+			value = blocked_draws2[index];
+			delta2 = value - mean_tmp2;
+			mean_tmp2 = mean_tmp2 + delta2 / (jj + 1);
+
+		}
+
+		delta = mean_tmp - mean;
+		mean = mean + delta / (ii+1);
+		delta2 = mean_tmp2 - mean2;
+		mean2 = mean2 + delta2 / (ii + 1);
+
+		value = obs_function(mean, mean2);
+		delta_chi = value - mean_chi;
+		mean_chi = mean_chi + delta_chi / (ii + 1);
+		var_chi = var_chi + delta * (value - mean_chi);
+
+	}
+
+	var_chi = (var_chi / (n_steps - 1)) / n_steps;
+
+	cout << tipology << ": <Chi> = " << mean_chi << " +- " << sqrt(var_chi) << endl;
+	
+	output_file << setprecision(numeric_limits<double>::max_digits10);
+	output_file << temp << "\t" << mean_chi << "\t" << sqrt(var_chi) << endl;
+
+	output_file.close();
+	input_file1.close();
+}
+
+template <class T> int blocking_sample(
+	vector <T> original_draws,
+	vector <T> blocked_draws,
+	const int dim_block
+) {
+
+	int n_blocks = original_draws.size() / dim_block;//=number of blocks
+	if (n_blocks < 2) {
+		std::cerr << "Warning: not enough blocks (" << n_blocks << ") to estimate variance reliably. Returning NaN." << std::endl;
+		*mean = std::numeric_limits<T>::quiet_NaN();
+		*var_m = std::numeric_limits<T>::quiet_NaN();
+		return 1;
+	}
+
+	int n_max = n_blocks * dim_block;//N_max to consider to compute variance
+	int index = 0;
+	T mean_tmp, delta;
+	for (int jj = 0; jj < n_max; jj += dim_block) {
+		index++;
+		mean_tmp = 0;
+		for (int kk = 1; kk <= dim_block; kk++) {
+			delta = draws[jj + kk - 1] - mean_tmp;
+			mean_tmp = mean_tmp + delta / kk;
+		}
+		blocked_draws.push_back(mean_tmp);
+	}
+
+	return 0;
+}
