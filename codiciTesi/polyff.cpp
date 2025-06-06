@@ -568,20 +568,20 @@ void stats_thesis(
 		stats_indipendent_unbiased(&mean, &var_m, y);
 	}
 	else {
-		blocking(&mean, &var_m, y, dim_block);
+		blocking_more_faster(&mean, &var_m, y, dim_block);
 	}
 	if (dim_block_re == 1) {
 		stats_indipendent_unbiased(&mean_re, &var_re, yr);
 	}
 	else {
-		blocking(&mean_re, &var_re, yr, dim_block_re);
+		blocking_more_faster(&mean_re, &var_re, yr, dim_block_re);
 	}
 	if (dim_block_im == 1) {
 		stats_indipendent_unbiased(&mean_im, &var_im, yi);
 	}
 	else
 	{
-		blocking(&mean_im, &var_im, yi, dim_block_im);
+		blocking_more_faster(&mean_im, &var_im, yi, dim_block_im);
 	}
 
 	cout << tipology << ": |<Obs * Obs^dag>| = " << mean << " +- " << sqrt(var_m) << endl;
