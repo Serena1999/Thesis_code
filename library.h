@@ -1048,55 +1048,6 @@ template <class T> int stats_indipendent_unbiased(T* mean, T* var_m, int n_skip,
 	return index;
 }
 
-template <class T> int stats_indipendent_unbiased_more_faster(T* mean, T* var_m, int n_skip, vector<T>& draws, string name_input_file) {
-	/*
-		-> *mean will contain sample mean value;
-		-> *var_m will contain sample variance value of the sample mean;
-		-> n_skip = number of discarded lines from the document start;
-		-> draws will contain all the draws which we are using in the mean and variance computations;
-		-> name_input_file = file from which we take data to analyze;
-		-> return the number of draws on which we have done the statistics
-		   if n_skip < number of lines in the document, 1 otherwise.
-	*/
-
-	ifstream input_file; //declaration of input file
-	int index = 0;
-	T value, delta, mean2;
-	string line;
-
-	input_file.open(name_input_file);
-	if (!input_file) {
-		cout << "Error opening file" << endl;
-		return 1;
-	}
-
-	for (int i = 0; i < n_skip; i++) {
-		if (!getline(input_file, line)) {
-			cerr << "Error: there are less than " << n_skip << " lines in the file." << endl;
-			return 1;
-		}
-	}
-
-	(*mean) = 0;
-	(*var_m) = 0;
-
-	while (input_file >> value) {
-		index++;
-		(*mean) += value;
-		mean2 += value * value;
-		draws.push_back(value);
-	}
-
-	(*var_m) = mean2 - (*mean) * (*mean);
-
-	(*var_m) = (*var_m) / (index - 1);
-
-	input_file.close();
-
-	return index;
-}
-
-
 
 //Function to compute sample mean and sample variance of the sample mean from a given array draws of data.
 template <class T> void stats_indipendent_unbiased(T* mean, T* var_m, vector<T>& draws) {
@@ -1126,6 +1077,41 @@ template <class T> void stats_indipendent_unbiased(T* mean, T* var_m, vector<T>&
 	(*var_m) = (*var_m) / (index - 1);
 	(*var_m) = (*var_m) / index;
 }
+
+template <class T> void stats_indipendent_unbiased_more_faster(T* mean, T* var_m, vector<T>& draws) {
+	/*
+		-> *mean will contain sample mean value;
+		-> *var_m will contain sample variance value of the sample mean;
+		-> draws contain all the draws which we are using in the mean and variance computations;
+
+		NOTE FOR ME: page 115 of statnotes_3.3.0.pdf on Desktop.
+
+		Welford's algorithm was used: B. P. Welford. Note on a method for
+		calculating corrected sums of squares and products. Technometrics,
+		4(3):419–420, 1962.
+	*/
+
+	int index = draws.size();
+	T delta, mean2 = 0;
+
+	(*mean) = 0;
+	(*var_m) = 0;
+	for (int ii = 0; ii < index; ii++) {
+		
+		delta = draws[ii];
+		(*mean) += delta;
+		mean2 += delta * delta;
+	}
+
+	(*mean) /= draws.size();
+	mean2 /= draws.size();
+
+	(*var_m) = mean2 - (*mean) * (*mean);
+
+	(*var_m) = (*var_m) / (index - 1);
+}
+
+
 
 //Function to compute sample mean and sample variance of the sample mean from a given vector of data, with autocorrelation estimated by the blocking techinque.
 template <class T> int blocking(T* mean, T* var_m, vector<T>& draws, int dim_block) {

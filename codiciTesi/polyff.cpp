@@ -565,19 +565,19 @@ void stats_thesis(
 		<< ", n_blocks_im = " << (yi.size() / dim_block_im) << endl;
 
 	if (dim_block == 1) {
-		stats_indipendent_unbiased(&mean, &var_m, y);
+		stats_indipendent_unbiased_more_faster(&mean, &var_m, y);
 	}
 	else {
 		blocking_more_faster(&mean, &var_m, y, dim_block);
 	}
 	if (dim_block_re == 1) {
-		stats_indipendent_unbiased(&mean_re, &var_re, yr);
+		stats_indipendent_unbiased_more_faster(&mean_re, &var_re, yr);
 	}
 	else {
 		blocking_more_faster(&mean_re, &var_re, yr, dim_block_re);
 	}
 	if (dim_block_im == 1) {
-		stats_indipendent_unbiased(&mean_im, &var_im, yi);
+		stats_indipendent_unbiased_more_faster(&mean_im, &var_im, yi);
 	}
 	else
 	{
