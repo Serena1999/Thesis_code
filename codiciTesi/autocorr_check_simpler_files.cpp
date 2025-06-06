@@ -11,7 +11,7 @@
 #include "../library.h"
 #include "../root_include.h"
 
-const bool debug_mode = 0;
+const bool debug_mode = 1;
 
 //-----------------------------------------------------------------
 //DECLARATIONS:
@@ -38,18 +38,17 @@ void process_autocorr_block(
 //MAIN:
 
 int main() {
-	bool bool_long = 0; //1 if you want "_long" in the end of images names;
+	bool bool_long = 1; //1 if you want "_long" in the end of images names;
+	double n_sub_ratio = 0.5;//poi riassegnata=n_sub_ratio*len(data) -> you can modify this number from 0 to 1;
 	int skipLines_file = 0, skipLines_file_list_therm = 1; //= number of lines to skip while reading input file;
-	//int step_sample_fermion = 10;
-	//int step_sample_gauge = 1;
+	const string name_file_list_therm = "11_05_2025/data_square/file_list_therm.txt";
+	const string first_out_line = "# N°elements in each subset \t	mean(value^2) \t var(value^2)";
+
 	vector <int> n_skip;
 	vector <int> n_sub;//will contain N°elements in each subset that we consider
 	vector<string> directories, files, titles;
-	double n_sub_ratio = 0.05;//=0.5*len(data) -> you can modify this number from 0 to 1;
 	string line, word, title, var_dimblock_poly_image, var_dimblock_polyre_image, var_dimblock_polyim_image, name_output_file;
 	string image;
-	const string name_file_list_therm = "11_05_2025/data_square/file_list_therm.txt";
-	const string first_out_line = "# N°elements in each subset \t	mean(value^2) \t var(value^2)";
 	
 	ifstream file_list;
 	file_list.open(name_file_list_therm);
@@ -178,10 +177,10 @@ void process_autocorr_block(
 				flag_init = 1;
 			}
 			flag = 0;
-			if ((debug_mode) && (0)) {
+			if (debug_mode && 0) {
 				cout << "(conf_id, conf_tmp) = (" << conf_id << ", " << conf_tmp << ")" << endl;
 			}
-			if (conf_id != conf_tmp) {
+			if ((conf_id != conf_tmp) && (n_copy_accum != 0)) {
 				cnt++;
 				conf_tmp = conf_id;
 				if (debug_mode) {
