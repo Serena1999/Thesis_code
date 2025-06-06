@@ -66,7 +66,7 @@ template <class T> int blocking_sample(
 //MAIN:
 
 int main() {
-	int n_steps = 1e3;//TO CHOOSE: NUMBER OF BOOSTRAP STEPS 
+	int n_steps = 1e4;//TO CHOOSE: NUMBER OF BOOSTRAP STEPS 
 	const int Nt = 8; //BE CAREFUL TO CHOOSE IT WELL;
 	const int Ns = 32; //BE CAREFUL TO CHOOSE IT WELL;
 	const int Vs = Ns * Ns * Ns;
@@ -373,8 +373,8 @@ void susceptibility_with_errors(
 	mean_chi2 /= (double)n_steps;
 	var_chi = mean_chi2 - mean_chi * mean_chi;
 	assert(var_chi > 0);
+	var_chi *= (double)n_steps;
 	var_chi /= (double) (n_steps - 1);
-	var_chi /= (double) n_steps;
 	assert(var_chi > 0);
 
 	if (var_chi < 0) {
