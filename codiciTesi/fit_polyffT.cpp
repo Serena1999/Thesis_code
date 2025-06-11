@@ -1,4 +1,6 @@
-﻿/*<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+﻿//fit_polyffT
+
+/*<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 ****                    visual_polyffT.cpp:                   ****
 ****    visualization of the mean values ​​of the observables   ****
 ****          (with corresponding standard deviation)         ****
@@ -9,7 +11,15 @@
 #include "../library.h"
 #include "../root_include.h"
 
-const string tipology = "reff"; //YOU CAN CHOOSE BETWEEN reP, imP, reff, imff;
+const string tipology = "gauge"; //gauge/fermion, CHOOSABLE --> to do the gauge/fermion observables graph
+bool choose_fit_function = 0; //0 for polynomial, 1 for arctg;
+
+//FIT FUNCTION: 
+
+#if choose_fit_function == 0
+	double fit_function(double)
+#elif choose_fit_function == 1
+
 
 //-----------------------------------------------------------------
 //ROOT MACRO TO DO FIT AND GRAPH:
@@ -23,8 +33,7 @@ void plot_points_errors(
 	string y_name,
 	double pos_title,
 	double pos_y,
-	double heigh_y,
-	double width_canvas
+	double heigh_y
 );
 
 //-----------------------------------------------------------------
@@ -33,84 +42,90 @@ void plot_points_errors(
 int main() {
 
 	int skipLines = 1; //= number of lines to skip while reading input file;
-	double temp_value, value, err_value;
-	vector <double> temp, chi, chi_err;
+	//vector<double> time1, time2, polyr_vec, polyi_vec, reff_vec, imff_vec; //to contain data
+	//int index = 0, conf_id;
+	//double value_tmp, poly_re, poly_im, ff_re, ff_im;
+	double temp_value, mod_value, mod_err_value, re_value, re_err_value, im_value, im_err_value;
+	vector <double> temp, mod, mod_err, re, re_err, im, im_err;
 	size_t pos;
 	string line, name_tmp;
-	string input_directory = "19_05_2025/data_susceptiblities_with_errors/";
+	string input_directory = "11_05_2025/polyff_results/";
 	string output_directory = "results/";
 	string name_input_file;
 	pos = name_input_file.find_last_of(".");
 	if (pos != std::string::npos) {
 		name_tmp = name_input_file.substr(0, pos); //I remove extension using substr
 	}
-	string name_image;
-	string title;
-	string y_name;
-	double pos_y;
-	double height;
-	double pos_title;
-	double width_canvas;
+	string name_image_mod;
+	string name_image_re;
+	string name_image_im;
+	string title_mod;
+	string title_re;
+	string title_im;
+	string y_name_mod;
+	string y_name_re;
+	string y_name_im;
+	double pos_ymod;
+	double pos_yre;
+	double pos_yim;
+	double height_mod;
+	double height_re;
+	double height_im;
+	double pos_title_mod;
+	double pos_title_re;
+	double pos_title_im;
 
-	if (tipology == "reP") {
-		name_input_file = "1500.0_reP_results.txt";
+	if (tipology == "gauge") {
+		name_input_file = "800.0_poly_results.txt";
 		pos = name_input_file.find_last_of(".");
 		if (pos != string::npos) {
 			name_tmp = name_input_file.substr(0, pos); //I remove extension using substr
 		}
 		name_input_file = input_directory + name_input_file;
-		name_image = output_directory + "chi(reP)vsT_" + name_tmp + ".png";
-		title = "#chi_{|Re(P)|} vs temperature:";
-		y_name = "#chi_{|Re(P)|}";
-		pos_y = 0.035;
-		height = 0.45;
-		pos_title = 0.35;
-		width_canvas = 900;
+		name_image_mod = output_directory + "modPvsT_" + name_tmp + ".png";
+		name_image_re = output_directory + "rePvsT_" + name_tmp + ".png";
+		name_image_im = output_directory + "imPvsT_" + name_tmp + ".png";
+		title_mod = "#LT|PP^{+}|#GT vs temperature:";
+		title_re = "#LTRe{P}#GT vs temperature :";
+		title_im = "#LTIm{P}#GT vs temperature:";
+		y_name_mod = "#LT|PP^{+}|#GT";
+		y_name_re = "#LTRe{P}#GT";
+		y_name_im = "#LTIm{P}#GT";
+		pos_ymod = 0.02;
+		pos_yre = 0.03;
+		pos_yim = 0.03;
+		height_mod = 0.4;
+		height_re = 0.45;
+		height_im = 0.45;
+		pos_title_mod = 0.3;
+		pos_title_re = 0.3;
+		pos_title_im = 0.3;
 	}
-	else if (tipology == "imP") {
-		name_input_file = "1500.0_imP_results.txt";
+	else if (tipology == "fermion") {
+		name_input_file = "800.0_ff_results.txt";
 		pos = name_input_file.find_last_of(".");
 		if (pos != string::npos) {
 			name_tmp = name_input_file.substr(0, pos); //I remove extension using substr
 		}
 		name_input_file = input_directory + name_input_file;
-		name_image = output_directory + "chi(imP)vsT_" + name_tmp + ".png";
-		title = "#chi_{|Im(P)|} vs temperature:";
-		y_name = "#chi_{|Im(P)|}";
-		pos_y = 0.03;
-		height = 0.45;
-		pos_title = 0.35;
-		width_canvas = 900;
-	}
-	else if (tipology == "reff") {
-		name_input_file = "1500.0_reff_results.txt";
-		pos = name_input_file.find_last_of(".");
-		if (pos != string::npos) {
-			name_tmp = name_input_file.substr(0, pos); //I remove extension using substr
-		}
-		name_input_file = input_directory + name_input_file;
-		name_image = output_directory + "chi(reff)vsT_" + name_tmp + ".png";
-		title = "#chi_{Re(#bar{#psi}#psi)} vs temperature:";
-		y_name = "#chi_{Re(#bar{#psi}#psi)}";
-		pos_y = 0.03;
-		height = 0.45;
-		pos_title = 0.35;
-		width_canvas = 900;
-	}
-	else if (tipology == "imff") {
-		name_input_file = "1500.0_imff_results.txt";
-		pos = name_input_file.find_last_of(".");
-		if (pos != string::npos) {
-			name_tmp = name_input_file.substr(0, pos); //I remove extension using substr
-		}
-		name_input_file = input_directory + name_input_file;
-		name_image = output_directory + "chi(imff)vsT_" + name_tmp + ".png";
-		title = "#chi_{Im(#bar{#psi}#psi)} vs temperature:";
-		y_name = "#chi_{Im(#bar{#psi}#psi)}";
-		pos_y = 0.03;
-		height = 0.45;
-		pos_title = 0.35;
-		width_canvas = 900;
+		name_image_mod = output_directory + "modffvsT_" + name_tmp + ".png";
+		name_image_re = output_directory + "reffvsT_" + name_tmp + ".png";
+		name_image_im = output_directory + "imffvsT_" + name_tmp + ".png";
+		title_mod = "#LT|(#bar{#psi}#psi)(#bar{#psi}#psi)^{+}|#GT vs temperature:";
+		title_re = "#LTRe{#bar{#psi}#psi}#GT vs temperature :";
+		title_im = "#LTIm{#bar{#psi}#psi}#GT vs temperature:";
+		y_name_mod = "#LT|(#bar{#psi}#psi)(#bar{#psi}#psi)^{+}|#GT";
+		y_name_re = "#LTRe{#bar{#psi}#psi}#GT";
+		y_name_im = "#LTIm{#bar{#psi}#psi}#GT";
+		pos_ymod = 0.03;
+		pos_yre = 0.03;
+		pos_yim = 0.04;
+		height_mod = 0.4;
+		height_re = 0.45;
+		height_im = 0.45;
+		pos_title_mod = 0.3;
+		pos_title_re = 0.3;
+		pos_title_im = 0.3;
 	}
 	else {
 		cerr << "Invalid tipology: you must write gauge or fermion";
@@ -133,10 +148,14 @@ int main() {
 
 	while (getline(input_file, line)) {
 		istringstream iss(line);
-		if (iss >> temp_value >> value >> err_value) {
+		if (iss >> temp_value >> mod_value >> mod_err_value >> re_value >> re_err_value >> im_value >> im_err_value) {
 			temp.push_back(temp_value);
-			chi.push_back(value);
-			chi_err.push_back(err_value);
+			mod.push_back(mod_value);
+			mod_err.push_back(mod_err_value);
+			re.push_back(re_value);
+			re_err.push_back(re_err_value);
+			im.push_back(im_value);
+			im_err.push_back(im_err_value);
 		}
 		else {
 			cerr << "Poorly formatted line: " << line << endl;
@@ -146,7 +165,9 @@ int main() {
 	input_file.close();
 
 	//GRAPHIC REPRESENTATION:
-	plot_points_errors(temp, chi, chi_err, name_image, title, y_name, pos_title, pos_y, height, width_canvas);
+	plot_points_errors(temp, mod, mod_err, name_image_mod, title_mod, y_name_mod, pos_title_mod, pos_ymod, height_mod);
+	plot_points_errors(temp, re, re_err, name_image_re, title_re, y_name_re, pos_title_re, pos_yre, height_re);
+	plot_points_errors(temp, im, im_err, name_image_im, title_im, y_name_im, pos_title_im, pos_yim, height_im);
 
 	return 0;
 }
@@ -163,8 +184,7 @@ void plot_points_errors(
 	string y_name,
 	double pos_title,
 	double pos_y,
-	double heigh_y,
-	double width_canvas
+	double heigh_y
 ) {
 
 	if (x.size() != y.size() || y.size() != y_err.size()) {
@@ -173,7 +193,7 @@ void plot_points_errors(
 	}
 
 	//CANVAS creation: (to draw the graph)
-	TCanvas* canvas = new TCanvas("canvas", "Canvas for Drawing Points", width_canvas, 600);
+	TCanvas* canvas = new TCanvas("canvas", "Canvas for Drawing Points", 900, 600);
 	canvas->SetGrid();//to set grid
 
 	// 1. Graph with only error bars:
@@ -185,8 +205,8 @@ void plot_points_errors(
 	//The usage of std::min_element is analogous but with for minimum element.
 	auto min_x = *min_element(x.begin(), x.end());
 	auto max_x = *max_element(x.begin(), x.end());
-	auto min_y = *min_element(y.begin(), y.end()) - *min_element(y_err.begin(), y_err.end());
-	auto max_y = *max_element(y.begin(), y.end()) + *max_element(y_err.begin(), y_err.end());
+	auto min_y = *min_element(y.begin(), y.end());
+	auto max_y = *max_element(y.begin(), y.end());
 
 	g_errors->SetLineColor(kBlack);//color of error bars
 	g_errors->SetMarkerColor(kBlack);
@@ -208,7 +228,7 @@ void plot_points_errors(
 	TLatex latex;
 	latex.SetNDC(); //sets the use of Normalized Device Coordinates (NDC).
 	latex.SetTextSize(0.05); //changes text size for title
-	latex.DrawLatex(pos_title, 0.94, title.c_str());
+	latex.DrawLatex(pos_title, 0.92, title.c_str());
 	latex.SetTextSize(0.04); //changes text size for axis labels
 	latex.DrawLatex(0.45, 0.03, "T[MeV]");
 	latex.SetTextAngle(90);

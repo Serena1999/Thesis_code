@@ -15,7 +15,7 @@
 const double hbar_c = 197.3269804; //MeV * fm
 
 const bool debug_mode = 0;
-const string tipology = "reP";//YOU CAN CHOOSE BETWEEN reP, imP, reff, imff;
+const string tipology = "reff";//YOU CAN CHOOSE BETWEEN reP, imP, reff, imff;
 
 //-----------------------------------------------------------------
 //DECLARATIONS:
@@ -71,15 +71,15 @@ int main() {
 	const int Ns = 32; //BE CAREFUL TO CHOOSE IT WELL;
 	const int Vs = Ns * Ns * Ns;
 	int skipLines_file_lpc = 2, skipLines_file_list = 1, skipLines = 0;
-	double mpi = 800; //MeV //BE CAREFUL TO CHOOSE IT WELL;
+	double mpi = 1500; //MeV //BE CAREFUL TO CHOOSE IT WELL;
 	bool bool_startFile = 1;//BE CAREFUL TO CHOOSE IT WELL;
 	vector<int> append_mode(20, 1); //80 entries with value = 1 (same size of beta); 
 	ostringstream mpi_stream;//TO INTRODUCE ALSO IN NUMERICAL METHODS CODE: IT IS USEFUL;
 	mpi_stream << std::fixed << std::setprecision(1) << mpi; //set to 1 decimal place
 	string mpi_string = mpi_stream.str(); // conversion into string
 	string name_output_file = "results/" + mpi_string + "_" + tipology + "_results.txt";
-	string name_file_lpc = "11_05_2025/data_value/lcp_data_value.txt";
-	string name_file_list = "11_05_2025/data_value/file_list_therm.txt";
+	string name_file_lpc = "19_05_2025/data_value/lcp_data_value.txt";
+	string name_file_list = "19_05_2025/data_value/file_list_therm.txt";
 
 	double temp_value;
 	vector<int> n_skip, n_skip2, dim_block, dim_block2;
@@ -308,16 +308,18 @@ void susceptibility_with_errors(
 		return;
 	}
 
-	for (int ii = 0; ii < original_draws.size(); ii++) {
-		value = original_draws[ii];
-		original_draws2.push_back(value * value);
-	}
+	/*
+		for (int ii = 0; ii < original_draws.size(); ii++) {
+			value = original_draws[ii];
+			original_draws2.push_back(value * value);
+		}
 
-	if(blocking_sample(original_draws2, blocked_draws2, dim_block)) {
-		cout << "Problem in blocking of original_draws2" << endl;
-		output_file.close();
-		return;
-	}
+		if(blocking_sample(original_draws2, blocked_draws2, dim_block)) {
+			cout << "Problem in blocking of original_draws2" << endl;
+			output_file.close();
+			return;
+		}
+	*/
 
 	uniform_int_distribution<> dist_int(0, blocked_draws.size() - 1);
 
@@ -335,8 +337,16 @@ void susceptibility_with_errors(
 			//delta = value - mean_tmp;
 			//mean_tmp = mean_tmp + delta / (double) (jj + 1);
 
+
+			/*
+			
 			value = blocked_draws2[index];
 			mean_tmp2 += value;//
+
+			*/
+			
+			mean_tmp2 += (value * value);//
+
 			//delta2 = value - mean_tmp2;
 			//mean_tmp2 = mean_tmp2 + delta2 / (double)(jj + 1);
 
@@ -412,14 +422,17 @@ template <class T> int blocking_sample(
 
 	int n_max = n_blocks * dim_block;//N_max to consider to compute variance
 	int index = 0;
-	T mean_tmp, delta;
+	T mean_tmp, value;
 	for (int jj = 0; jj < n_max; jj += dim_block) {
 		index++;
 		mean_tmp = 0;
 		for (int kk = 1; kk <= dim_block; kk++) {
-			delta = original_draws[jj + kk - 1] - mean_tmp;
-			mean_tmp = mean_tmp + delta / (double) kk;
+			//delta = original_draws[jj + kk - 1] - mean_tmp;
+			//mean_tmp = mean_tmp + delta / (double) kk;
+			value = original_draws[jj + kk - 1];
+			mean_tmp += value;
 		}
+		mean_tmp /= (double)dim_block;
 		blocked_draws.push_back(mean_tmp);
 	}
 
