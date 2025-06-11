@@ -62,6 +62,13 @@ template <class T> int blocking_sample(
 	const int dim_block
 );
 
+template <class T> bool renormalize_conf_draw(
+	int n_conf_omitt,
+	vector <int>& conf_draws,
+	vector <T>& original_draws,
+	vector <T>& renormalized_conf_draws
+);
+
 //-----------------------------------------------------------------
 //MAIN:
 
@@ -75,7 +82,7 @@ int main() {
 	bool bool_startFile = 1;//BE CAREFUL TO CHOOSE IT WELL;
 	vector<int> append_mode(20, 1); //80 entries with value = 1 (same size of beta); 
 	ostringstream mpi_stream;//TO INTRODUCE ALSO IN NUMERICAL METHODS CODE: IT IS USEFUL;
-	mpi_stream << std::fixed << std::setprecision(1) << mpi; //set to 1 decimal place
+	mpi_stream << fixed << setprecision(1) << mpi; //set to 1 decimal place
 	string mpi_string = mpi_stream.str(); // conversion into string
 	string name_output_file = "results/" + mpi_string + "_" + tipology + "_results.txt";
 	string name_file_lpc = "19_05_2025/data_value/lcp_data_value.txt";
@@ -284,8 +291,9 @@ void susceptibility_with_errors(
 	double mean_chi2 = 0;
 
 	sample_gen sampler;
+	vector <int> conf_draws;
 	vector <double> original_draws, blocked_draws;
-	vector <double> original_draws2, blocked_draws2;
+	vector <double> renormalized_conf_draws;
 
 	ofstream output_file; //declaration of output file
 	if (append_mode) {
@@ -300,26 +308,21 @@ void susceptibility_with_errors(
 		return;
 	}
 
-	read_1from2columns(1, n_skip + n_skip_file, original_draws, input_path);
+	read_2columns(n_skip_file, conf_draws, original_draws, input_path);
 	
-	if (blocking_sample(original_draws, blocked_draws, dim_block)) {
+	if (renormalize_conf_draw(n_skip, conf_draws, original_draws, renormalized_conf_draws)) {
+		cerr << "Error in renormalize_conf_draw" << endl;
+		conf_draws.clear();
+		original_draws.clear();
+		renormalized_conf_draws.clear();
+		return;
+	}
+
+	if (blocking_sample(renormalized_conf_draws, blocked_draws, dim_block)) {
 		cout << "Problem in blocking of original_draws" << endl;
 		output_file.close();
 		return;
 	}
-
-	/*
-		for (int ii = 0; ii < original_draws.size(); ii++) {
-			value = original_draws[ii];
-			original_draws2.push_back(value * value);
-		}
-
-		if(blocking_sample(original_draws2, blocked_draws2, dim_block)) {
-			cout << "Problem in blocking of original_draws2" << endl;
-			output_file.close();
-			return;
-		}
-	*/
 
 	uniform_int_distribution<> dist_int(0, blocked_draws.size() - 1);
 
@@ -331,52 +334,21 @@ void susceptibility_with_errors(
 		for (int jj = 0; jj < blocked_draws.size(); jj++) {
 			
 			index = dist_int(sampler.rng);
-			//cout << index << "\t";
 			value = blocked_draws[index];
 			mean_tmp += value;//
-			//delta = value - mean_tmp;
-			//mean_tmp = mean_tmp + delta / (double) (jj + 1);
-
-
-			/*
-			
-			value = blocked_draws2[index];
-			mean_tmp2 += value;//
-
-			*/
-			
 			mean_tmp2 += (value * value);//
-
-			//delta2 = value - mean_tmp2;
-			//mean_tmp2 = mean_tmp2 + delta2 / (double)(jj + 1);
 
 		}
 
 		mean_tmp /= (double)blocked_draws.size();
 		mean_tmp2 /= (double)blocked_draws.size();
 
-		//cout << endl;
-
-		//delta = mean_tmp - mean;
-		//mean = mean + delta / (double) (ii + 1);
-		//delta2 = mean_tmp2 - mean2;
-		//mean2 = mean2 + delta2 / (double) (ii + 1);
-
-		mean = mean_tmp;//
+		mean = mean_tmp;
 		mean2 = mean_tmp2;
 
 		value = obs_function(prefactor, mean, mean2);
-		//delta_chi = value - mean_chi;
-		//mean_chi = mean_chi + delta_chi / (double) (ii + 1);
-		mean_chi += value;//
+		mean_chi += value;
 		mean_chi2 += value * value;
-		//assert(var_chi >= 0);
-		//cout << var_chi << endl;
-		//var_chi = var_chi + delta * (value - mean_chi);
-		//assert(isnan(var_chi) == false);
-		//assert(var_chi < 0);
-		//assert(var_chi >= 0);
-
 	}
 
 	mean_chi /= (double)n_steps;
@@ -397,13 +369,11 @@ void susceptibility_with_errors(
 
 	cout << tipology << ": <Chi> = " << mean_chi << " +- " << sqrt(var_chi) << endl;
 	
-	output_file << setprecision(numeric_limits<double>::max_digits10);
+	output_file << fixed << setprecision(numeric_limits<double>::max_digits10);
 	output_file << temp << "\t" << mean_chi << "\t" << sqrt(var_chi) << endl;
 
 	original_draws.clear();
-	original_draws2.clear();
 	blocked_draws.clear();
-	blocked_draws2.clear();
 
 	output_file.close();
 }
@@ -427,8 +397,6 @@ template <class T> int blocking_sample(
 		index++;
 		mean_tmp = 0;
 		for (int kk = 1; kk <= dim_block; kk++) {
-			//delta = original_draws[jj + kk - 1] - mean_tmp;
-			//mean_tmp = mean_tmp + delta / (double) kk;
 			value = original_draws[jj + kk - 1];
 			mean_tmp += value;
 		}
@@ -437,4 +405,49 @@ template <class T> int blocking_sample(
 	}
 
 	return 0;
+}
+
+template <class T> bool renormalize_conf_draw(
+	int n_first_conf,
+	vector <int>&  conf_draws,
+	vector <T>& original_draws, 
+	vector <T>& renormalized_conf_draws
+) {
+	int index = 0;
+	bool flag = 1;
+	int cnt = 0, n_copy_accum = 0, conf_id = conf_draws[0], conf_tmp;
+	T value_tmp = 0;
+
+	while (flag) {
+		assert(index < conf_draws.size());
+		if (debug_mode) {
+			cout << "conf_draws[" << index << "] = " << conf_draws[index] << " --- " << n_first_conf << endl;
+		}
+		if ((conf_draws[index]) > n_first_conf) {
+			flag = 0;
+		}
+		index++;
+	}
+
+	conf_tmp = conf_draws[index];
+
+	for (int ii = index; ii < original_draws.size(); ii++) {
+		conf_id = conf_draws[ii];
+		if (conf_id != conf_tmp) {
+			cnt++;
+			conf_tmp = conf_id;
+			value_tmp /= (double)n_copy_accum;
+			renormalized_conf_draws.push_back(value_tmp);
+			value_tmp = 0;
+			n_copy_accum = 0;
+		}
+		n_copy_accum++;
+		value_tmp += original_draws[ii];
+	}
+	if (n_copy_accum != 0) {
+		value_tmp /= (double)n_copy_accum;
+		renormalized_conf_draws.push_back(value_tmp);
+	}
+
+	return flag;
 }

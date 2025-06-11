@@ -1326,3 +1326,36 @@ template <class T> void read_1from2columns(bool which_column, int n_skip, vector
 
 	input_file.close();
 }
+
+//Function to read data 2 columns from a file, in which datas are alligned as 2 columns.
+template <class T, class T1> void read_2columns(int n_skip, vector<T>& draws1, vector<T1>& draws2, string name_input_file) {
+	/*
+		-> name_input_file = name of the file from where we read the values that we want to put into draws;
+		-> n_skip = number of lines to discard from the start of name_input_file;
+		-> draws will contain all the values read from name_input_file.
+	*/
+	ifstream input_file;
+	string line;
+	T value1;
+	T1 value2;
+
+	input_file.open(name_input_file);
+	if (!input_file) {
+		cout << "Error opening input file" << endl;
+		return;
+	}
+
+	for (int i = 0; i < n_skip; i++) {
+		if (!getline(input_file, line)) {
+			cerr << "Error: there are less than " << n_skip << " lines in the file." << endl;
+			return;
+		}
+	}
+
+	while (input_file >> value1 >> value2) {
+		draws1.push_back(value1);
+		draws2.push_back(value2);
+	}
+
+	input_file.close();
+}
