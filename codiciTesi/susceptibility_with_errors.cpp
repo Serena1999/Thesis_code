@@ -15,7 +15,7 @@
 const double hbar_c = 197.3269804; //MeV * fm
 
 const bool debug_mode = 0;
-const string tipology = "reP";//YOU CAN CHOOSE BETWEEN reP, imP, reff, imff;
+const string tipology = "reff";//YOU CAN CHOOSE BETWEEN reP, imP, reff, imff;
 
 //-----------------------------------------------------------------
 //DECLARATIONS:
@@ -78,15 +78,15 @@ int main() {
 	const int Ns = 32; //BE CAREFUL TO CHOOSE IT WELL;
 	const int Vs = Ns * Ns * Ns;
 	int skipLines_file_lpc = 2, skipLines_file_list = 1, skipLines = 0;
-	double mpi = 1500; //MeV //BE CAREFUL TO CHOOSE IT WELL;
+	double mpi = 800; //MeV //BE CAREFUL TO CHOOSE IT WELL;
 	bool bool_startFile = 1;//BE CAREFUL TO CHOOSE IT WELL;
 	vector<int> append_mode(20, 1); //80 entries with value = 1 (same size of beta); 
 	ostringstream mpi_stream;//TO INTRODUCE ALSO IN NUMERICAL METHODS CODE: IT IS USEFUL;
 	mpi_stream << fixed << setprecision(1) << mpi; //set to 1 decimal place
 	string mpi_string = mpi_stream.str(); // conversion into string
 	string name_output_file = "results/" + mpi_string + "_" + tipology + "_results.txt";
-	string name_file_lpc = "19_05_2025/data_value/lcp_data_value.txt";
-	string name_file_list = "19_05_2025/data_value/file_list_therm.txt";
+	string name_file_lpc = "11_05_2025/data_value/lcp_data_value.txt";
+	string name_file_list = "11_05_2025/data_value/file_list_therm.txt";
 
 	double temp_value;
 	vector<int> n_skip, n_skip2, dim_block, dim_block2;
@@ -286,13 +286,13 @@ void susceptibility_with_errors(
 	double value;
 	double mean_chi = 0, var_chi = 0, delta_chi;
 	double mean = 0, mean_tmp = 0, delta;
-	double mean2 = 0, mean_tmp2 = 0, delta2;
+	double mean2 = 0, mean_tmp2 = 0, delta2, chi_estimate;
 
 	double mean_chi2 = 0;
 
 	sample_gen sampler;
 	vector <int> conf_draws;
-	vector <double> original_draws, blocked_draws;
+	vector <double> original_draws, blocked_draws, conf_draws_d;
 	vector <double> renormalized_conf_draws;
 
 	ofstream output_file; //declaration of output file
@@ -308,8 +308,13 @@ void susceptibility_with_errors(
 		return;
 	}
 
-	read_2columns(n_skip_file, conf_draws, original_draws, input_path);
-	
+	read_2columns(n_skip_file, conf_draws_d, original_draws, input_path);
+
+	for (int ii = 0; ii < conf_draws_d.size(); ii++) {
+		conf_draws.push_back((int)conf_draws_d[ii]);
+	}
+
+
 	if (renormalize_conf_draw(n_skip, conf_draws, original_draws, renormalized_conf_draws)) {
 		cerr << "Error in renormalize_conf_draw" << endl;
 		conf_draws.clear();
@@ -324,7 +329,26 @@ void susceptibility_with_errors(
 		return;
 	}
 
-	uniform_int_distribution<> dist_int(0, blocked_draws.size() - 1);
+	//mean computation:
+
+	mean = 0;
+	mean2 = 0;
+
+	int N = blocked_draws.size();
+
+	for (int ii = 0; ii < N; ii++) {
+		value = blocked_draws[ii];
+		mean += value;
+		mean2 += (value * value);
+	}
+	mean /= (double)N;
+	mean2 /= (double)N;
+	chi_estimate = obs_function(prefactor, mean, mean2);
+
+
+	//variance computation:
+
+	uniform_int_distribution<> dist_int(0, N - 1);
 	//sampler.init(10);//SEED
 
 	for (int ii = 0; ii < n_steps; ii++) {
@@ -332,22 +356,17 @@ void susceptibility_with_errors(
 		mean_tmp = 0;
 		mean_tmp2 = 0;
 		
-		for (int jj = 0; jj < blocked_draws.size(); jj++) {
-			
+		for (int jj = 0; jj < N; jj++) {
 			index = dist_int(sampler.rng);
 			value = blocked_draws[index];
-			mean_tmp += value;//
-			mean_tmp2 += (value * value);//
-
+			mean_tmp += value;
+			mean_tmp2 += (value * value);
 		}
 
 		mean_tmp /= (double)blocked_draws.size();
 		mean_tmp2 /= (double)blocked_draws.size();
 
-		mean = mean_tmp;
-		mean2 = mean_tmp2;
-
-		value = obs_function(prefactor, mean, mean2);
+		value = obs_function(prefactor, mean_tmp, mean_tmp2);
 		mean_chi += value;
 		mean_chi2 += value * value;
 	}
@@ -371,7 +390,7 @@ void susceptibility_with_errors(
 	cout << tipology << ": <Chi> = " << mean_chi << " +- " << sqrt(var_chi) << endl;
 	
 	output_file << fixed << setprecision(numeric_limits<double>::max_digits10);
-	output_file << temp << "\t" << mean_chi << "\t" << sqrt(var_chi) << endl;
+	output_file << temp << "\t" << chi_estimate << "\t" << sqrt(var_chi) << endl;
 
 	original_draws.clear();
 	blocked_draws.clear();
@@ -445,6 +464,7 @@ template <class T> bool renormalize_conf_draw(
 		n_copy_accum++;
 		value_tmp += original_draws[ii];
 	}
+
 	if (n_copy_accum != 0) {
 		value_tmp /= (double)n_copy_accum;
 		renormalized_conf_draws.push_back(value_tmp);

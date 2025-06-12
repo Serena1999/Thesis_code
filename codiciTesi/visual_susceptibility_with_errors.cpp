@@ -38,7 +38,7 @@ int main() {
 	vector <double> temp, chi, chi_err;
 	size_t pos;
 	string line, name_tmp;
-	string input_directory = "19_05_2025/data_susceptiblities_with_errors/";
+	string input_directory = "11_05_2025/data_susceptiblities_with_errors/";
 	string output_directory = "results/";
 	string name_input_file;
 	pos = name_input_file.find_last_of(".");
@@ -54,7 +54,7 @@ int main() {
 	double width_canvas;
 
 	if (tipology == "reP") {
-		name_input_file = "1500.0_reP_results.txt";
+		name_input_file = "800.0_reP_results.txt";
 		pos = name_input_file.find_last_of(".");
 		if (pos != string::npos) {
 			name_tmp = name_input_file.substr(0, pos); //I remove extension using substr
@@ -63,7 +63,7 @@ int main() {
 		name_image = output_directory + "chi(reP)vsT_" + name_tmp + ".png";
 		title = "#chi_{|Re(P)|} vs temperature:";
 		y_name = "#chi_{|Re(P)|}";
-		pos_y = 0.035;
+		pos_y = 0.020;
 		height = 0.45;
 		pos_title = 0.35;
 		width_canvas = 900;
@@ -84,7 +84,7 @@ int main() {
 		width_canvas = 900;
 	}
 	else if (tipology == "reff") {
-		name_input_file = "1500.0_reff_results.txt";
+		name_input_file = "800.0_reff_results.txt";
 		pos = name_input_file.find_last_of(".");
 		if (pos != string::npos) {
 			name_tmp = name_input_file.substr(0, pos); //I remove extension using substr
@@ -93,13 +93,13 @@ int main() {
 		name_image = output_directory + "chi(reff)vsT_" + name_tmp + ".png";
 		title = "#chi_{Re(#bar{#psi}#psi)} vs temperature:";
 		y_name = "#chi_{Re(#bar{#psi}#psi)}";
-		pos_y = 0.03;
+		pos_y = 0.015;
 		height = 0.45;
 		pos_title = 0.35;
-		width_canvas = 900;
+		width_canvas = 1100;
 	}
 	else if (tipology == "imff") {
-		name_input_file = "1500.0_imff_results.txt";
+		name_input_file = "800.0_imff_results.txt";
 		pos = name_input_file.find_last_of(".");
 		if (pos != string::npos) {
 			name_tmp = name_input_file.substr(0, pos); //I remove extension using substr
