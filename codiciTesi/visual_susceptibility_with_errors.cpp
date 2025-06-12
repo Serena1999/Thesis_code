@@ -10,6 +10,7 @@
 #include "../root_include.h"
 
 const string tipology = "reff"; //YOU CAN CHOOSE BETWEEN reP, imP, reff, imff;
+const bool bool_log_scale = 0;
 
 //-----------------------------------------------------------------
 //ROOT MACRO TO DO FIT AND GRAPH:
@@ -135,6 +136,10 @@ int main() {
 		istringstream iss(line);
 		if (iss >> temp_value >> value >> err_value) {
 			temp.push_back(temp_value);
+			if (bool_log_scale) { 
+				value = log(value);
+				//err_value = log(err_value);
+			}
 			chi.push_back(value);
 			chi_err.push_back(err_value);
 		}

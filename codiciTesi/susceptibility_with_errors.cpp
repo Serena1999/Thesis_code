@@ -15,7 +15,7 @@
 const double hbar_c = 197.3269804; //MeV * fm
 
 const bool debug_mode = 0;
-const string tipology = "reff";//YOU CAN CHOOSE BETWEEN reP, imP, reff, imff;
+const string tipology = "reP";//YOU CAN CHOOSE BETWEEN reP, imP, reff, imff;
 
 //-----------------------------------------------------------------
 //DECLARATIONS:
@@ -73,7 +73,7 @@ template <class T> bool renormalize_conf_draw(
 //MAIN:
 
 int main() {
-	int n_steps = 1e4;//TO CHOOSE: NUMBER OF BOOSTRAP STEPS 
+	int n_steps = 1.1e4;//TO CHOOSE: NUMBER OF BOOSTRAP STEPS 
 	const int Nt = 8; //BE CAREFUL TO CHOOSE IT WELL;
 	const int Ns = 32; //BE CAREFUL TO CHOOSE IT WELL;
 	const int Vs = Ns * Ns * Ns;
@@ -325,6 +325,7 @@ void susceptibility_with_errors(
 	}
 
 	uniform_int_distribution<> dist_int(0, blocked_draws.size() - 1);
+	//sampler.init(10);//SEED
 
 	for (int ii = 0; ii < n_steps; ii++) {
 
