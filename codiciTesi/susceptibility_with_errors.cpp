@@ -73,7 +73,7 @@ template <class T> bool renormalize_conf_draw(
 //MAIN:
 
 int main() {
-	int n_steps = 1.1e4;//TO CHOOSE: NUMBER OF BOOSTRAP STEPS 
+	int n_steps = 1100;//TO CHOOSE: NUMBER OF BOOSTRAP STEPS 
 	const int Nt = 8; //BE CAREFUL TO CHOOSE IT WELL;
 	const int Ns = 32; //BE CAREFUL TO CHOOSE IT WELL;
 	const int Vs = Ns * Ns * Ns;
@@ -334,10 +334,10 @@ void susceptibility_with_errors(
 	mean = 0;
 	mean2 = 0;
 
-	int N = blocked_draws.size();
+	int N = renormalized_conf_draws.size();
 
 	for (int ii = 0; ii < N; ii++) {
-		value = blocked_draws[ii];
+		value = renormalized_conf_draws[ii];
 		mean += value;
 		mean2 += (value * value);
 	}
@@ -348,6 +348,7 @@ void susceptibility_with_errors(
 
 	//variance computation:
 
+	N = blocked_draws.size();
 	uniform_int_distribution<> dist_int(0, N - 1);
 	//sampler.init(10);//SEED
 

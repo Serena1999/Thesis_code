@@ -9,7 +9,7 @@
 #include "../library.h"
 #include "../root_include.h"
 
-const string tipology = "reff"; //YOU CAN CHOOSE BETWEEN reP, imP, reff, imff;
+const string tipology = "reP"; //YOU CAN CHOOSE BETWEEN reP, imP, reff, imff;
 const bool bool_log_scale = 0;
 
 //-----------------------------------------------------------------
@@ -69,7 +69,7 @@ int main() {
 		width_canvas = 900;
 	}
 	else if (tipology == "imP") {
-		name_input_file = "1500.0_imP_results.txt";
+		name_input_file = "800.0_imP_results.txt";
 		pos = name_input_file.find_last_of(".");
 		if (pos != string::npos) {
 			name_tmp = name_input_file.substr(0, pos); //I remove extension using substr
