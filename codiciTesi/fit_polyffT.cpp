@@ -9,8 +9,8 @@
 #include "../library.h"
 #include "../root_include.h"
 
-const string tipology = "gauge"; //gauge/fermion, CHOOSABLE --> to do the gauge/fermion observables graph
-#define CHOOSE_FIT_FUNCTION 6 //0 for polynomial, 1 for arctg, 2 for logistic function;
+const string tipology = "fermion"; //gauge/fermion, CHOOSABLE --> to do the gauge/fermion observables graph
+#define CHOOSE_FIT_FUNCTION 1 //0 for polynomial, 1 for arctg, 2 for logistic function;
 
 //FIT FUNCTION: 
 
