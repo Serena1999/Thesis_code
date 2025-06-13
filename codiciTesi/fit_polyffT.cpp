@@ -786,6 +786,9 @@ double chi2_reduced_estimate(
 		res = (y[ii] - fit_function(xx, par.data()))/y_err[ii];
 		res *= res;
 		chi2r += res;
+		//cout << "x["<< ii<< "]:" << x[ii] << endl;
+		//cout << "y[" << ii << "]:" << y[ii] << endl;
+		//cout << "y_err[" << ii << "]:" << y_err[ii] << endl;
 	}
 	cout << "CHI2 = " << chi2r << endl;
 	chi2r /= (x.size() - par.size());
@@ -846,8 +849,8 @@ void fit_plot_points_errors(
 
 	gStyle->SetOptFit(1111);
 
-	double fit_min = min_x - 20;
-	double fit_max = max_x + 20;
+	double fit_min = 0;
+	double fit_max = max_x + 200;
 
 	TF1* p_plot = new TF1("fit_function", fit_function, fit_min, fit_max, n_par_fit);
 
@@ -869,8 +872,10 @@ void fit_plot_points_errors(
 	//FIT:
 	gStyle->SetOptFit(0);// (1111);
 	g_errors->Fit(p_plot, "SW"); // S = return result, W = use weights (i.e., y errors)
+	
 	TVirtualFitter* fit = TVirtualFitter::GetFitter(); //to get fit results;
-	TVirtualFitter* fitter = TVirtualFitter::GetFitter();
+	//ATTENTA!! Spesso, ROOT stampa "Chi2" come la media dei residui quadratici(RMS²), NON come la vera somma pesata!
+	//Questo è uno di questi casi, dei valori ci si può fidare se il chi2 stimato con l'apposita funzione nel seguito è ragionevole.
 	
 	for (int ii = 0; ii < par.size(); ii++) {
 		par[ii] = p_plot->GetParameter(ii);
@@ -891,7 +896,7 @@ void fit_plot_points_errors(
 	{
 		for (int j = 0; j < n_par_fit; ++j)
 		{
-			cov[i][j] = fitter->GetCovarianceMatrixElement(i, j);
+			cov[i][j] = fit->GetCovarianceMatrixElement(i, j);
 			cout << cov[i][j] << "\t";
 		}
 	
