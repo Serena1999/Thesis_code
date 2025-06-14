@@ -6,26 +6,46 @@
 ****                (author = Serena Bruzzesi)                ****
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
 
+//-----------------------------------------------------------------
+//HEADERS && LIBRARY:
+
 #include "../library.h"
 #include "../root_include.h"
 
+//-----------------------------------------------------------------
+//VARIABLES TO SET:
+
 const string tipology = "gauge"; //gauge/fermion, CHOOSABLE --> to do the gauge/fermion observables graph
 #define CHOOSE_FIT_FUNCTION 6 //0 for polynomial, 1 for arctg, 2 for logistic function;
+const bool bool_chose_at_eye = 0; //0 if you want an automatic set of parameters, 1 if you want to impose them by hand;
+bool bool_enlarge = 1;//0 if you want to use the original draws, 1 if you want that y-values are multiplied by a the following factor:
+double enlarge_factor = 100;//factor to multiply the draws id bool_enlarge = 0;
 
-//FIT FUNCTION: 
+//-----------------------------------------------------------------
+//FIT && ESTIMATE OF PARAMETERS FUNCTIONS: 
 
 #if CHOOSE_FIT_FUNCTION == 0
+	
 	double fit_function(double* y, double* par) {//
 		return par[0] + par[1] * y[0] + par[2] * y[0] * y[0] + par[3] * y[0] * y[0] * y[0];
 	};
 
 	const int n_par_fit = 4;
 
-	void par_estimate(//considering polynomial as y(x) = p[0] + p[1]*x + p[2] * x^2 + p[3] * x^3;
-		vector<double>& x,
-		vector<double>& y,
-		vector<double>& p
+	int par_estimate(//considering polynomial as y(x) = p[0] + p[1]*x + p[2] * x^2 + p[3] * x^3;
+		//return 0 if success, 1 if not;
+		const vector<double>& x, //temperatures
+		const vector<double>& y, //observables
+		vector<double>& p //parameters
 	) {
+
+		if (bool_chose_at_eye) {
+			p[0] = 1;
+			p[1] = 1;
+			p[2] = 1;
+			p[3] = 1;
+			return 0;
+		}
 
 		int step = x.size() / 4;
 
@@ -62,51 +82,30 @@ const string tipology = "gauge"; //gauge/fermion, CHOOSABLE --> to do the gauge/
 		p[3] /= detM;
 
 		cout << "Parameters used for fit: [" << p[0] << ", " << p[1] << ", " << p[2] << ", " << p[3] << "]" << endl;
+		return 0;
 	}
 
 
-#elif CHOOSE_FIT_FUNCTION == 1
+#elif CHOOSE_FIT_FUNCTION == 1 //RIPARTI DA QUIIII A SISTEMARE FORMA;---------------------------------------------
+
 	double fit_function(double* y, double* par) {//
 		if (par[3] < 0 ) return 1e30;
 		return par[0] + par[1] * atan(par[2] * (y[0] - par[3]));
 	};
 
-
 	const int n_par_fit = 4;
-
-	/*
-	
-	void par_estimate(//considering polynomial as par[0] + par[1] * atan(par[2] * (x[0] - par[3]));
-		vector<double>& x,
-		vector<double>& y,
-		vector<double>& p
-	) {
-		/
-		p[0] = 0.004;
-		p[1] = 0.06;
-		p[2] = 0.003;
-		p[3] = 160;
-		/
-		p[0] = 0.02;
-		p[1] = 0.05;
-		p[2] = 0.015;
-		p[3] = 200;
-
-		cout << "Parameters used for fit: [" << p[0] << ", " << p[1] << ", " << p[2] << ", " << p[3] << "]" << endl;
-	}
-	*/
 	
 	void par_estimate(
-		vector<double>& x, // temperature
-		vector<double>& y, // observable
-		vector<double>& p  // parameters to fill
+		vector<double>& x, //temperature
+		vector<double>& y, //observable
+		vector<double>& p  //parameters
 	) {
 
-		if (0) {
-			p[0] = 0.024;// 0.005;
+		if (bool_chose_at_eye) {
+			p[0] = 0.024;
 			p[1] = 0.1 /PI;
-			p[2] = 0.006;//0.002;//0.005
-			p[3] = 250; // 180;
+			p[2] = 0.006;
+			p[3] = 250;
 			return;
 		}
 
@@ -117,82 +116,22 @@ const string tipology = "gauge"; //gauge/fermion, CHOOSABLE --> to do the gauge/
 			return;
 		}
 
-		/*
-		// ---- 1. p3: punto della transizione (lo scelgo ad occhio)
-		int idx = 6;
-		p[3] = x[idx]; // T al massimo gradiente
+		// ---- 1. p3: point x of the transition (I choose it by eye)
+		p[3] = 240;//must be about the inflection point
 
-		// ---- 2. p0: punto del flesso:
-		p[0] = y[idx];
+		// ---- 2. p0: y point of the transition (I choose it by eye):
+		p[0] = 0.02;//must be about the inflection point
 
-		// ---- 3. p1: altezza del gradino/PI
-		p[1] = 2.0 * p[0] / PI;
-
-		// ---- 4. p2: uso le stime precedenti:
-		p[2] = tan((y[idx+1] - p[0]) / p[1]) / (x[idx+1] - p[3]);
-
-		cout << "Initial guess: p0 = " << p[0]
-			<< ", p1 = " << p[1]
-			<< ", p2 = " << p[2]
-			<< ", p3 = " << p[3] << endl;
-
-		*/
-
-		/*
-			// 1. Trova il punto di massimo gradiente (flesso)
-		int idx = 1;
-		double max_der = -1e10;
-		for (int i = 1; i < n - 1; i++) {
-			double dy = y[i + 1] - y[i - 1];
-			double dx = x[i + 1] - x[i - 1];
-			double der = dy / dx;
-			if (abs(der) > max_der) {
-				max_der = abs(der);
-				idx = i;
-			}
-		}
-		p[3] = x[idx]; // centro del gradino
-
-		// 2. p0: valore nel flesso (altezza al centro)
-		p[0] = y[idx];
-
-		// 3. p1: ampiezza del gradino / PI
-		double y_max = *max_element(y.begin(), y.end());
-		double y_min = *min_element(y.begin(), y.end());
-		p[1] = (y_max - y_min) / PI;
-
-		// 4. p2: ripidità (1/larghezza tra 20% e 80%)
-		double y20 = y_min + 0.2 * (y_max - y_min);
-		double y80 = y_min + 0.8 * (y_max - y_min);
-		double T_low = x.front(), T_high = x.back();
-		for (int i = 1; i < n; i++) {
-			if ((y[i - 1] < y20 && y[i] > y20)) T_low = x[i];
-			if ((y[i - 1] < y80 && y[i] > y80)) {
-				T_high = x[i];
-				break;
-			}
-		}
-		double width = T_high - T_low;
-		p[2] = (width > 0.0) ? 1.0 / width : 1.0;
-		*/
-
-		// ---- 1. p3: punto x della transizione (lo scelgo ad occhio)
-		p[3] = 240; // 210; // T al massimo gradiente
-
-		// ---- 2. p0: punto y della transizione (lo scelgo ad occhio):
-		p[0] = 0.02; //0.015;
-
-		// ---- 3. p1: altezza del gradino/PI
+		// ---- 3. p1: step height/PI
 		p[1] = 2.0 / PI * (y[x.size() - 1] * 1.1 - p[0]);
 
-		// ---- 4. p2: uso le stime precedenti:
+		// ---- 4. p2: I use previous estimates and the function form:
 		p[2] = tan((y[2] - p[0]) / p[1]) / (x[2] - p[3]);
 
 		cout << "Initial guess: p0 = " << p[0]
 			<< ", p1 = " << p[1]
 			<< ", p2 = " << p[2]
 			<< ", p3 = " << p[3] << endl;
-
 	}
 	
 #elif CHOOSE_FIT_FUNCTION == 2
@@ -204,155 +143,137 @@ const int n_par_fit = 4;
 	}
 
 	void par_estimate(
-		const vector<double>& x, // temperature
-		const vector<double>& y, // observable
-		vector<double>& p        // parameters to fill: p0, p1, p2, p3
+		const vector<double>& x, //temperatures
+		const vector<double>& y, //observables
+		vector<double>& p //parameters
 	) {
-		size_t n = x.size();
-
-		// baseline: media dei primi 3 valori
-		p[0] = (y[0] + y[1] + y[2]) / 3.0;
-		// ampiezza: media ultimi 3 meno baseline
-		p[1] = (y[n - 1] + y[n - 2] + y[n - 3]) / 3.0 - p[0];
-		// punto centrale: massimo gradiente numerico
-		int idx = 1;
-		double max_der = -1e10;
-		for (int i = 1; i < n - 1; i++) {
-			double dy = y[i + 1] - y[i - 1];
-			double dx = x[i + 1] - x[i - 1];
-			double der = dy / dx;
-			if (der > max_der) {
-				max_der = der;
-				idx = i;
-			}
-		}
-		p[3] = x[idx];
-		// ripidità: 4/(larghezza tra 20% e 80%)
-		double y20 = p[0] + 0.2 * p[1];
-		double y80 = p[0] + 0.8 * p[1];
-		double x20 = x[0], x80 = x[n - 1];
-		for (int i = 1; i < n; i++) {
-			if ((y[i - 1] < y20 && y[i] > y20)) x20 = x[i];
-			if ((y[i - 1] < y80 && y[i] > y80)) { x80 = x[i]; break; }
-		}
-		double width = x80 - x20;
-		p[2] = width > 0 ? 4.0 / width : 1.0;
-
-		cout << "Initial guess: p0 = " << p[0]
-			<< ", p1 = " << p[1]
-			<< ", p2 = " << p[2]
-			<< ", p3 = " << p[3] << endl;
-	}
-
-	/*
-	void par_estimate(
-		vector<double>& x, // temperature
-		vector<double>& y, // observable
-		vector<double>& p  // parameters to fill
-	) {
-
-		if (1) {
-			p[0] = 0;
-			p[1] = 1.0;
-			p[2] = 1.0;
-			p[3] = 200;
+		
+		if(bool_chose_at_eye){
+			p[0] = 1;
+			p[1] = 1;
+			p[2] = 1;
+			p[3] = 1;
 			return;
 		}
+		
+		int i_infl;
+		double max_der, dy, dx, der, y20, y80, x20, width;
 
-		int n = y.size() - 1;
-		p[0] = 0.0; // baseline
-		p[1] = y[n - 1] - p[0]; // ampiezza
-		// Trova l'indice del massimo gradiente
-		int idx = 1;
-		double max_der = -1e10;
+		size_t n = x.size();
+
+		//p[0] = baseline: average of the first 3 values:
+		p[0] = (y[0] + y[1] + y[2]) / 3.0;
+		
+		//p[1] = amplitude: (average of last 3) - baseline:
+		p[1] = (y[n - 1] + y[n - 2] + y[n - 3]) / 3.0 - p[0];
+		
+		// p[3] = inflection point: maximum numerical gradient:
+		i_infl = 1;
+		max_der = -1e10;
 		for (int i = 1; i < n - 1; i++) {
-			double dy = y[i + 1] - y[i - 1];
-			double dx = x[i + 1] - x[i - 1];
-			double der = dy / dx;
+			dy = y[i + 1] - y[i - 1];
+			dx = x[i + 1] - x[i - 1];
+			der = dy / dx;
 			if (der > max_der) {
 				max_der = der;
-				idx = i;
+				i_infl = i;
 			}
 		}
-		p[3] = x[idx]; // posizione centrale
-		// Calcola larghezza tra 20% e 80%
-		double y20 = p[0] + 0.2 * p[1];
-		double y80 = p[0] + 0.8 * p[1];
-		double x20 = x[0], x80 = x[n - 1];
+		p[3] = x[i_infl];
+
+		//p[2] = steepness: I assume it to be: 4/(width between 20% and 80%)
+		y20 = p[0] + 0.2 * p[1];
+		y80 = p[0] + 0.8 * p[1];
+		x20 = x[0], x80 = x[n - 1];
 		for (int i = 1; i < n; i++) {
-			if ((y[i - 1] < y20 && y[i] > y20)) x20 = x[i];
-			if ((y[i - 1] < y80 && y[i] > y80)) { x80 = x[i]; break; }
+			if ((y[i - 1] < y20 && y[i] > y20)) {
+				x20 = x[i];
+			}
+			if ((y[i - 1] < y80 && y[i] > y80)) { 
+				x80 = x[i]; 
+				break;
+			}
 		}
-		double width = x80 - x20;
+		width = x80 - x20;
 		p[2] = width > 0 ? 4.0 / width : 1.0;
 
 		cout << "Initial guess: p0 = " << p[0]
 			<< ", p1 = " << p[1]
 			<< ", p2 = " << p[2]
 			<< ", p3 = " << p[3] << endl;
-
 	}
-	*/
-
+	
 #elif CHOOSE_FIT_FUNCTION == 3
 
-double fit_function(double* y, double* par) {//Hill function:
-	return par[0] + par[1] / (1 + pow(par[2] * y[0],par[3]));
-}
-
-const int n_par_fit = 4;
-
-void par_estimate(const vector<double>& x, const vector<double>& y, vector<double>& p) {
-	size_t n = x.size();
-
-	// 1. baseline (minimo)
-	p[0] = (y[0] + y[1] + y[2]) / 3.0;
-
-	// 2. ampiezza (max - min)
-	p[1] = (y[n - 1] + y[n - 2] + y[n - 3]) / 3.0 - p[0];
-
-	// 3. x_half (dove y = p0 + 0.5*p1)
-	double y_half = p[0] + 0.5 * p[1];
-	double x_half = x[0];
-	double min_diff = fabs(y[0] - y_half);
-	for (size_t i = 1; i < n; ++i) {
-		if (fabs(y[i] - y_half) < min_diff) {
-			min_diff = fabs(y[i] - y_half);
-			x_half = x[i];
-		}
+	double fit_function(double* y, double* par) {//Hill function:
+		return par[0] + par[1] / (1 + pow(par[2] * y[0],par[3]));
 	}
-	p[2] = 1.0 / x_half;
 
-	// 4. Hill coefficient (ripidità): default = 2
-	p[3] = 2.0;
+	const int n_par_fit = 4;
 
-	// (opzionale: stima migliore di p3)
-	// Puoi calcolare x_80 e x_20 come sopra e stimare p[3] = log(4)/log(x80/x20)
+	void par_estimate(
+		const vector<double>& x, //temperatures
+		const vector<double>& y, //observables
+		vector<double>& p //parameters
+	) {
+		
+		if (bool_chose_at_eye) {
+			p[0] = 1;
+			p[1] = 1;
+			p[2] = 1;
+			p[3] = 1;
+			return;
+		}
+		
+		double y_half, x_half, min_diff;
 
-	cout << "Initial guess: p0 = " << p[0]
-		<< ", p1 = " << p[1]
-		<< ", p2 = " << p[2]
-		<< ", p3 = " << p[3] << endl;
-}
+		size_t n = x.size();
+
+		//p[0] = baseline: average of the first 3 values:
+		p[0] = (y[0] + y[1] + y[2]) / 3.0;
+
+		//p[1] = amplitude: (average of last 3) - baseline:
+		p[1] = (y[n - 1] + y[n - 2] + y[n - 3]) / 3.0 - p[0];
+
+		//p[2] = central_height_point (where y = p0 + 0.5*p1)
+		y_half = p[0] + 0.5 * p[1];
+		x_half = x[0];
+		min_diff = fabs(y[0] - y_half);
+		for (size_t i = 1; i < n; ++i) {
+			if (fabs(y[i] - y_half) < min_diff) {
+				min_diff = fabs(y[i] - y_half);
+				x_half = x[i];
+			}
+		}
+		p[2] = 1.0 / x_half;
+
+		//p[3] = Hill coefficient (stepness): (I give a default value = 2)
+		p[3] = 2.0;
+
+		cout << "Initial guess: p0 = " << p[0]
+			<< ", p1 = " << p[1]
+			<< ", p2 = " << p[2]
+			<< ", p3 = " << p[3] << endl;
+		}
 
 #elif CHOOSE_FIT_FUNCTION == 4
 
-const int n_par_fit = 5;
+	const int n_par_fit = 5;
 
-double fit_function(double* x, double* par) {
-	// par[0] = a (intercetta fondo)
-	// par[1] = b (pendenza fondo)
-	// par[2] = c (ampiezza gradino/pi)
-	// par[3] = d (ripidità)
-	// par[4] = e (centro transizione)
-	return par[0] + par[1] * x[0] + par[2] * atan(par[3] * (x[0] - par[4]));
-}
+	double fit_function(double* x, double* par) {
+		// par[0] = (intercept bottom)
+		// par[1] = (bottom slope)
+		// par[2] = (step width)/PI
+		// par[3] = stepness
+		// par[4] = transition temperature
+		return par[0] + par[1] * x[0] + par[2] * atan(par[3] * (x[0] - par[4]));
+	}
 
-void par_estimate(
-	vector<double>& x,
-	vector<double>& y,
-	vector<double>& par
-) {
+	void par_estimate(
+		const vector<double>& x, //temperature
+		const vector<double>& y, //observable
+		vector<double>& p //parameters
+	) {
 	size_t n = x.size();
 
 	// --- 1. Stima fondo lineare (a, b) usando i primi punti ---
@@ -415,13 +336,13 @@ double fit_function(double* y, double* par) {
 const int n_par_fit = 4;
 
 void par_estimate(
-	const std::vector<double>& x,
-	const std::vector<double>& y,
-	std::vector<double>& par
+	const vector<double>& x, //temperature
+	const vector<double>& y, //observable
+	vector<double>& p //parameters
 ) {
 	size_t n = x.size();
 	// 1. baseline: media dei primi 3 y
-	par[0] = (y[0] + y[1] + y[2]) / 3.0;
+	p[0] = (y[0] + y[1] + y[2]) / 3.0;
 
 	// 2. pendenza (ampiezza “scalante”) fit lineare ultimi 3
 	double sum_x = 0, sum_y = 0, sum_xx = 0, sum_xy = 0;
@@ -433,7 +354,7 @@ void par_estimate(
 		sum_xy += x[i] * y[i];
 	}
 	double denom = n_fit * sum_xx - sum_x * sum_x;
-	par[1] = (denom != 0) ? (n_fit * sum_xy - sum_x * sum_y) / denom : 0.0;
+	p[1] = (denom != 0) ? (n_fit * sum_xy - sum_x * sum_y) / denom : 0.0;
 
 	// 3. centro (p3): massimo gradiente numerico
 	int idx = 1;
@@ -447,7 +368,7 @@ void par_estimate(
 			idx = i;
 		}
 	}
-	par[3] = x[idx];
+	p[3] = x[idx];
 
 	// 4. ripidità (p2): 4/(larghezza tra 20% e 80%)
 	double y_min = *std::min_element(y.begin(), y.end());
@@ -460,12 +381,12 @@ void par_estimate(
 		if ((y[i - 1] < y80 && y[i] > y80)) { x80 = x[i]; break; }
 	}
 	double width = x80 - x20;
-	par[2] = (width > 0) ? 4.0 / width : 1.0;
+	p[2] = (width > 0) ? 4.0 / width : 1.0;
 
-	std::cout << "Initial guess: p0 = " << par[0]
-		<< ", p1 = " << par[1]
-		<< ", p2 = " << par[2]
-		<< ", p3 = " << par[3] << std::endl;
+	std::cout << "Initial guess: p0 = " << p[0]
+		<< ", p1 = " << p[1]
+		<< ", p2 = " << p[2]
+		<< ", p3 = " << p[3] << std::endl;
 }
 
 #elif CHOOSE_FIT_FUNCTION == 6
@@ -493,22 +414,18 @@ double fit_function(double* y, double* par) {
 const int n_par_fit = 4;
 
 void par_estimate(
-	const std::vector<double>& x,
-	const std::vector<double>& y,
-	std::vector<double>& par
-) {
+	const vector<double>& x, //temperature
+	const vector<double>& y, //observable
+	vector<double>& p //parameters
+	) {
 
 	if (1) {
 		
-		par[0] = 1.0 / 20000;
-		par[1] = 0.79;
-		par[2] = 1.0 / 10;
-		par[3] = 240.0;
+		p[0] = 1.0 / 20000;
+		p[1] = 0.79;
+		p[2] = 1.0 / 10;
+		p[3] = 240.0;
 		
-		/*par[0] = 1.931e-4 * 2.0;
-		par[1] = 1.196;
-		par[2] = 4.43e-2;
-		par[3] = 192;*/
 		return;
 	}
 
@@ -521,9 +438,9 @@ void par_estimate(
 	double sxx = logx1 * logx1 + logx2 * logx2 + logx3 * logx3;
 	double sxy = logx1 * logy1 + logx2 * logy2 + logx3 * logy3;
 	double denom = 3 * sxx - sx * sx;
-	par[1] = (denom != 0) ? (3 * sxy - sx * sy) / denom : 1.0; // esponente potenza
-	double loga = (3 * sy - par[1] * sx) / 3.0;
-	par[0] = std::exp(loga); // scala
+	p[1] = (denom != 0) ? (3 * sxy - sx * sy) / denom : 1.0; // esponente potenza
+	double loga = (3 * sy - p[1] * sx) / 3.0;
+	p[0] = std::exp(loga); // scala
 
 	// Centro della transizione (p3): massimo gradiente numerico
 	int idx = 1;
@@ -537,7 +454,7 @@ void par_estimate(
 			idx = i;
 		}
 	}
-	par[3] = x[idx];
+	p[3] = x[idx];
 
 	// Ripidità (p2): 4/(larghezza tra 20% e 80%)
 	double y_min = *std::min_element(y.begin(), y.end());
@@ -550,12 +467,12 @@ void par_estimate(
 		if ((y[i - 1] < y80 && y[i] > y80)) { x80 = x[i]; break; }
 	}
 	double width = x80 - x20;
-	par[2] = (width > 0) ? 4.0 / width : 1.0;
+	p[2] = (width > 0) ? 4.0 / width : 1.0;
 
-	std::cout << "Initial guess: p0 = " << par[0]
-		<< ", p1 = " << par[1]
-		<< ", p2 = " << par[2]
-		<< ", p3 = " << par[3] << std::endl;
+	std::cout << "Initial guess: p0 = " << p[0]
+		<< ", p1 = " << p[1]
+		<< ", p2 = " << p[2]
+		<< ", p3 = " << p[3] << std::endl;
 }
 
 #endif
@@ -565,47 +482,47 @@ void par_estimate(
 //ROOT MACRO TO DO FIT AND GRAPH:
 
 void fit_plot_points_errors(
-	vector<double>& x,
-	vector<double>& y,
-	vector<double>& y_err,
-	string name_image,
-	string title,
-	string y_name,
-	double pos_title,
-	double pos_y,
-	double heigh_y,
-	int n_par_fit
+	const vector<double>& x,
+	const vector<double>& y,
+	const vector<double>& y_err,
+	const string name_image,
+	const string title,
+	const string y_name,
+	const double pos_title,
+	const double pos_y,
+	const double heigh_y,
+	const int n_par_fit
 );
 
 void fit_plot_inverted_points_errors(
-	vector<double>& x,
-	vector<double>& y,
-	vector<double>& y_err,
-	string name_image,
-	string title,
-	string y_name,
-	double pos_title,
-	double pos_y,
-	double heigh_y
+	const vector<double>& x,
+	const vector<double>& y,
+	const vector<double>& y_err,
+	const string name_image,
+	const string title,
+	const string y_name,
+	const double pos_title,
+	const double pos_y,
+	const double heigh_y
 );
 
 void silly_plot(
-	vector<double>& x,
-	vector<double>& y,
-	vector<double>& y_err,
-	string name_image,
-	string title,
-	string y_name,
-	double pos_title,
-	double pos_y,
-	double heigh_y,
-	int n_par_fit
+	const vector<double>& x,
+	const vector<double>& y,
+	const vector<double>& y_err,
+	const string name_image,
+	const string title,
+	const string y_name,
+	const double pos_title,
+	const double pos_y,
+	const double heigh_y,
+	const int n_par_fit
 );
 
 double chi2_reduced_estimate(
-	vector<double>& x,
-	vector<double>& y,
-	vector<double>& y_err,
+	const vector<double>& x,
+	const vector<double>& y,
+	const vector<double>& y_err,
 	vector<double>& par
 );
 
@@ -731,10 +648,6 @@ int main() {
 
 	input_file.close();
 
-
-	bool bool_enlarge = 1;
-	double enlarge_factor = 100;
-
 	if (bool_enlarge) {
 		for (int ii = 0; ii < temp.size(); ii++) {
 			mod[ii] *= 100;
@@ -776,9 +689,9 @@ int main() {
 
 
 double chi2_reduced_estimate(
-	vector<double>& x,
-	vector<double>& y,
-	vector<double>& y_err,
+	const vector<double>& x,
+	const vector<double>& y,
+	const vector<double>& y_err,
 	vector<double>& par
 ) {
 	double chi2r = 0, res;
@@ -801,15 +714,15 @@ double chi2_reduced_estimate(
 //ROOT MACRO TO GRAPH:
 
 void fit_plot_points_errors(
-	vector<double>& x,
-	vector<double>& y,
-	vector<double>& y_err,
-	string name_image,
-	string title,
-	string y_name,
-	double pos_title,
-	double pos_y,
-	double heigh_y,
+	const vector<double>& x,
+	const vector<double>& y,
+	const vector<double>& y_err,
+	const string name_image,
+	const string title,
+	const string y_name,
+	const double pos_title,
+	const double pos_y,
+	const double heigh_y,
 	const int n_par_fit
 ) {
 
@@ -954,15 +867,15 @@ void fit_plot_points_errors(
 
 
 void fit_plot_inverted_points_errors(//CAMBIA NOME AGLI ASSI
-	vector<double>& x,
-	vector<double>& y,
-	vector<double>& y_err,
-	string name_image,
-	string title,
-	string y_name,
-	double pos_title,
-	double pos_y,
-	double heigh_y
+	const vector<double>& x,
+	const vector<double>& y,
+	const vector<double>& y_err,
+	const string name_image,
+	const string title,
+	const string y_name,
+	const double pos_title,
+	const double pos_y,
+	const double heigh_y
 ) {
 
 	if (x.size() != y.size() || y.size() != y_err.size()) {
@@ -1060,16 +973,16 @@ void fit_plot_inverted_points_errors(//CAMBIA NOME AGLI ASSI
 }
 
 void silly_plot(
-	vector<double>& x,
-	vector<double>& y,
-	vector<double>& y_err,
-	string name_image,
-	string title,
-	string y_name,
-	double pos_title,
-	double pos_y,
-	double heigh_y,
-	int n_par_fit
+	const vector<double>& x,
+	const vector<double>& y,
+	const vector<double>& y_err,
+	const string name_image,
+	const string title,
+	const string y_name,
+	const double pos_title,
+	const double pos_y,
+	const double heigh_y,
+	const int n_par_fit
 ) {
 	if (x.size() != y.size() || y.size() != y_err.size()) {
 		cerr << "Error: mismatched vector sizes in plot_points_errors()." << endl;
