@@ -9,3 +9,22 @@
 - "visual_monte_carlo_history.cpp": visualization of Monte Carlo history.
 
 - "visual_polyffT.cpp": visualization of the mean values ​​of the observables (with corresponding standard deviation) as a function of the temperature.
+
+- "visual_susceptibility_polyff.cpp": this script provides a visualization of the susceptibility of Polyakov loops and chiral condensates, estimated directly from the variances computed in polyff.cpp
+
+- "converter_into_obs.cpp": script to convert value data in observable files to obs(value), arranged in two-column (one for conf_id, one for obs(value)).
+
+- "autocorr_check_simpler_files.cpp":  implements the blocking technique and ranges over different block sizes dim_block, returning the plot of variance vs dim_block for all files specified in file_list_therm.txt, in the 2-columns format.
+
+- "susceptibility_with_errors.cpp": script dedicated to the estimation of the susceptibility of Polyakov loops and chiral condensates, with related error (use of blocking and bootstrap).
+
+- "visual_susceptibility_with_errors.cpp": visualization of the chiral condensate, with errors, as a function of temperature (input file from susceptibility_with_errors.cpp).
+
+- "dependent_data_analysis_autocorrelation_calculated.cpp": direct calculation of the autocorrelation function.
+
+- "visual_autocorrelation.cpp": visualization of autocorrelation as a function of distance between indices, estimation of autocorrelation time;
+
+- "fit_polyffT.cpp": script dedicated to the fit of Polyakov loops and chiral condensates as a function of temperature.
+
+
+
