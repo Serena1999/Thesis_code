@@ -9,8 +9,8 @@
 #include "../library.h"
 #include "../root_include.h"
 
-const string tipology = "fermion"; //gauge/fermion, CHOOSABLE --> to do the gauge/fermion observables graph
-#define CHOOSE_FIT_FUNCTION 1 //0 for polynomial, 1 for arctg, 2 for logistic function;
+const string tipology = "gauge"; //gauge/fermion, CHOOSABLE --> to do the gauge/fermion observables graph
+#define CHOOSE_FIT_FUNCTION 6 //0 for polynomial, 1 for arctg, 2 for logistic function;
 
 //FIT FUNCTION: 
 
@@ -67,6 +67,7 @@ const string tipology = "fermion"; //gauge/fermion, CHOOSABLE --> to do the gaug
 
 #elif CHOOSE_FIT_FUNCTION == 1
 	double fit_function(double* y, double* par) {//
+		if (par[3] < 0 ) return 1e30;
 		return par[0] + par[1] * atan(par[2] * (y[0] - par[3]));
 	};
 
@@ -497,12 +498,12 @@ void par_estimate(
 	std::vector<double>& par
 ) {
 
-	if (0) {
+	if (1) {
 		
 		par[0] = 1.0 / 20000;
 		par[1] = 0.79;
 		par[2] = 1.0 / 10;
-		par[3] = 200.0;
+		par[3] = 240.0;
 		
 		/*par[0] = 1.931e-4 * 2.0;
 		par[1] = 1.196;
@@ -619,7 +620,7 @@ int main() {
 	vector <double> temp, mod, mod_err, re, re_err, im, im_err;
 	size_t pos;
 	string line, name_tmp;
-	string input_directory = "11_05_2025/polyff_results/";
+	string input_directory = "19_05_2025/polyff_results/";
 	string output_directory = "results/";
 	string name_input_file;
 	string name_image_mod;
@@ -642,7 +643,7 @@ int main() {
 	double pos_title_im;
 
 	if (tipology == "gauge") {
-		name_input_file = "800.0_poly_results.txt";
+		name_input_file = "1500.0_poly_results.txt";
 		pos = name_input_file.find_last_of(".");
 		if (pos != string::npos) {
 			name_tmp = name_input_file.substr(0, pos); //I remove extension using substr
@@ -668,7 +669,7 @@ int main() {
 		pos_title_im = 0.3;
 	}
 	else if (tipology == "fermion") {
-		name_input_file = "800.0_ff_results.txt";
+		name_input_file = "1500.0_ff_results.txt";
 		pos = name_input_file.find_last_of(".");
 		if (pos != string::npos) {
 			name_tmp = name_input_file.substr(0, pos); //I remove extension using substr
