@@ -25,6 +25,3 @@
 - "visual_autocorrelation.cpp": visualization of autocorrelation as a function of distance between indices, estimation of autocorrelation time;
 
 - "fit_polyffT.cpp": script dedicated to the fit of Polyakov loops and chiral condensates as a function of temperature.
-
-
-
