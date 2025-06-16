@@ -16,18 +16,22 @@
 //VARIABLES TO SET:
 
 const string tipology = "gauge"; //gauge/fermion, CHOOSABLE --> to do the gauge/fermion observables graph
-#define CHOOSE_FIT_FUNCTION 6 //0 for polynomial, 1 for arctg, 2 for logistic function;
+#define CHOOSE_FIT_FUNCTION 6 //0 for polynomial, 1 for arctg, 2 for logistic function, 3 for Hill function, 4 for arctg+linear, 5 for sigmoid, 6 for personalized sigmoid;
 const bool bool_chose_at_eye = 0; //0 if you want an automatic set of parameters, 1 if you want to impose them by hand;
+// -> if 1, modify the corrisponding if condition in par_estimate function to choose parameters;
 bool bool_enlarge = 1;//0 if you want to use the original draws, 1 if you want that y-values are multiplied by a the following factor:
-double enlarge_factor = 100;//factor to multiply the draws id bool_enlarge = 0;
+double enlarge_factor = 100;//factor to multiply the draws if bool_enlarge = 0;
 
 //-----------------------------------------------------------------
 //FIT && ESTIMATE OF PARAMETERS FUNCTIONS: 
 
 #if CHOOSE_FIT_FUNCTION == 0
 	
-	double fit_function(double* y, double* par) {//
-		return par[0] + par[1] * y[0] + par[2] * y[0] * y[0] + par[3] * y[0] * y[0] * y[0];
+	double fit_function(//T_c = flex point = - p[2]/(3*p[3])
+		double* y, //temperatures
+		double* p //parameters
+	) {
+		return p[0] + p[1] * y[0] + p[2] * y[0] * y[0] + p[3] * y[0] * y[0] * y[0];
 	};
 
 	const int n_par_fit = 4;
@@ -81,23 +85,30 @@ double enlarge_factor = 100;//factor to multiply the draws id bool_enlarge = 0;
 		p[2] /= detM;
 		p[3] /= detM;
 
-		cout << "Parameters used for fit: [" << p[0] << ", " << p[1] << ", " << p[2] << ", " << p[3] << "]" << endl;
+		cout << "Parameters used for fit: p0 = " << p[0]
+			<< ", p1 = " << p[1]
+			<< ", p2 = " << p[2]
+			<< ", p3 = " << p[3] << endl;
+
 		return 0;
 	}
 
 
-#elif CHOOSE_FIT_FUNCTION == 1 //RIPARTI DA QUIIII A SISTEMARE FORMA;---------------------------------------------
+#elif CHOOSE_FIT_FUNCTION == 1 
 
-	double fit_function(double* y, double* par) {//
-		if (par[3] < 0 ) return 1e30;
-		return par[0] + par[1] * atan(par[2] * (y[0] - par[3]));
+	double fit_function(//T_c = flex point = p[3]
+		double* y, //temperatures
+		double* p //parameters
+	) {
+		if (p[3] < 0 ) return 1e30;
+		return p[0] + p[1] * atan(p[2] * (y[0] - p[3]));
 	};
 
 	const int n_par_fit = 4;
 	
-	void par_estimate(
-		vector<double>& x, //temperature
-		vector<double>& y, //observable
+	int par_estimate(//return 0 if success, 1 if not;
+		vector<double>& x, //temperatures
+		vector<double>& y, //observables
 		vector<double>& p  //parameters
 	) {
 
@@ -106,14 +117,14 @@ double enlarge_factor = 100;//factor to multiply the draws id bool_enlarge = 0;
 			p[1] = 0.1 /PI;
 			p[2] = 0.006;
 			p[3] = 250;
-			return;
+			return 0;
 		}
 
 		size_t n = x.size();
 		if (n < 5) {
 			cerr << "Not enough points for estimate." << endl;
 			p = { 0, 1, 0.01, 250 }; // fallback
-			return;
+			return 1;
 		}
 
 		// ---- 1. p3: point x of the transition (I choose it by eye)
@@ -128,21 +139,22 @@ double enlarge_factor = 100;//factor to multiply the draws id bool_enlarge = 0;
 		// ---- 4. p2: I use previous estimates and the function form:
 		p[2] = tan((y[2] - p[0]) / p[1]) / (x[2] - p[3]);
 
-		cout << "Initial guess: p0 = " << p[0]
+		cout << "Parameters used for fit: p0 = " << p[0]
 			<< ", p1 = " << p[1]
 			<< ", p2 = " << p[2]
 			<< ", p3 = " << p[3] << endl;
+		return 0;
 	}
 	
 #elif CHOOSE_FIT_FUNCTION == 2
 
 const int n_par_fit = 4;
 
-	double fit_function(double* y, double* par) {
-		return par[0] + par[1] / (1 + exp(-par[2] * (y[0] - par[3])));
+	double fit_function(double* y, double* p) {
+		return p[0] + p[1] / (1 + exp(-p[2] * (y[0] - p[3])));
 	}
 
-	void par_estimate(
+	int par_estimate(//return 0 if success, 1 if not;//!!!!!!!!
 		const vector<double>& x, //temperatures
 		const vector<double>& y, //observables
 		vector<double>& p //parameters
@@ -197,7 +209,7 @@ const int n_par_fit = 4;
 		width = x80 - x20;
 		p[2] = width > 0 ? 4.0 / width : 1.0;
 
-		cout << "Initial guess: p0 = " << p[0]
+		cout << "Parameters used for fit: p0 = " << p[0]
 			<< ", p1 = " << p[1]
 			<< ", p2 = " << p[2]
 			<< ", p3 = " << p[3] << endl;
@@ -205,8 +217,8 @@ const int n_par_fit = 4;
 	
 #elif CHOOSE_FIT_FUNCTION == 3
 
-	double fit_function(double* y, double* par) {//Hill function:
-		return par[0] + par[1] / (1 + pow(par[2] * y[0],par[3]));
+	double fit_function(double* y, double* p) {//Hill function:
+		return p[0] + p[1] / (1 + pow(p[2] * y[0],p[3]));
 	}
 
 	const int n_par_fit = 4;
@@ -250,7 +262,7 @@ const int n_par_fit = 4;
 		//p[3] = Hill coefficient (stepness): (I give a default value = 2)
 		p[3] = 2.0;
 
-		cout << "Initial guess: p0 = " << p[0]
+		cout << "Parameters used for fit: p0 = " << p[0]
 			<< ", p1 = " << p[1]
 			<< ", p2 = " << p[2]
 			<< ", p3 = " << p[3] << endl;
@@ -260,13 +272,13 @@ const int n_par_fit = 4;
 
 	const int n_par_fit = 5;
 
-	double fit_function(double* x, double* par) {
-		// par[0] = (intercept bottom)
-		// par[1] = (bottom slope)
-		// par[2] = (step width)/PI
-		// par[3] = stepness
-		// par[4] = transition temperature
-		return par[0] + par[1] * x[0] + par[2] * atan(par[3] * (x[0] - par[4]));
+	double fit_function(double* x, double* p) {
+		// p[0] = (intercept bottom)
+		// p[1] = (bottom slope)
+		// p[2] = (step width)/PI
+		// p[3] = stepness
+		// p[4] = transition temperature
+		return p[0] + p[1] * x[0] + p[2] * atan(p[3] * (x[0] - p[4]));
 	}
 
 	void par_estimate(
@@ -286,14 +298,14 @@ const int n_par_fit = 4;
 		sum_xy += x[i] * y[i];
 	}
 	double denom = n_fit * sum_xx - sum_x * sum_x;
-	par[1] = (denom != 0) ? (n_fit * sum_xy - sum_x * sum_y) / denom : 0; // b
-	par[0] = (n_fit != 0) ? (sum_y - par[1] * sum_x) / n_fit : 0;      // a
+	p[1] = (denom != 0) ? (n_fit * sum_xy - sum_x * sum_y) / denom : 0; // b
+	p[0] = (n_fit != 0) ? (sum_y - p[1] * sum_x) / n_fit : 0;      // a
 
 	// --- 2. Ampiezza gradino (c): differenza tra media ultimi punti e retta fondo (ai massimi x) ---
 	double y_top = (y[n - 1] + y[n - 2] + y[n - 3]) / 3.0;
 	double x_top = (x[n - 1] + x[n - 2] + x[n - 3]) / 3.0;
-	double fondo_top = par[0] + par[1] * x_top;
-	par[2] = (y_top - fondo_top) / PI; // ampiezza/pi
+	double fondo_top = p[0] + p[1] * x_top;
+	p[2] = (y_top - fondo_top) / PI; // ampiezza/pi
 
 	// --- 3. Centro del gradino (e): massimo gradiente numerico ---
 	int idx_flesso = 1;
@@ -307,7 +319,7 @@ const int n_par_fit = 4;
 			idx_flesso = i;
 		}
 	}
-	par[4] = x[idx_flesso];
+	p[4] = x[idx_flesso];
 
 	// --- 4. Ripidità (d): 1/(larghezza tra 20% e 80% del gradino) ---
 	double y20 = fondo_top + 0.2 * (y_top - fondo_top);
@@ -318,19 +330,19 @@ const int n_par_fit = 4;
 		if ((y[i - 1] < y80 && y[i] > y80)) { x80 = x[i]; break; }
 	}
 	double width = x80 - x20;
-	par[3] = (width > 0) ? 1.0 / width : 0.01; // d
+	p[3] = (width > 0) ? 1.0 / width : 0.01; // d
 
-	std::cout << "Initial guess: a=" << par[0]
-		<< ", b=" << par[1]
-		<< ", c=" << par[2]
-		<< ", d=" << par[3]
-		<< ", e=" << par[4] << std::endl;
+	cout << "Parameters used for fit: p0 = " << p[0]
+		<< ", p1 = " << p[1]
+		<< ", p2 = " << p[2]
+		<< ", p3 = " << p[3]
+		<< ", p4 = " << p43] << endl;
 }
 
 #elif CHOOSE_FIT_FUNCTION == 5
 
-double fit_function(double* y, double* par) {
-	return par[0] + par[1] * y[0] / (1 + exp(-par[2] * (y[0] - par[3])));
+double fit_function(double* y, double* p) {
+	return p[0] + p[1] * y[0] / (1 + exp(-p[2] * (y[0] - p[3])));
 }
 
 const int n_par_fit = 4;
@@ -383,31 +395,31 @@ void par_estimate(
 	double width = x80 - x20;
 	p[2] = (width > 0) ? 4.0 / width : 1.0;
 
-	std::cout << "Initial guess: p0 = " << p[0]
+	cout << "Parameters used for fit: p0 = " << p[0]
 		<< ", p1 = " << p[1]
 		<< ", p2 = " << p[2]
-		<< ", p3 = " << p[3] << std::endl;
+		<< ", p3 = " << p[3] << endl;
 }
 
 #elif CHOOSE_FIT_FUNCTION == 6
 
-double fit_function(double* y, double* par) {
-	//return pow(par[0] * y[0] / (1 + exp(-par[2] * (y[0] - par[3]))), par[1]);
+double fit_function(double* y, double* p) {
+	//return pow(p[0] * y[0] / (1 + exp(-p[2] * (y[0] - p[3]))), p[1]);
 	// Proteggi exp
-	double expo = -par[2] * (y[0] - par[3]);
+	double expo = -p[2] * (y[0] - p[3]);
 	if (expo > 700) expo = 700;
 	if (expo < -700) expo = -700;
 	double denom = 1.0 + exp(expo);
 
 	// Calcola argomento della pow
-	double arg = par[0] * y[0] / denom;
+	double arg = p[0] * y[0] / denom;
 	if (arg <= 1e-12) arg = 1e-12; // evita base negativa/zero
 
 	// Penalità per parametri non fisici
-	if (par[0] <= 0 || par[1] <= 0 || par[2] <= 0)
+	if (p[0] <= 0 || p[1] <= 0 || p[2] <= 0)
 		return 1e30;
 
-	return pow(arg, par[1]);
+	return pow(arg, p[1]);
 }
 
 
@@ -469,10 +481,10 @@ void par_estimate(
 	double width = x80 - x20;
 	p[2] = (width > 0) ? 4.0 / width : 1.0;
 
-	std::cout << "Initial guess: p0 = " << p[0]
+	cout << "Parameters used for fit: p0 = " << p[0]
 		<< ", p1 = " << p[1]
 		<< ", p2 = " << p[2]
-		<< ", p3 = " << p[3] << std::endl;
+		<< ", p3 = " << p[3] << endl;
 }
 
 #endif
