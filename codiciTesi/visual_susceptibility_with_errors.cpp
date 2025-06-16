@@ -6,8 +6,14 @@
 ****                (author = Serena Bruzzesi)                ****
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
 
+//-----------------------------------------------------------------
+//HEADERS && LIBRARY:
+
 #include "../library.h"
 #include "../root_include.h"
+
+//-----------------------------------------------------------------
+//VARIABLES TO SET:
 
 const string tipology = "reP"; //YOU CAN CHOOSE BETWEEN reP, imP, reff, imff;
 const bool bool_log_scale = 0;

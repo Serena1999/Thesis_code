@@ -9,10 +9,19 @@
 ****                (author = Serena Bruzzesi)                ****
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
 
+//-----------------------------------------------------------------
+//HEADERS && LIBRARY:
+
 #include "../library.h"
 #include "../root_include.h"
 
+//-----------------------------------------------------------------
+//GLOBAL CONSTANTS:
+
 const double hbar_c = 197.3269804; //MeV * fm
+
+//-----------------------------------------------------------------
+//VARIABLES TO SET:
 
 const bool debug_mode = 0;
 const string tipology = "reff";//YOU CAN CHOOSE BETWEEN reP, imP, reff, imff;

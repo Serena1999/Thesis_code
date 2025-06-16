@@ -7,8 +7,14 @@
 ****                (author = Serena Bruzzesi)                ****
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
 
+//-----------------------------------------------------------------
+//HEADERS && LIBRARY:
+
 #include "../library.h"
 #include "../root_include.h"
+
+//-----------------------------------------------------------------
+//VARIABLES TO SET:
 
 const bool debug_mode = 0;
 const bool fermion_mode = 1;

@@ -1,5 +1,5 @@
 /*<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-****                    autocorr_check.cpp:                   ****
+****             autocorr_check_simpler_files.cpp:            ****
 ****     implements the blocking technique and ranges over    ****
 ****             different block sizes dim_block,             **** 
 ****    returning the plot of variance vs dim_block for all   ****
@@ -8,8 +8,14 @@
 ****                (author = Serena Bruzzesi)                ****
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
 
+//-----------------------------------------------------------------
+//HEADERS && LIBRARY:
+
 #include "../library.h"
 #include "../root_include.h"
+
+//-----------------------------------------------------------------
+//VARIABLES TO SET:
 
 const bool debug_mode = 1;
 

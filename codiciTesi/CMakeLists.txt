@@ -21,6 +21,7 @@ add_executable(visual_susceptibility_with_errors "visual_susceptibility_with_err
 add_executable(dependent_data_analysis_autocorrelation_calculated "dependent_data_analysis_autocorrelation_calculated.cpp")
 add_executable(visual_autocorrelation "visual_autocorrelation.cpp")
 add_executable(fit_polyffT "fit_polyffT.cpp")
+add_executable(temperature_compute "temperature_compute.cpp")
 
 target_link_libraries(polyff ${ROOT_LIBRARIES})
 target_link_libraries(autocorr_check ${ROOT_LIBRARIES})

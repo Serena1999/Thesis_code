@@ -9,10 +9,20 @@
 ****                (author = Serena Bruzzesi)                ****
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
 
+//-----------------------------------------------------------------
+//HEADERS && LIBRARY:
+
 #include "../library.h"
 #include "../root_include.h"
 
+//-----------------------------------------------------------------
+//GLOBAL CONSTANTS:
+
 const double hbar_c = 197.3269804; //MeV * fm
+
+//-----------------------------------------------------------------
+//VARIABLES TO SET:
+
 const bool debug_mode = 0;
 
 //-----------------------------------------------------------------
@@ -82,7 +92,7 @@ int main() {
 	vector<double> aml, beta, afm, temp;//T = \hbar * c /(Nt * a[fm]) (1.60), Nt = 8; 
 	vector<string> directories, gauge_files, fermion_files;
 	ostringstream mpi_stream;//TO INTRODUCE ALSO IN NUMERICAL METHODS CODE: IT IS USEFUL;
-	mpi_stream << std::fixed << std::setprecision(1) << mpi; //set to 1 decimal place
+	mpi_stream << fixed << setprecision(1) << mpi; //set to 1 decimal place
 	string mpi_string = mpi_stream.str(); // conversion into string
 	string name_output_file_poly = "results/" + mpi_string + "_poly_results.txt";
 	string name_output_file_ff = "results/" +  mpi_string + "_ff_results.txt";
