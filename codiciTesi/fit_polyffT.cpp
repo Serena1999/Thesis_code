@@ -17,7 +17,7 @@
 
 const string tipology = "gauge"; //gauge/fermion, CHOOSABLE --> to do the gauge/fermion observables graph
 #define CHOOSE_FIT_FUNCTION 6 //0 for polynomial, 1 for arctg, 2 for logistic function, 3 for Hill function, 4 for arctg+linear, 5 for sigmoid, 6 for personalized sigmoid;
-const bool bool_chose_at_eye = 0; //0 if you want an automatic set of parameters, 1 if you want to impose them by hand;
+const bool bool_choose_at_eye = 0; //0 if you want an automatic set of parameters, 1 if you want to impose them by hand;
 // -> if 1, modify the corrisponding if condition in par_estimate function to choose parameters;
 bool bool_enlarge = 1;//0 if you want to use the original draws, 1 if you want that y-values are multiplied by a the following factor:
 double enlarge_factor = 100;//factor to multiply the draws if bool_enlarge = 0;
@@ -36,18 +36,24 @@ double enlarge_factor = 100;//factor to multiply the draws if bool_enlarge = 0;
 
 	const int n_par_fit = 4;
 
-	int par_estimate(//considering polynomial as y(x) = p[0] + p[1]*x + p[2] * x^2 + p[3] * x^3;
+	bool par_estimate(//considering polynomial as y(x) = p[0] + p[1]*x + p[2] * x^2 + p[3] * x^3;
 		//return 0 if success, 1 if not;
 		const vector<double>& x, //temperatures
 		const vector<double>& y, //observables
 		vector<double>& p //parameters
 	) {
 
-		if (bool_chose_at_eye) {
+		if (bool_choose_at_eye || (x.size() < n_par_fit)) {//TO CHANGE THE FOLLOWING FOR "CHOOSE BY EYE" SETTING
 			p[0] = 1;
 			p[1] = 1;
 			p[2] = 1;
 			p[3] = 1;
+
+			if (x.size() < n_par_fit) {
+				cerr << "Not enough points for estimate." << endl;
+				return 1;
+			}
+
 			return 0;
 		}
 
@@ -65,18 +71,18 @@ double enlarge_factor = 100;//factor to multiply the draws if bool_enlarge = 0;
 			return;
 		}
 		
-		for (int ii = 0; ii < p.size(); ii++) {
+		for (int ii = 0; ii < p.size(); ++ii) {
 			p[ii] = 0;
 		}
 		
-		for (int ii = 0; ii < (x.size() - 4); ii++) {
+		for (int ii = 0; ii < (x.size() - 4); ++ii) {
 			p[0] += -x[ii] * x[ii + 1] * (x[ii] - x[ii + 1]) * (x[ii + 2] * y[ii + 3] * (x[ii] - x[ii + 2]) * (x[ii + 2] - x[ii + 1]) + x[ii + 3] * y[ii + 2] * (x[ii] - x[ii + 3]) * (x[ii + 1] - x[ii + 3])) + x[ii] * x[ii + 2] * x[ii + 3] * y[ii] * (x[ii] - x[ii + 2]) * (x[ii] - x[ii + 3]) * (x[ii + 2] - x[ii + 3]) - x[ii + 1] * x[ii + 2] * x[ii + 3] * y[0] * (x[ii + 1] - x[ii + 2]) * (x[ii + 1] - x[ii + 3]) * (x[ii + 2] - x[ii + 3]);
 			p[1] += y[ii] * (pow(x[ii], 3) * (pow(x[ii + 3], 2) - pow(x[ii + 2], 2)) + pow(x[ii], 2) * (pow(x[ii + 2], 3) - pow(x[ii + 3], 3)) + pow(x[ii + 2], 2) * pow(x[ii + 3], 2) * (x[ii + 3] - x[ii + 2])) + (x[ii] - x[ii + 1]) * (y[ii + 3] * (x[ii] - x[ii + 2]) * (x[ii + 2] - x[ii + 1]) * (x[ii] * (x[ii + 1] + x[ii + 2]) + x[ii + 1] * x[ii + 2]) + y[ii + 2] * (x[ii] - x[ii + 3]) * (x[ii + 1] - x[ii + 3]) * (x[ii] * (x[ii + 1] + x[ii + 3]) + x[ii + 1] * x[ii + 3])) + y[0] * (pow(x[ii + 1], 3) * (pow(x[ii + 2], 2) - pow(x[ii + 3], 2)) + pow(x[ii + 1], 2) * (pow(x[ii + 3], 3) - pow(x[ii + 2], 3)) + pow(x[ii + 2], 2) * pow(x[ii + 3], 2) * (x[ii + 2] - x[ii + 3]));
 			p[2] += pow(x[ii], 3) * (-x[ii + 1]) * y[ii + 2] + pow(x[ii], 3) * x[ii + 1] * y[ii + 3] + y[ii] * (pow(x[ii], 3) * (x[ii + 2] - x[ii + 3]) + x[ii] * (pow(x[ii + 3], 3) - pow(x[ii + 2], 3)) + x[ii + 2] * x[ii + 3] * (pow(x[ii + 2], 2) - pow(x[ii + 3], 2))) - pow(x[ii], 3) * x[ii + 2] * y[ii + 3] + pow(x[ii], 3) * x[ii + 3] * y[ii + 2] + x[ii] * pow(x[ii + 1], 3) * y[ii + 2] - x[ii] * pow(x[ii + 1], 3) * y[ii + 3] + x[ii] * pow(x[ii + 2], 3) * y[ii + 3] - x[ii] * pow(x[ii + 3], 3) * y[ii + 2] + y[0] * (pow(x[ii + 1], 3) * (x[ii + 3] - x[ii + 2]) + x[ii + 1] * (pow(x[ii + 2], 3) - pow(x[ii + 3], 3)) - pow(x[ii + 2], 3) * x[ii + 3] + x[ii + 2] * pow(x[ii + 3], 3)) + pow(x[ii + 1], 3) * x[ii + 2] * y[ii + 3] - pow(x[ii + 1], 3) * x[ii + 3] * y[ii + 2] - x[ii + 1] * pow(x[ii + 2], 3) * y[ii + 3] + x[ii + 1] * pow(x[ii + 3], 3) * y[ii + 2];
 			p[3] += (x[ii] - x[ii + 1]) * (y[ii + 3] * (x[ii] - x[ii + 2]) * (x[ii + 2] - x[ii + 1]) + y[ii + 2] * (x[ii] - x[ii + 3]) * (x[ii + 1] - x[ii + 3])) - y[ii] * (x[ii] - x[ii + 2]) * (x[ii] - x[ii + 3]) * (x[ii + 2] - x[ii + 3]) + y[0] * (x[ii + 1] - x[ii + 2]) * (x[ii + 1] - x[ii + 3]) * (x[ii + 2] - x[ii + 3]);
 		}
 
-		for (int ii = 0; ii < p.size(); ii++) {
+		for (int ii = 0; ii < p.size(); ++ii) {
 			p[ii] /= (x.size() - 4);
 		}
 
@@ -106,25 +112,25 @@ double enlarge_factor = 100;//factor to multiply the draws if bool_enlarge = 0;
 
 	const int n_par_fit = 4;
 	
-	int par_estimate(//return 0 if success, 1 if not;
-		vector<double>& x, //temperatures
-		vector<double>& y, //observables
-		vector<double>& p  //parameters
+	bool par_estimate(//considering fit function as y(x) = p[0] + p[1] * atan{p[2] * (x - p[3])};
+		//return 0 if success, 1 if not;
+		const vector<double>& x, //temperatures
+		const vector<double>& y, //observables
+		vector<double>& p //parameters
 	) {
 
-		if (bool_chose_at_eye) {
+		if (bool_chose_at_eye || (x.size() < n_par_fit)) {//TO CHANGE THE FOLLOWING FOR "CHOOSE BY EYE" SETTING
 			p[0] = 0.024;
 			p[1] = 0.1 /PI;
 			p[2] = 0.006;
 			p[3] = 250;
-			return 0;
-		}
 
-		size_t n = x.size();
-		if (n < 5) {
-			cerr << "Not enough points for estimate." << endl;
-			p = { 0, 1, 0.01, 250 }; // fallback
-			return 1;
+			if (x.size() < n_par_fit) {
+				cerr << "Not enough points for estimate." << endl;
+				return 1;
+			}
+
+			return 0;
 		}
 
 		// ---- 1. p3: point x of the transition (I choose it by eye)
@@ -148,61 +154,70 @@ double enlarge_factor = 100;//factor to multiply the draws if bool_enlarge = 0;
 	
 #elif CHOOSE_FIT_FUNCTION == 2
 
-const int n_par_fit = 4;
+	const int n_par_fit = 4;
 
-	double fit_function(double* y, double* p) {
+	double fit_function(//T_c = flex point = p[3]
+		double* y, //temperatures
+		double* p //parameters
+	) {
 		return p[0] + p[1] / (1 + exp(-p[2] * (y[0] - p[3])));
 	}
 
-	int par_estimate(//return 0 if success, 1 if not;//!!!!!!!!
+	bool par_estimate(//considering fit function as y(x) = p[0] + p[1]/{1 + exp[-p[2]*(x - p[3])]};
+		//return 0 if success, 1 if not;
 		const vector<double>& x, //temperatures
 		const vector<double>& y, //observables
 		vector<double>& p //parameters
 	) {
 		
-		if(bool_chose_at_eye){
+		if (bool_chose_at_eye || (x.size() < n_par_fit)) {//TO CHANGE THE FOLLOWING FOR "CHOOSE BY EYE" SETTING
 			p[0] = 1;
 			p[1] = 1;
 			p[2] = 1;
 			p[3] = 1;
-			return;
+
+			if (x.size() < n_par_fit) {
+				cerr << "Not enough points for estimate." << endl;
+				return 1;
+			}
+
+			return 0;
 		}
 		
-		int i_infl;
-		double max_der, dy, dx, der, y20, y80, x20, width;
+		int i_infl = 1;
+		double max_der = -1e10, dy, dx, der, y20, y80, x20, width;
 
 		size_t n = x.size();
 
-		//p[0] = baseline: average of the first 3 values:
+		//1. p[0] = baseline: average of the first 3 values:
 		p[0] = (y[0] + y[1] + y[2]) / 3.0;
 		
-		//p[1] = amplitude: (average of last 3) - baseline:
+		//2. p[1] = amplitude = (average of last 3) - baseline:
 		p[1] = (y[n - 1] + y[n - 2] + y[n - 3]) / 3.0 - p[0];
 		
-		// p[3] = inflection point: maximum numerical gradient:
-		i_infl = 1;
-		max_der = -1e10;
-		for (int i = 1; i < n - 1; i++) {
-			dy = y[i + 1] - y[i - 1];
-			dx = x[i + 1] - x[i - 1];
+		//3. p[3] = inflection point: maximum numerical gradient:
+		for (int ii = 1; ii < n - 1; ++ii) {
+			dy = y[ii + 1] - y[ii - 1];
+			dx = x[ii + 1] - x[ii - 1];
 			der = dy / dx;
 			if (der > max_der) {
 				max_der = der;
-				i_infl = i;
+				i_infl = ii;
 			}
 		}
 		p[3] = x[i_infl];
 
-		//p[2] = steepness: I assume it to be: 4/(width between 20% and 80%)
-		y20 = p[0] + 0.2 * p[1];
+		//4. p[2] = steepness: I assume it to be: 4/(width between 20% and 80%)
+		y20 = p[0] + 0.2 * p[1];///QUIIIIIIIIIIIIIIIIII
 		y80 = p[0] + 0.8 * p[1];
-		x20 = x[0], x80 = x[n - 1];
-		for (int i = 1; i < n; i++) {
-			if ((y[i - 1] < y20 && y[i] > y20)) {
-				x20 = x[i];
+		x20 = x[0];
+		x80 = x[n - 1];
+		for (int ii = 1; ii < n; ++ii) {
+			if ((y[ii - 1] < y20 && y[ii] > y20)) {
+				x20 = x[ii];
 			}
-			if ((y[i - 1] < y80 && y[i] > y80)) { 
-				x80 = x[i]; 
+			if ((y[ii - 1] < y80 && y[ii] > y80)) { 
+				x80 = x[ii]; 
 				break;
 			}
 		}
@@ -213,33 +228,45 @@ const int n_par_fit = 4;
 			<< ", p1 = " << p[1]
 			<< ", p2 = " << p[2]
 			<< ", p3 = " << p[3] << endl;
+		return 0;
 	}
 	
 #elif CHOOSE_FIT_FUNCTION == 3
 
-	double fit_function(double* y, double* p) {//Hill function:
+	double fit_function(//Hill function: //T_c = flex point = 1/p[2]
+		double* y, //temperatures
+		double* p //parameters
+	) {
 		return p[0] + p[1] / (1 + pow(p[2] * y[0],p[3]));
 	}
 
 	const int n_par_fit = 4;
 
-	void par_estimate(
+	bool par_estimate(//considering fit function as y(x) = p[0] + p[1]/{1 + (p[2] * x)^p[3]};
+		//return 0 if success, 1 if not;
 		const vector<double>& x, //temperatures
 		const vector<double>& y, //observables
 		vector<double>& p //parameters
 	) {
 		
-		if (bool_chose_at_eye) {
+		if (bool_chose_at_eye || (x.size() < n_par_fit)) {//TO CHANGE THE FOLLOWING FOR "CHOOSE BY EYE" SETTING
 			p[0] = 1;
 			p[1] = 1;
 			p[2] = 1;
 			p[3] = 1;
-			return;
+			
+			if (x.size() < n_par_fit) {
+				cerr << "Not enough points for estimate." << endl;
+				return 1;
+			}
+
+			return 0;
+
 		}
 		
 		double y_half, x_half, min_diff;
 
-		size_t n = x.size();
+		int n = x.size();
 
 		//p[0] = baseline: average of the first 3 values:
 		p[0] = (y[0] + y[1] + y[2]) / 3.0;
@@ -251,10 +278,10 @@ const int n_par_fit = 4;
 		y_half = p[0] + 0.5 * p[1];
 		x_half = x[0];
 		min_diff = fabs(y[0] - y_half);
-		for (size_t i = 1; i < n; ++i) {
-			if (fabs(y[i] - y_half) < min_diff) {
-				min_diff = fabs(y[i] - y_half);
-				x_half = x[i];
+		for (int ii = 1; ii < n; ++ii) {
+			if (fabs(y[ii] - y_half) < min_diff) {
+				min_diff = fabs(y[ii] - y_half);
+				x_half = x[ii];
 			}
 		}
 		p[2] = 1.0 / x_half;
@@ -266,36 +293,57 @@ const int n_par_fit = 4;
 			<< ", p1 = " << p[1]
 			<< ", p2 = " << p[2]
 			<< ", p3 = " << p[3] << endl;
+		
+		return 0;
 		}
 
 #elif CHOOSE_FIT_FUNCTION == 4
 
 	const int n_par_fit = 5;
 
-	double fit_function(double* x, double* p) {
+	double fit_function(//T_c = flex point = p[4]
+		double* y, //temperatures
+		double* p //parameters
+	) {
 		// p[0] = (intercept bottom)
 		// p[1] = (bottom slope)
 		// p[2] = (step width)/PI
 		// p[3] = stepness
 		// p[4] = transition temperature
-		return p[0] + p[1] * x[0] + p[2] * atan(p[3] * (x[0] - p[4]));
+		return p[0] + p[1] * y[0] + p[2] * atan(p[3] * (y[0] - p[4]));
 	}
 
-	void par_estimate(
-		const vector<double>& x, //temperature
-		const vector<double>& y, //observable
+	bool par_estimate(//considering fit function as y(x) = p[0] + p[1]*x + p[2] * atan{p[3] * (x - p[4])};
+		//return 0 if success, 1 if not;
+		const vector<double>& x, //temperatures
+		const vector<double>& y, //observables
 		vector<double>& p //parameters
 	) {
+
+		if (bool_choose_at_eye || (x.size() < n_par_fit)) {//TO CHANGE THE FOLLOWING FOR "CHOOSE BY EYE" SETTING
+			p[0] = 1;
+			p[1] = 1;
+			p[2] = 1;
+			p[3] = 1;
+
+			if (x.size() < n_par_fit) {
+				cerr << "Not enough points for estimate." << endl;
+				return 1;
+			}
+
+			return 0;
+		}
+
 	size_t n = x.size();
 
 	// --- 1. Stima fondo lineare (a, b) usando i primi punti ---
 	int n_fit = std::min<size_t>(4, n / 3); // primi 3-4 punti
 	double sum_x = 0, sum_y = 0, sum_xx = 0, sum_xy = 0;
-	for (int i = 0; i < n_fit; ++i) {
-		sum_x += x[i];
-		sum_y += y[i];
-		sum_xx += x[i] * x[i];
-		sum_xy += x[i] * y[i];
+	for (int i = 0; i < n_fit; ++ii) {
+		sum_x += x[ii];
+		sum_y += y[ii];
+		sum_xx += x[ii] * x[ii];
+		sum_xy += x[ii] * y[ii];
 	}
 	double denom = n_fit * sum_xx - sum_x * sum_x;
 	p[1] = (denom != 0) ? (n_fit * sum_xy - sum_x * sum_y) / denom : 0; // b
@@ -310,13 +358,13 @@ const int n_par_fit = 4;
 	// --- 3. Centro del gradino (e): massimo gradiente numerico ---
 	int idx_flesso = 1;
 	double max_der = -1e20;
-	for (int i = 1; i < n - 1; ++i) {
-		double dy = y[i + 1] - y[i - 1];
-		double dx = x[i + 1] - x[i - 1];
+	for (int ii = 1; ii < (n - 1); ++ii) {
+		double dy = y[ii + 1] - y[ii - 1];
+		double dx = x[ii + 1] - x[ii - 1];
 		double der = dy / dx;
-		if (std::abs(der) > max_der) {
-			max_der = std::abs(der);
-			idx_flesso = i;
+		if (abs(der) > max_der) {
+			max_der = abs(der);
+			idx_flesso = ii;
 		}
 	}
 	p[4] = x[idx_flesso];
@@ -325,9 +373,9 @@ const int n_par_fit = 4;
 	double y20 = fondo_top + 0.2 * (y_top - fondo_top);
 	double y80 = fondo_top + 0.8 * (y_top - fondo_top);
 	double x20 = x[0], x80 = x[n - 1];
-	for (int i = 1; i < n; ++i) {
-		if ((y[i - 1] < y20 && y[i] > y20)) x20 = x[i];
-		if ((y[i - 1] < y80 && y[i] > y80)) { x80 = x[i]; break; }
+	for (int ii = 1; ii < n; ++ii) {
+		if ((y[ii - 1] < y20 && y[ii] > y20)) x20 = x[ii];
+		if ((y[ii - 1] < y80 && y[ii] > y80)) { x80 = x[ii]; break; }
 	}
 	double width = x80 - x20;
 	p[3] = (width > 0) ? 1.0 / width : 0.01; // d
@@ -337,21 +385,42 @@ const int n_par_fit = 4;
 		<< ", p2 = " << p[2]
 		<< ", p3 = " << p[3]
 		<< ", p4 = " << p43] << endl;
+
+		return 0;
 }
 
 #elif CHOOSE_FIT_FUNCTION == 5
 
-double fit_function(double* y, double* p) {
+double fit_function(//T_c = flex point = p[3]
+	double* y, //temperatures
+	double* p //parameters
+) {
 	return p[0] + p[1] * y[0] / (1 + exp(-p[2] * (y[0] - p[3])));
 }
 
 const int n_par_fit = 4;
 
-void par_estimate(
-	const vector<double>& x, //temperature
-	const vector<double>& y, //observable
+bool par_estimate(//considering fit function as y(x) = p[0] + p[1]*x/{ 1 - exp[ -p[2] * (x - p[3]) ] };
+	//return 0 if success, 1 if not;
+	const vector<double>& x, //temperatures
+	const vector<double>& y, //observables
 	vector<double>& p //parameters
 ) {
+
+	if (bool_choose_at_eye || (x.size() < n_par_fit)) {//TO CHANGE THE FOLLOWING FOR "CHOOSE BY EYE" SETTING
+		p[0] = 1;
+		p[1] = 1;
+		p[2] = 1;
+		p[3] = 1;
+
+		if (x.size() < n_par_fit) {
+			cerr << "Not enough points for estimate." << endl;
+			return 1;
+		}
+
+		return 0;
+	}
+
 	size_t n = x.size();
 	// 1. baseline: media dei primi 3 y
 	p[0] = (y[0] + y[1] + y[2]) / 3.0;
@@ -359,11 +428,11 @@ void par_estimate(
 	// 2. pendenza (ampiezza “scalante”) fit lineare ultimi 3
 	double sum_x = 0, sum_y = 0, sum_xx = 0, sum_xy = 0;
 	int n_fit = 3;
-	for (int i = n - n_fit; i < n; ++i) {
-		sum_x += x[i];
-		sum_y += y[i];
-		sum_xx += x[i] * x[i];
-		sum_xy += x[i] * y[i];
+	for (int ii = n - n_fit; ii < n; ++ii) {
+		sum_x += x[ii];
+		sum_y += y[ii];
+		sum_xx += x[ii] * x[ii];
+		sum_xy += x[ii] * y[ii];
 	}
 	double denom = n_fit * sum_xx - sum_x * sum_x;
 	p[1] = (denom != 0) ? (n_fit * sum_xy - sum_x * sum_y) / denom : 0.0;
@@ -371,9 +440,9 @@ void par_estimate(
 	// 3. centro (p3): massimo gradiente numerico
 	int idx = 1;
 	double max_der = -1e20;
-	for (int i = 1; i < n - 1; ++i) {
-		double dy = y[i + 1] - y[i - 1];
-		double dx = x[i + 1] - x[i - 1];
+	for (int ii = 1; ii < n - 1; ++ii) {
+		double dy = y[ii + 1] - y[ii - 1];
+		double dx = x[ii + 1] - x[ii - 1];
 		double der = dy / dx;
 		if (der > max_der) {
 			max_der = der;
@@ -388,9 +457,9 @@ void par_estimate(
 	double y20 = y_min + 0.2 * (y_max - y_min);
 	double y80 = y_min + 0.8 * (y_max - y_min);
 	double x20 = x[0], x80 = x[n - 1];
-	for (int i = 1; i < n; ++i) {
-		if ((y[i - 1] < y20 && y[i] > y20)) x20 = x[i];
-		if ((y[i - 1] < y80 && y[i] > y80)) { x80 = x[i]; break; }
+	for (int ii = 1; ii < n; ++ii) {
+		if ((y[ii - 1] < y20 && y[ii] > y20)) x20 = x[ii];
+		if ((y[ii - 1] < y80 && y[ii] > y80)) { x80 = x[ii]; break; }
 	}
 	double width = x80 - x20;
 	p[2] = (width > 0) ? 4.0 / width : 1.0;
@@ -399,11 +468,15 @@ void par_estimate(
 		<< ", p1 = " << p[1]
 		<< ", p2 = " << p[2]
 		<< ", p3 = " << p[3] << endl;
+	return 0;
 }
 
 #elif CHOOSE_FIT_FUNCTION == 6
 
-double fit_function(double* y, double* p) {
+double fit_function(//T_c = flex point = p[3]
+	double* y, //temperatures
+	double* p //parameters
+) {
 	//return pow(p[0] * y[0] / (1 + exp(-p[2] * (y[0] - p[3]))), p[1]);
 	// Proteggi exp
 	double expo = -p[2] * (y[0] - p[3]);
@@ -425,20 +498,26 @@ double fit_function(double* y, double* p) {
 
 const int n_par_fit = 4;
 
-void par_estimate(
-	const vector<double>& x, //temperature
-	const vector<double>& y, //observable
+bool par_estimate(//considering fit function as y(x) = { p[0]*x / [ 1 + exp( -p[2] * (x - p[3]) ) ] }^p[1];
+	//return 0 if success, 1 if not;
+	const vector<double>& x, //temperatures
+	const vector<double>& y, //observables
 	vector<double>& p //parameters
-	) {
+) {
 
-	if (1) {
+	if (bool_choose_at_eye || (x.size() < n_par_fit)) {//TO CHANGE THE FOLLOWING FOR "CHOOSE BY EYE" SETTING
 		
 		p[0] = 1.0 / 20000;
 		p[1] = 0.79;
 		p[2] = 1.0 / 10;
 		p[3] = 240.0;
 		
-		return;
+		if (x.size() < n_par_fit) {
+			cerr << "Not enough points for estimate." << endl;
+			return 1;
+		}
+
+		return 0;
 	}
 
 	size_t n = x.size();
@@ -457,13 +536,13 @@ void par_estimate(
 	// Centro della transizione (p3): massimo gradiente numerico
 	int idx = 1;
 	double max_der = -1e20;
-	for (int i = 1; i < n - 1; ++i) {
-		double dy = y[i + 1] - y[i - 1];
-		double dx = x[i + 1] - x[i - 1];
+	for (int ii = 1; ii < n - 1; ++ii) {
+		double dy = y[ii + 1] - y[ii - 1];
+		double dx = x[ii + 1] - x[ii - 1];
 		double der = dy / dx;
 		if (der > max_der) {
 			max_der = der;
-			idx = i;
+			idx = ii;
 		}
 	}
 	p[3] = x[idx];
@@ -474,9 +553,9 @@ void par_estimate(
 	double y20 = y_min + 0.2 * (y_max - y_min);
 	double y80 = y_min + 0.8 * (y_max - y_min);
 	double x20 = x[0], x80 = x[n - 1];
-	for (int i = 1; i < n; ++i) {
-		if ((y[i - 1] < y20 && y[i] > y20)) x20 = x[i];
-		if ((y[i - 1] < y80 && y[i] > y80)) { x80 = x[i]; break; }
+	for (int ii = 1; ii < n; ++ii) {
+		if ((y[ii - 1] < y20 && y[ii] > y20)) x20 = x[ii];
+		if ((y[ii - 1] < y80 && y[ii] > y80)) { x80 = x[ii]; break; }
 	}
 	double width = x80 - x20;
 	p[2] = (width > 0) ? 4.0 / width : 1.0;
@@ -485,6 +564,8 @@ void par_estimate(
 		<< ", p1 = " << p[1]
 		<< ", p2 = " << p[2]
 		<< ", p3 = " << p[3] << endl;
+
+	return 0;
 }
 
 #endif
@@ -635,7 +716,7 @@ int main() {
 		return 1;
 	}
 
-	for (int i = 0; i < skipLines; i++) {
+	for (int ii = 0; ii < skipLines; ++ii) {
 		if (!getline(input_file, line)) {
 			cerr << "Error: there are less than " << skipLines << " lines in the input file." << endl;
 			return 1;
@@ -661,7 +742,7 @@ int main() {
 	input_file.close();
 
 	if (bool_enlarge) {
-		for (int ii = 0; ii < temp.size(); ii++) {
+		for (int ii = 0; ii < temp.size(); ++ii) {
 			mod[ii] *= 100;
 			mod_err[ii] *= 100;
 			re[ii] *= 100;
@@ -707,7 +788,7 @@ double chi2_reduced_estimate(
 	vector<double>& par
 ) {
 	double chi2r = 0, res;
-	for (int ii = 0; ii < x.size(); ii++) {
+	for (int ii = 0; ii < x.size(); ++ii) {
 		double xx[1] = { x[ii] };
 		res = (y[ii] - fit_function(xx, par.data()))/y_err[ii];
 		res *= res;
@@ -787,7 +868,7 @@ void fit_plot_points_errors(
 
 	par_estimate(x, y, par);
 
-	for (int ii = 0; ii < par.size(); ii++) {
+	for (int ii = 0; ii < par.size(); ++ii) {
 		p_plot->SetParameter(ii, par[ii]); //setting the ii-th parameter of the function
 	}
 
@@ -803,7 +884,7 @@ void fit_plot_points_errors(
 	//ATTENTA!! Spesso, ROOT stampa "Chi2" come la media dei residui quadratici(RMS²), NON come la vera somma pesata!
 	//Questo è uno di questi casi, dei valori ci si può fidare se il chi2 stimato con l'apposita funzione nel seguito è ragionevole.
 	
-	for (int ii = 0; ii < par.size(); ii++) {
+	for (int ii = 0; ii < par.size(); ++ii) {
 		par[ii] = p_plot->GetParameter(ii);
 	}
 
@@ -818,12 +899,12 @@ void fit_plot_points_errors(
 
 	cout << endl;
 	cout << "COV_MATRIX:" << endl;
-	for (int i = 0; i < n_par_fit; ++i)
+	for (int ii = 0; ii < n_par_fit; ++ii)
 	{
-		for (int j = 0; j < n_par_fit; ++j)
+		for (int jj = 0; jj < n_par_fit; ++jj)
 		{
-			cov[i][j] = fit->GetCovarianceMatrixElement(i, j);
-			cout << cov[i][j] << "\t";
+			cov[ii][jj] = fit->GetCovarianceMatrixElement(ii, jj);
+			cout << cov[ii][jj] << "\t";
 		}
 	
 		cout << endl;
@@ -834,11 +915,11 @@ void fit_plot_points_errors(
 
 	cout << endl;
 	cout << "CORR_MATRIX:" << endl;
-	for (int i = 0; i < n_par_fit; ++i)
+	for (int ii = 0; ii < n_par_fit; ++ii)
 	{
-		for (int j = 0; j < n_par_fit; ++j)
+		for (int jj = 0; jj < n_par_fit; ++jj)
 		{
-			cout << cov[i][j] /sqrt(cov[i][i] * cov[j][j]) << "\t";
+			cout << cov[ii][jj] /sqrt(cov[ii][ii] * cov[jj][jj]) << "\t";
 		}
 
 		cout << endl;
@@ -932,7 +1013,7 @@ void fit_plot_inverted_points_errors(//CAMBIA NOME AGLI ASSI
 
 	par_estimate(y, x, par);
 
-	for (int ii = 0; ii < par.size(); ii++) {
+	for (int ii = 0; ii < par.size(); ++ii) {
 		p_plot->SetParameter(ii, par[ii]); //setting the ii-th parameter of the function
 	}
 
@@ -948,11 +1029,11 @@ void fit_plot_inverted_points_errors(//CAMBIA NOME AGLI ASSI
 	TVirtualFitter* fitter = TVirtualFitter::GetFitter();
 	double cov[10][10]; // scegli una dimensione sufficientemente grande
 
-	for (int i = 0; i < n_par_fit; ++i)
+	for (int ii = 0; ii < n_par_fit; ++ii)
 	{
-		for (int j = 0; j < n_par_fit; ++j)
+		for (int jj = 0; jj < n_par_fit; ++jj)
 		{
-			cov[i][j] = fitter->GetCovarianceMatrixElement(i, j);
+			cov[ii][jj] = fitter->GetCovarianceMatrixElement(ii, jj);
 		}
 
 	}

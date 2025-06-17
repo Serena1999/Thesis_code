@@ -24,9 +24,11 @@ int main() {
 	//-----------------------------------------------------------------
 	//VARIABLES TO SET:
 	
-	int Nt = 256; // 8; //number of temporal lattice sites
+	int Nt = 24; // 8; //number of temporal lattice sites
 
 	vector<double> afm = { //a[fm] 
+		0.1806154387,
+		0.1710305482,
 		0.1586635474,
 		0.1476200601,
 		0.1377037468,
