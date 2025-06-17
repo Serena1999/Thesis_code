@@ -208,21 +208,21 @@ double enlarge_factor = 100;//factor to multiply the draws if bool_enlarge = 0;
 		p[3] = x[i_infl];
 
 		//4. p[2] = steepness: I assume it to be: 4/(width between 20% and 80%)
-		y20 = p[0] + 0.2 * p[1];///QUIIIIIIIIIIIIIIIIII
+		y20 = p[0] + 0.2 * p[1];
 		y80 = p[0] + 0.8 * p[1];
 		x20 = x[0];
 		x80 = x[n - 1];
 		for (int ii = 1; ii < n; ++ii) {
-			if ((y[ii - 1] < y20 && y[ii] > y20)) {
+			if (((y[ii - 1] < y20) && (y[ii] > y20))) {
 				x20 = x[ii];
 			}
-			if ((y[ii - 1] < y80 && y[ii] > y80)) { 
+			if (((y[ii - 1] < y80) && (y[ii] > y80))) {
 				x80 = x[ii]; 
 				break;
 			}
 		}
 		width = x80 - x20;
-		p[2] = width > 0 ? 4.0 / width : 1.0;
+		p[2] = width > 0 ? (4.0 / width) : 1.0;
 
 		cout << "Parameters used for fit: p0 = " << p[0]
 			<< ", p1 = " << p[1]
@@ -261,20 +261,19 @@ double enlarge_factor = 100;//factor to multiply the draws if bool_enlarge = 0;
 			}
 
 			return 0;
-
 		}
 		
 		double y_half, x_half, min_diff;
 
 		int n = x.size();
 
-		//p[0] = baseline: average of the first 3 values:
+		//1. p[0] = baseline = average of the first 3 values:
 		p[0] = (y[0] + y[1] + y[2]) / 3.0;
 
-		//p[1] = amplitude: (average of last 3) - baseline:
+		//2. p[1] = amplitude = (average of last 3) - baseline:
 		p[1] = (y[n - 1] + y[n - 2] + y[n - 3]) / 3.0 - p[0];
 
-		//p[2] = central_height_point (where y = p0 + 0.5*p1)
+		//3. p[2] = central_height_point (where y = p0 + 0.5*p1)
 		y_half = p[0] + 0.5 * p[1];
 		x_half = x[0];
 		min_diff = fabs(y[0] - y_half);
@@ -286,7 +285,7 @@ double enlarge_factor = 100;//factor to multiply the draws if bool_enlarge = 0;
 		}
 		p[2] = 1.0 / x_half;
 
-		//p[3] = Hill coefficient (stepness): (I give a default value = 2)
+		//4. p[3] = Hill coefficient (stepness): (I give a default value = 2)
 		p[3] = 2.0;
 
 		cout << "Parameters used for fit: p0 = " << p[0]
@@ -334,62 +333,65 @@ double enlarge_factor = 100;//factor to multiply the draws if bool_enlarge = 0;
 			return 0;
 		}
 
-	size_t n = x.size();
+		int n = x.size(), n_fit = 3, i_infl = 1;
+		double sum_x = 0, sum_y = 0, sum_xx = 0, sum_xy = 0, max_der = -1e20;
+		double denom, y_top, x_top, fondo_top, y20, x20, y80, x80, width;
 
-	// --- 1. Stima fondo lineare (a, b) usando i primi punti ---
-	int n_fit = std::min<size_t>(4, n / 3); // primi 3-4 punti
-	double sum_x = 0, sum_y = 0, sum_xx = 0, sum_xy = 0;
-	for (int i = 0; i < n_fit; ++ii) {
-		sum_x += x[ii];
-		sum_y += y[ii];
-		sum_xx += x[ii] * x[ii];
-		sum_xy += x[ii] * y[ii];
-	}
-	double denom = n_fit * sum_xx - sum_x * sum_x;
-	p[1] = (denom != 0) ? (n_fit * sum_xy - sum_x * sum_y) / denom : 0; // b
-	p[0] = (n_fit != 0) ? (sum_y - p[1] * sum_x) / n_fit : 0;      // a
-
-	// --- 2. Ampiezza gradino (c): differenza tra media ultimi punti e retta fondo (ai massimi x) ---
-	double y_top = (y[n - 1] + y[n - 2] + y[n - 3]) / 3.0;
-	double x_top = (x[n - 1] + x[n - 2] + x[n - 3]) / 3.0;
-	double fondo_top = p[0] + p[1] * x_top;
-	p[2] = (y_top - fondo_top) / PI; // ampiezza/pi
-
-	// --- 3. Centro del gradino (e): massimo gradiente numerico ---
-	int idx_flesso = 1;
-	double max_der = -1e20;
-	for (int ii = 1; ii < (n - 1); ++ii) {
-		double dy = y[ii + 1] - y[ii - 1];
-		double dx = x[ii + 1] - x[ii - 1];
-		double der = dy / dx;
-		if (abs(der) > max_der) {
-			max_der = abs(der);
-			idx_flesso = ii;
+		// 1. p[0] and p[1], by a linear fit on the first 3 points: (y =ca p[0] + p[1]*x)
+		for (int ii = 0; ii < n_fit; ++ii) {
+			sum_x += x[ii];
+			sum_y += y[ii];
+			sum_xx += x[ii] * x[ii];
+			sum_xy += x[ii] * y[ii];
 		}
-	}
-	p[4] = x[idx_flesso];
+		denom = n_fit * sum_xx - sum_x * sum_x;
+		p[1] = (denom != 0) ? (n_fit * sum_xy - sum_x * sum_y) / denom : 0;
+		p[0] = (sum_y - p[1] * sum_x) / n_fit;
 
-	// --- 4. Ripidità (d): 1/(larghezza tra 20% e 80% del gradino) ---
-	double y20 = fondo_top + 0.2 * (y_top - fondo_top);
-	double y80 = fondo_top + 0.8 * (y_top - fondo_top);
-	double x20 = x[0], x80 = x[n - 1];
-	for (int ii = 1; ii < n; ++ii) {
-		if ((y[ii - 1] < y20 && y[ii] > y20)) x20 = x[ii];
-		if ((y[ii - 1] < y80 && y[ii] > y80)) { x80 = x[ii]; break; }
-	}
-	double width = x80 - x20;
-	p[3] = (width > 0) ? 1.0 / width : 0.01; // d
+		// 2. p[2] = amplitude/PI, where: amplitude = (difference between average of last points and bottom line (at maximum x))
+		y_top = (y[n - 1] + y[n - 2] + y[n - 3]) / 3.0;
+		x_top = (x[n - 1] + x[n - 2] + x[n - 3]) / 3.0;
+		fondo_top = p[0] + p[1] * x_top;
+		p[2] = (y_top - fondo_top) / PI; //amplitude/PI
 
-	cout << "Parameters used for fit: p0 = " << p[0]
-		<< ", p1 = " << p[1]
-		<< ", p2 = " << p[2]
-		<< ", p3 = " << p[3]
-		<< ", p4 = " << p43] << endl;
+		//3. p[3] = inflection point: maximum numerical gradient:
+		for (int ii = 1; ii < (n - 1); ++ii) {
+			double dy = y[ii + 1] - y[ii - 1];
+			double dx = x[ii + 1] - x[ii - 1];
+			double der = dy / dx;
+			if (abs(der) > max_der) {
+				max_der = abs(der);
+				i_infl = ii;
+			}
+		}
+		p[4] = x[i_infl];
+
+		// 4. p[3] = steepness: I assume it to be: 4/(width between 20% and 80%)
+		y20 = fondo_top + 0.2 * (y_top - fondo_top);
+		y80 = fondo_top + 0.8 * (y_top - fondo_top);
+		x20 = x[0];
+		x80 = x[n - 1];
+		for (int ii = 1; ii < n; ++ii) {
+			if ((y[ii - 1] < y20 && y[ii] > y20)) {
+				x20 = x[ii];
+			}
+			if ((y[ii - 1] < y80 && y[ii] > y80)) {
+				x80 = x[ii]; break; 
+			}
+		}
+		width = x80 - x20;
+		p[3] = (width > 0) ? 1.0 / width : 0.01;
+
+		cout << "Parameters used for fit: p0 = " << p[0]
+			<< ", p1 = " << p[1]
+			<< ", p2 = " << p[2]
+			<< ", p3 = " << p[3]
+			<< ", p4 = " << p43] << endl;
 
 		return 0;
 }
 
-#elif CHOOSE_FIT_FUNCTION == 5
+#elif CHOOSE_FIT_FUNCTION == 5//QUIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
 
 double fit_function(//T_c = flex point = p[3]
 	double* y, //temperatures
