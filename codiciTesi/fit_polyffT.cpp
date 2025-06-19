@@ -391,7 +391,7 @@ double enlarge_factor = 100;//factor to multiply the draws if bool_enlarge = 0;
 		return 0;
 }
 
-#elif CHOOSE_FIT_FUNCTION == 5//QUIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
+#elif CHOOSE_FIT_FUNCTION == 5
 
 double fit_function(//T_c = flex point = p[3]
 	double* y, //temperatures
@@ -423,48 +423,54 @@ bool par_estimate(//considering fit function as y(x) = p[0] + p[1]*x/{ 1 - exp[ 
 		return 0;
 	}
 
+	double sum_x = 0, sum_y = 0, sum_xx = 0, sum_xy = 0, denom, dy, dx, der, max_der = -1e20, y_min, y_max, y20, y80, x20, x80, width;
+	int n_fit = 3, i_infl = 1;
+
 	size_t n = x.size();
-	// 1. baseline: media dei primi 3 y
+	//1. p[0] = baseline: average of the first 3 values:
 	p[0] = (y[0] + y[1] + y[2]) / 3.0;
 
-	// 2. pendenza (ampiezza “scalante”) fit lineare ultimi 3
-	double sum_x = 0, sum_y = 0, sum_xx = 0, sum_xy = 0;
-	int n_fit = 3;
-	for (int ii = n - n_fit; ii < n; ++ii) {
+	// 2.p[1] = angular coefficient of the last 3 points
+	for (int ii = (n - n_fit); ii < n; ++ii) {
 		sum_x += x[ii];
 		sum_y += y[ii];
 		sum_xx += x[ii] * x[ii];
 		sum_xy += x[ii] * y[ii];
 	}
-	double denom = n_fit * sum_xx - sum_x * sum_x;
+	denom = n_fit * sum_xx - sum_x * sum_x;
 	p[1] = (denom != 0) ? (n_fit * sum_xy - sum_x * sum_y) / denom : 0.0;
 
-	// 3. centro (p3): massimo gradiente numerico
-	int idx = 1;
-	double max_der = -1e20;
+	//3. p[3] = inflection point: maximum numerical gradient:
 	for (int ii = 1; ii < n - 1; ++ii) {
-		double dy = y[ii + 1] - y[ii - 1];
-		double dx = x[ii + 1] - x[ii - 1];
-		double der = dy / dx;
+		dy = y[ii + 1] - y[ii - 1];
+		dx = x[ii + 1] - x[ii - 1];
+		der = dy / dx;
 		if (der > max_der) {
 			max_der = der;
-			idx = i;
+			i_infl = i;
 		}
 	}
-	p[3] = x[idx];
+	p[3] = x[i_infl];
 
-	// 4. ripidità (p2): 4/(larghezza tra 20% e 80%)
-	double y_min = *std::min_element(y.begin(), y.end());
-	double y_max = *std::max_element(y.begin(), y.end());
-	double y20 = y_min + 0.2 * (y_max - y_min);
-	double y80 = y_min + 0.8 * (y_max - y_min);
-	double x20 = x[0], x80 = x[n - 1];
+	// 4. p[3] = steepness: I assume it to be: 4/(width between 20% and 80%)
+	y_min = *min_element(y.begin(), y.end());
+	y_max = *max_element(y.begin(), y.end());
+	y20 = y_min + 0.2 * (y_max - y_min);
+	y80 = y_min + 0.8 * (y_max - y_min);
+	x20 = x[0];
+	x80 = x[n - 1];
 	for (int ii = 1; ii < n; ++ii) {
-		if ((y[ii - 1] < y20 && y[ii] > y20)) x20 = x[ii];
-		if ((y[ii - 1] < y80 && y[ii] > y80)) { x80 = x[ii]; break; }
+		if ((y[ii - 1] < y20 && y[ii] > y20)) 
+		{
+			x20 = x[ii];
+		}
+		if ((y[ii - 1] < y80 && y[ii] > y80)) {
+			x80 = x[ii];
+			break; 
+		}
 	}
-	double width = x80 - x20;
-	p[2] = (width > 0) ? 4.0 / width : 1.0;
+	width = x80 - x20;
+	p[2] = (width > 0) ? (4.0 / width) : 1.0;
 
 	cout << "Parameters used for fit: p0 = " << p[0]
 		<< ", p1 = " << p[1]
@@ -480,18 +486,20 @@ double fit_function(//T_c = flex point = p[3]
 	double* p //parameters
 ) {
 	//return pow(p[0] * y[0] / (1 + exp(-p[2] * (y[0] - p[3]))), p[1]);
-	// Proteggi exp
-	double expo = -p[2] * (y[0] - p[3]);
+	double expo, denom, arg;
+	
+	// Protect exp: (to remain in physical range)
+	expo = -p[2] * (y[0] - p[3]);
 	if (expo > 700) expo = 700;
 	if (expo < -700) expo = -700;
-	double denom = 1.0 + exp(expo);
+	denom = 1.0 + exp(expo);
 
-	// Calcola argomento della pow
-	double arg = p[0] * y[0] / denom;
-	if (arg <= 1e-12) arg = 1e-12; // evita base negativa/zero
+	//Calculate argument of pow:
+	arg = p[0] * y[0] / denom;
+	if (arg <= 1e-12) arg = 1e-12; //avoid negative/zero base
 
-	// Penalità per parametri non fisici
-	if (p[0] <= 0 || p[1] <= 0 || p[2] <= 0)
+	//Penalty for non-physical parameters
+	if ((p[0] <= 0) || (p[1] <= 0) || (p[2] <= 0))
 		return 1e30;
 
 	return pow(arg, p[1]);
@@ -522,44 +530,54 @@ bool par_estimate(//considering fit function as y(x) = { p[0]*x / [ 1 + exp( -p[
 		return 0;
 	}
 
-	size_t n = x.size();
-	// Fit log-log agli ultimi 3 punti per scala e potenza
-	double logx1 = std::log(x[n - 3]), logx2 = std::log(x[n - 2]), logx3 = std::log(x[n - 1]);
-	double logy1 = std::log(y[n - 3]), logy2 = std::log(y[n - 2]), logy3 = std::log(y[n - 1]);
-	double sx = logx1 + logx2 + logx3;
-	double sy = logy1 + logy2 + logy3;
-	double sxx = logx1 * logx1 + logx2 * logx2 + logx3 * logx3;
-	double sxy = logx1 * logy1 + logx2 * logy2 + logx3 * logy3;
-	double denom = 3 * sxx - sx * sx;
-	p[1] = (denom != 0) ? (3 * sxy - sx * sy) / denom : 1.0; // esponente potenza
-	double loga = (3 * sy - p[1] * sx) / 3.0;
-	p[0] = std::exp(loga); // scala
+	int n = x.size(), i_infl = 1;
+	double logx1, logx2, logx3;
+	double logy1, logy2, logy3;
+	double sx, sy, sxx, sxy, denom, loga;
+	double max_der = -1e20, dy, dx, der;
+	double y_min, y_max, y20, y80, x20, x80, width;
 
-	// Centro della transizione (p3): massimo gradiente numerico
-	int idx = 1;
-	double max_der = -1e20;
+	//1. && 2. Fit log-log to the last 3 points for scale p[0] and power p[1]
+	logx1 = log(x[n - 3]);
+	logx2 = log(x[n - 2]);
+	logx3 = log(x[n - 1]);
+	logy1 = log(y[n - 3]);
+	logy2 = log(y[n - 2]); 
+	logy3 = log(y[n - 1]);
+	sx = logx1 + logx2 + logx3;
+	sy = logy1 + logy2 + logy3;
+	sxx = logx1 * logx1 + logx2 * logx2 + logx3 * logx3;
+	sxy = logx1 * logy1 + logx2 * logy2 + logx3 * logy3;
+	denom = 3 * sxx - sx * sx;
+
+	p[1] = (denom != 0) ? (3 * sxy - sx * sy) / denom : 1.0; //power exponent
+	
+	loga = (3 * sy - p[1] * sx) / 3.0;
+	p[0] = exp(loga); //scale
+
+	//3. p[3] = inflection point: maximum numerical gradient:
 	for (int ii = 1; ii < n - 1; ++ii) {
-		double dy = y[ii + 1] - y[ii - 1];
-		double dx = x[ii + 1] - x[ii - 1];
-		double der = dy / dx;
+		dy = y[ii + 1] - y[ii - 1];
+		dx = x[ii + 1] - x[ii - 1];
+		der = dy / dx;
 		if (der > max_der) {
 			max_der = der;
-			idx = ii;
+			i_infl = ii;
 		}
 	}
-	p[3] = x[idx];
+	p[3] = x[i_infl];
 
-	// Ripidità (p2): 4/(larghezza tra 20% e 80%)
-	double y_min = *std::min_element(y.begin(), y.end());
-	double y_max = *std::max_element(y.begin(), y.end());
-	double y20 = y_min + 0.2 * (y_max - y_min);
-	double y80 = y_min + 0.8 * (y_max - y_min);
-	double x20 = x[0], x80 = x[n - 1];
+	// 4. p[2] = steepness: I assume it to be: 4/(width between 20% and 80%)
+	y_min = *min_element(y.begin(), y.end());
+	y_max = *max_element(y.begin(), y.end());
+	y20 = y_min + 0.2 * (y_max - y_min);
+	y80 = y_min + 0.8 * (y_max - y_min);
+	x20 = x[0], x80 = x[n - 1];
 	for (int ii = 1; ii < n; ++ii) {
 		if ((y[ii - 1] < y20 && y[ii] > y20)) x20 = x[ii];
 		if ((y[ii - 1] < y80 && y[ii] > y80)) { x80 = x[ii]; break; }
 	}
-	double width = x80 - x20;
+	width = x80 - x20;
 	p[2] = (width > 0) ? 4.0 / width : 1.0;
 
 	cout << "Parameters used for fit: p0 = " << p[0]
