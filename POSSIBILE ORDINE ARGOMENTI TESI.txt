@@ -1,0 +1,23 @@
+POSSIBILE ORDINE ARGOMENTI TESI:
+
+TITOLO PROVVISORIO: Transizioni di fase nella QCD con fermioni dinamici: studio lungo la diagonale del Columbia plot e condensazione di monopoli termici al variare della massa del pione:
+
+1. INTRODUZIONE:
+
+2. STUDIO DELLE SIMMETRIE DELLA CROMODINAMICA QUANTISTICA:
+   -> lagrangiana euclidea
+      -> libertà asintotica a giustificare l'analisi non perturbativa
+   -> simmetria chirale;
+   -> simmetria di centro;
+   -> simulazioni su reticolo:
+      -> implementazione;
+      -> Columbia plot;
+      -> transizione pseudo-critica;
+      -> transizione di deconfinamento;
+
+3. MONOPOLI MAGNETICI NELLA QCD:
+
+4. 
+
+
+TO END
