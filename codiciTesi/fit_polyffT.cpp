@@ -16,11 +16,12 @@
 //VARIABLES TO SET:
 
 const string tipology = "gauge"; //gauge/fermion, CHOOSABLE --> to do the gauge/fermion observables graph
-#define CHOOSE_FIT_FUNCTION 6 //0 for polynomial, 1 for arctg, 2 for logistic function, 3 for Hill function, 4 for arctg+linear, 5 for sigmoid, 6 for personalized sigmoid;
-const bool bool_choose_at_eye = 0; //0 if you want an automatic set of parameters, 1 if you want to impose them by hand;
+#define CHOOSE_FIT_FUNCTION 1 //0 for polynomial, 1 for arctg, 2 for logistic function, 3 for Hill function, 4 for arctg+linear, 5 for sigmoid, 6 for personalized sigmoid;
+const bool bool_choose_at_eye = 1; //0 if you want an automatic set of parameters, 1 if you want to impose them by hand;
 // -> if 1, modify the corrisponding if condition in par_estimate function to choose parameters;
 bool bool_enlarge = 1;//0 if you want to use the original draws, 1 if you want that y-values are multiplied by a the following factor:
 double enlarge_factor = 100;//factor to multiply the draws if bool_enlarge = 0;
+bool bool_adjustable_range = 1; //1 if you want to use only index in [index_min, index_max] of given temperatures[index], 0 if you want to use them all
 
 //-----------------------------------------------------------------
 //FIT && ESTIMATE OF PARAMETERS FUNCTIONS: 
@@ -68,7 +69,7 @@ double enlarge_factor = 100;//factor to multiply the draws if bool_enlarge = 0;
 			p[1] = 1;
 			p[2] = 1;
 			p[3] = 1;
-			return;
+			return 1;
 		}
 		
 		for (int ii = 0; ii < p.size(); ++ii) {
@@ -119,11 +120,11 @@ double enlarge_factor = 100;//factor to multiply the draws if bool_enlarge = 0;
 		vector<double>& p //parameters
 	) {
 
-		if (bool_chose_at_eye || (x.size() < n_par_fit)) {//TO CHANGE THE FOLLOWING FOR "CHOOSE BY EYE" SETTING
-			p[0] = 0.024;
-			p[1] = 0.1 /PI;
-			p[2] = 0.006;
-			p[3] = 250;
+		if (bool_choose_at_eye || (x.size() < n_par_fit)) {//TO CHANGE THE FOLLOWING FOR "CHOOSE BY EYE" SETTING
+			p[0] = 1.9;
+			p[1] = 1.5;// 5.0 / PI;
+			p[2] = 0.4;
+			p[3] = 234;
 
 			if (x.size() < n_par_fit) {
 				cerr << "Not enough points for estimate." << endl;
@@ -134,7 +135,7 @@ double enlarge_factor = 100;//factor to multiply the draws if bool_enlarge = 0;
 		}
 
 		// ---- 1. p3: point x of the transition (I choose it by eye)
-		p[3] = 240;//must be about the inflection point
+		p[3] = 210;//must be about the inflection point
 
 		// ---- 2. p0: y point of the transition (I choose it by eye):
 		p[0] = 0.02;//must be about the inflection point
@@ -646,6 +647,9 @@ double chi2_reduced_estimate(
 int main() {
 
 	int skipLines = 1; //= number of lines to skip while reading input file;
+	double min_index = 4;
+	double max_index = 8;
+	
 	double temp_value, mod_value, mod_err_value, re_value, re_err_value, im_value, im_err_value;
 	vector <double> temp, mod, mod_err, re, re_err, im, im_err;
 	size_t pos;
@@ -679,9 +683,16 @@ int main() {
 			name_tmp = name_input_file.substr(0, pos); //I remove extension using substr
 		}
 		name_input_file = input_directory + name_input_file;
-		name_image_mod = output_directory + "FIT_modPvsT_" + name_tmp + ".png";
-		name_image_re = output_directory + "FIT_rePvsT_" + name_tmp + ".png";
-		name_image_im = output_directory + "FIT_imPvsT_" + name_tmp + ".png";
+		if (bool_adjustable_range) {
+			name_image_mod = output_directory + "FIT_modPvsT_" + name_tmp + "_less_points.png";
+			name_image_re = output_directory + "FIT_rePvsT_" + name_tmp + "_less_points.png";
+			name_image_im = output_directory + "FIT_imPvsT_" + name_tmp + "_less_points.png";
+		}
+		else {
+			name_image_mod = output_directory + "FIT_modPvsT_" + name_tmp + ".png";
+			name_image_re = output_directory + "FIT_rePvsT_" + name_tmp + ".png";
+			name_image_im = output_directory + "FIT_imPvsT_" + name_tmp + ".png";
+		}
 		title_mod = "#LT|PP^{+}|#GT vs temperature:";
 		title_re = "#LTRe{P}#GT vs temperature :";
 		title_im = "#LTIm{P}#GT vs temperature:";
@@ -705,9 +716,16 @@ int main() {
 			name_tmp = name_input_file.substr(0, pos); //I remove extension using substr
 		}
 		name_input_file = input_directory + name_input_file;
-		name_image_mod = output_directory + "FIT_modffvsT_" + name_tmp + ".png";
-		name_image_re = output_directory + "FIT_reffvsT_" + name_tmp + ".png";
-		name_image_im = output_directory + "FIT_imffvsT_" + name_tmp + ".png";
+		if (bool_adjustable_range) {
+			name_image_mod = output_directory + "FIT_modffvsT_" + name_tmp + "_less_points.png";
+			name_image_re = output_directory + "FIT_reffvsT_" + name_tmp + "_less_points.png";
+			name_image_im = output_directory + "FIT_imffvsT_" + name_tmp + "_less_points.png";
+		}
+		else {
+			name_image_mod = output_directory + "FIT_modffvsT_" + name_tmp + ".png";
+			name_image_re = output_directory + "FIT_reffvsT_" + name_tmp + ".png";
+			name_image_im = output_directory + "FIT_imffvsT_" + name_tmp + ".png";
+		}
 		title_mod = "#LT|(#bar{#psi}#psi)(#bar{#psi}#psi)^{+}|#GT vs temperature:";
 		title_re = "#LTRe{#bar{#psi}#psi}#GT vs temperature :";
 		title_im = "#LTIm{#bar{#psi}#psi}#GT vs temperature:";
@@ -743,19 +761,45 @@ int main() {
 		}
 	}
 
-	while (getline(input_file, line)) {
-		istringstream iss(line);
-		if (iss >> temp_value >> mod_value >> mod_err_value >> re_value >> re_err_value >> im_value >> im_err_value) {
-			temp.push_back(temp_value);
-			mod.push_back(mod_value);
-			mod_err.push_back(mod_err_value);
-			re.push_back(re_value);
-			re_err.push_back(re_err_value);
-			im.push_back(im_value);
-			im_err.push_back(im_err_value);
+	if (bool_adjustable_range) {
+		int index = 0;
+		while (getline(input_file, line)) {
+			if (index >= min_index) {
+				if (index <= max_index) {
+					istringstream iss(line);
+					if (iss >> temp_value >> mod_value >> mod_err_value >> re_value >> re_err_value >> im_value >> im_err_value) {
+						temp.push_back(temp_value);
+						mod.push_back(mod_value);
+						mod_err.push_back(mod_err_value);
+						re.push_back(re_value);
+						re_err.push_back(re_err_value);
+						im.push_back(im_value);
+						im_err.push_back(im_err_value);
+					}
+					else {
+						cerr << "Poorly formatted line: " << line << endl;
+					}
+				}
+				else break;
+			}
+			index++;
 		}
-		else {
-			cerr << "Poorly formatted line: " << line << endl;
+	}
+	else {
+		while (getline(input_file, line)) {
+			istringstream iss(line);
+			if (iss >> temp_value >> mod_value >> mod_err_value >> re_value >> re_err_value >> im_value >> im_err_value) {
+				temp.push_back(temp_value);
+				mod.push_back(mod_value);
+				mod_err.push_back(mod_err_value);
+				re.push_back(re_value);
+				re_err.push_back(re_err_value);
+				im.push_back(im_value);
+				im_err.push_back(im_err_value);
+			}
+			else {
+				cerr << "Poorly formatted line: " << line << endl;
+			}
 		}
 	}
 
