@@ -10,83 +10,111 @@ TITOLO PROVVISORIO: Transizioni di fase nella QCD con fermioni dinamici: studio 
    -> lagrangiana euclidea
       -> libertà asintotica a giustificare l'analisi non perturbativa
    -> simmetria chirale;
-   -> simmetria di centro;
+   -> simmetria di centro; (Ref. Tesi Leone, Gattringer – cap. 3.3)
+      [sottolineo la somiglianza del risultato sulla rottura della simmetria di centro in full QCD con la rottura della simmetria chirale]
    -> simulazioni su reticolo:
       -> implementazione: lagrangiana intera, metodi, descrizione dei singoli pezzi della lagrangiana:
-         -> lagrangiana di pura gauge;
-         -> lagrangiana fermionica;
-            -> discretizzazione semplice e fermion doubling;
-            -> fermioni di Wilson e simmetria chirale;
-            -> fermioni staggered;
-         -> metodo Monte Carlo;
-            -> limiti: es. problemi del finite size scaling; (ref. Gattringer)
-               -> a risolvere: Stout Smearing Improvement;
-            -> algoritmo Hybrid Monte Carlo (HMC);
-               -> caso di tre fermioni degeneri;
-      -> osservabili bare;
-         -> limite al continuo;
-         -> limite chirale;
-         -> limite quenched;
-         -> regolarizzazione e rinormalizzazione (nella gestione delle divergenze);
-      -> Correlatori e operatori interpolanti;
-         -> scale setting e variazione della massa del pione;
-      -> Linee a fisica costante (LCP);
-      -> Columbia plot;
-      -> transizione pseudo-critica;
-         -> condensato chirale: formula teorica;
-         -> condensato chirale: stima numerica effettiva;
-         -> gestione delle rinormalizzazioni;
-      -> transizione di deconfinamento;
-         -> traccia del loop di Polyakov in rappresentazione fondamentale: formula teorica;
-         -> traccia del loop di Polyakov in rappresentazione fondamentale: stima numerica effettiva;
-         -> ruolo delle rappresentazioni di ordine successivo;
+      -> fermioni dinamici; (fermioni di valenza e di marea)
+      -> lagrangiana di pura gauge;
+         -> lagrangiana tree-level Symanzik improved; (Ref. Tesi Leone, Gattringer – cap.2)
+      -> lagrangiana fermionica; (Ref. Tesi Leone, Gattringer – cap.2, 3)
+         -> discretizzazione naive e fermion doubling;
+            -> teorema su cose che si possono avere contemporaneamente in una teoria discretizzata fermionica;
+         -> fermioni di Wilson e simmetria chirale;
+         -> fermioni staggered;
+      -> metodo Monte Carlo;
+         -> limiti: es. problemi del finite size scaling; (ref. Gattringer)
+            -> a risolvere: procedure di smoothing, Stout Smearing Improvement;
+         -> algoritmo Hybrid Monte Carlo (HMC);
+            -> caso di tre fermioni degeneri;
+   -> osservabili bare;
+      -> limite al continuo;
+      -> limite chirale;
+      -> limite quenched;
+      -> regolarizzazione e rinormalizzazione (nella gestione delle divergenze);
+   -> Correlatori e operatori interpolanti; (cap.6 Gattringer, cap.1, 2.4, guarda come è scritto a pag. 13 (IV.b) dell’ articolo 2412.01170v1.pdf nella cartella DOTTORATO) (guarda come è scritto a pag. 12 (IV.a) dell’ articolo 2412.01170v1.pdf nella cartella DOTTORATO)
+      -> scale setting e variazione della massa del pione;
+   -> Linee a fisica costante (LCP);
+   -> Columbia plot;
+   -> transizione pseudo-critica;
+      -> condensato chirale: formula teorica;
+      -> condensato chirale: stima numerica effettiva;
+      -> gestione delle rinormalizzazioni;
+   -> transizione di deconfinamento;
+      -> traccia del loop di Polyakov in rappresentazione fondamentale: formula teorica;
+      -> traccia del loop di Polyakov in rappresentazione fondamentale: stima numerica effettiva;
+      -> ruolo delle rappresentazioni di ordine successivo;
+         -> Casimir scaling;
+   -> risultati dalla letteratura:
+      -> sulle transizioni al variare delle masse dei pioni;
+      -> sul Casimir scaling;
+   -> Conclusione e possibili sviluppi basati sui risultati di questa sezione.
 
 3. MONOPOLI MAGNETICI NELLA QCD:
-   -> gauge fixing nel continuo e nel reticolo;
+   -> simmetria di gauge; (Ref. Gattringer – cap. 2, 3)
+   -> gauge fixing nel continuo e nel reticolo; (Ref. Gattringer – cap. 3.2, sesta lezione metodi modulo 6 di Bonati) (indicazione del ruolo del gauge fixing su reticolo, trattazione riassuntiva (elenco) di varie  possibili gauge, con accenno al fatto che della maximally abelian gauge parlerò meglio in una sezione successiva)
    -> difetti topologici nella QCD: come emergono monopoli, vortici;
-   -> legame col confinamento di colore: quadro teorico alla base;
+   -> legame col problema del confinamento di colore: quadro teorico alla base;
+      -> modello di superconduttore duale: ho intenzione di dare una spiegazione matematica abbastanza elegante, seppur concisa, così da mettere bene in luce cosa succede con l’effetto Meissner, i superconduttori di tipo 2 e come ciò possa dar luce a tubi di flusso. Inoltre, vorrei evidenziare il meccanismo secondo cui, al variare della temperatura, si possa avere che i loop di corrente cromoelettrica svaniscano. Questo perché, in tal modo, riesco a dare più intuito fisico di cosa sto cercando;
+         + 
+         fase di stringy fuid e fase di quark-gluon-plasma; (guarda p.32… cerca di vedere matematica, ripassare aspetti, così da darne una discussione semi-formale seppure concisa)
    -> monopoli di Dirac;
-   -> monopoli della QCD nel continuo; 
+   -> monopoli della QCD nel continuo;
+      -> faccio riferimento alla trattazione nell’articolo “https://doi.org/10.1016/j.nuclphysbps.2016.02.035”. Infatti, intendo dare una spiegazione elegante, seppur concisa, del modello lagrangiano da cui emergono le soluzioni di monopolo, sottolineando così la loro origine fisica; 
       -> SU(2): abelian gauge;
       -> SU(N>2): maximally abelian gauge;
    -> monopoli della QCD su reticolo;
       -> come emergono in breve (senza titolo)
-      -> generalized MAG: descrizione del principio e dell'algoritmo di gauge fixing;
-      -> estrazioni delle fasi abeliane;
+      -> generalized MAG: descrizione del principio e dell'algoritmo di gauge fixing (massimizzazione dell’apposito funzionale);
+      -> estrazioni delle fasi abeliane (estrazione della diagonale dei link);
       -> algoritmo di De Grand-Toussaint;
       -> monopoli termici come permutazioni di bosoni: descrizione con matematica del path integral di cosa significa;
       -> condensazione di monopoli;
-         -> tracce sulla densità dei monopoli;
+         -> segni sulla densità dei monopoli;
             -> potenziale chimico;
-         -> tracce sulla lunghezza dei cammini;
+         -> segni sulla lunghezza dei cammini;
       -> massa dei monopoli;
-      -> interazioni fra monopoli;
+      -> interazioni fra monopoli (PER ME: posso pensare di formalizzarlo con vertici di interazioni?);
       -> risultati dalla letteratura;
-    -> vortici della QCD:
+         -> caso di pura gauge;
+         -> caso di SU(3) 2+1;
+         -> temperature di condensazione e critica al variare della massa del pione;
+         -> inquadramento del legame tra questi risultati ed il mio lavoro seguente;
+    -> vortici della QCD: (vortici di centro)
       -> risultati dalla letteratura;
+    -> Conclusione e possibili sviluppi basati sui risultati di questa sezione.
 
 4. ANALISI NUMERICA:
    -> Supercomputer per analisi; (in particolare Leonardo)
    -> OpenStaPLE: libreria per HMC;
    -> yang-mills: libreria per monopoli;
    -> LCP;
+      -> determinazione delle linee a fisica costante (con masse opportune, maggiori e vicine alla presunta transizione);
    -> transizione del primo ordine verso il limite quenched;
+      -> analisi del condensato chirale;
+      -> analisi del loop di Polyakov;
    -> analisi della condensazione dei monopoli;
       -> densità di monopoli;
+         -> totale (compreso rho/T^3);
+         -> al variare del numero di avvolgimenti;
       -> potenziale chimico;
+         -> fit del potenziale chimico in funzione della temperatura;
       -> lunghezza dei cluster;
+         -> parametro rc del cluster medio al variare della temperatura
       -> masse dei monopoli; (FORSE?)
       -> interazioni dei monopoli; (FORSE?)
+      -> confronto con la temperatura pseudo-critica e i risultati nel limite quenched;
    -> loop di Polyakov in rappresentazioni più alte; (FORSE?)
+   -> ANCORA DA DEFINIRE
 
+5. Conclusioni: COMPLETAMENTE DA DEFINIRE.
 
+6. Ringraziamenti;
 
-
-
-
-TO END: 2h: 11:38 -> …
+TO END: 2h: 11:38 -> 12:35 + 14:15 - … (15:20?) (mancano 1h 03');
 
 Guarda:
+-> precedente indice: FATTO!
 -> articolo vortici;
 -> tesi Gaetano;
 -> altri articoli SU(2) e SU(3) in ordine;
