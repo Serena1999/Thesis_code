@@ -3,21 +3,95 @@ POSSIBILE ORDINE ARGOMENTI TESI:
 TITOLO PROVVISORIO: Transizioni di fase nella QCD con fermioni dinamici: studio lungo la diagonale del Columbia plot e condensazione di monopoli termici al variare della massa del pione:
 
 1. INTRODUZIONE:
+   -> motivazioni;
+   -> obbiettivi pratici;
 
-2. STUDIO DELLE SIMMETRIE DELLA CROMODINAMICA QUANTISTICA:
+2. STUDIO DELLE TRANSIZIONI DELLA CROMODINAMICA QUANTISTICA:
    -> lagrangiana euclidea
       -> libertà asintotica a giustificare l'analisi non perturbativa
    -> simmetria chirale;
    -> simmetria di centro;
    -> simulazioni su reticolo:
-      -> implementazione;
+      -> implementazione: lagrangiana intera, metodi, descrizione dei singoli pezzi della lagrangiana:
+         -> lagrangiana di pura gauge;
+         -> lagrangiana fermionica;
+            -> discretizzazione semplice e fermion doubling;
+            -> fermioni di Wilson e simmetria chirale;
+            -> fermioni staggered;
+         -> metodo Monte Carlo;
+            -> limiti: es. problemi del finite size scaling; (ref. Gattringer)
+               -> a risolvere: Stout Smearing Improvement;
+            -> algoritmo Hybrid Monte Carlo (HMC);
+               -> caso di tre fermioni degeneri;
+      -> osservabili bare;
+         -> limite al continuo;
+         -> limite chirale;
+         -> limite quenched;
+         -> regolarizzazione e rinormalizzazione (nella gestione delle divergenze);
+      -> Correlatori e operatori interpolanti;
+         -> scale setting e variazione della massa del pione;
+      -> Linee a fisica costante (LCP);
       -> Columbia plot;
       -> transizione pseudo-critica;
+         -> condensato chirale: formula teorica;
+         -> condensato chirale: stima numerica effettiva;
+         -> gestione delle rinormalizzazioni;
       -> transizione di deconfinamento;
+         -> traccia del loop di Polyakov in rappresentazione fondamentale: formula teorica;
+         -> traccia del loop di Polyakov in rappresentazione fondamentale: stima numerica effettiva;
+         -> ruolo delle rappresentazioni di ordine successivo;
 
 3. MONOPOLI MAGNETICI NELLA QCD:
+   -> gauge fixing nel continuo e nel reticolo;
+   -> difetti topologici nella QCD: come emergono monopoli, vortici;
+   -> legame col confinamento di colore: quadro teorico alla base;
+   -> monopoli di Dirac;
+   -> monopoli della QCD nel continuo; 
+      -> SU(2): abelian gauge;
+      -> SU(N>2): maximally abelian gauge;
+   -> monopoli della QCD su reticolo;
+      -> come emergono in breve (senza titolo)
+      -> generalized MAG: descrizione del principio e dell'algoritmo di gauge fixing;
+      -> estrazioni delle fasi abeliane;
+      -> algoritmo di De Grand-Toussaint;
+      -> monopoli termici come permutazioni di bosoni: descrizione con matematica del path integral di cosa significa;
+      -> condensazione di monopoli;
+         -> tracce sulla densità dei monopoli;
+            -> potenziale chimico;
+         -> tracce sulla lunghezza dei cammini;
+      -> massa dei monopoli;
+      -> interazioni fra monopoli;
+      -> risultati dalla letteratura;
+    -> vortici della QCD:
+      -> risultati dalla letteratura;
 
-4. 
+4. ANALISI NUMERICA:
+   -> Supercomputer per analisi; (in particolare Leonardo)
+   -> OpenStaPLE: libreria per HMC;
+   -> yang-mills: libreria per monopoli;
+   -> LCP;
+   -> transizione del primo ordine verso il limite quenched;
+   -> analisi della condensazione dei monopoli;
+      -> densità di monopoli;
+      -> potenziale chimico;
+      -> lunghezza dei cluster;
+      -> masse dei monopoli; (FORSE?)
+      -> interazioni dei monopoli; (FORSE?)
+   -> loop di Polyakov in rappresentazioni più alte; (FORSE?)
 
 
-TO END
+
+
+
+
+TO END: 2h: 11:38 -> …
+
+Guarda:
+-> articolo vortici;
+-> tesi Gaetano;
+-> altri articoli SU(2) e SU(3) in ordine;
+-> libro blu fin dove sei arrivata;
+-> appunti aspetti;
+-> appunti metodi;
+-> appunti cromodinamica;
+-> etc.
