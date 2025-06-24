@@ -6,10 +6,12 @@ TITOLO PROVVISORIO: Transizioni di fase nella QCD con fermioni dinamici: studio 
    -> motivazioni;
    -> obbiettivi pratici;
 
+PAGINA CON NOTAZIONI USATE
+
 2. STUDIO DELLE TRANSIZIONI DELLA CROMODINAMICA QUANTISTICA:
    -> lagrangiana euclidea
       -> libertà asintotica a giustificare l'analisi non perturbativa
-   -> simmetria chirale;
+   -> simmetria chirale; [Gattringer: cap.8]
    -> simmetria di centro; (Ref. Tesi Leone, Gattringer – cap. 3.3)
       [sottolineo la somiglianza del risultato sulla rottura della simmetria di centro in full QCD con la rottura della simmetria chirale]
    -> simulazioni su reticolo:
@@ -112,6 +114,9 @@ TITOLO PROVVISORIO: Transizioni di fase nella QCD con fermioni dinamici: studio 
 6. Ringraziamenti;
 
 TO END: 2h: 11:38 -> 12:35 + 14:15 - … (15:20?) (mancano 1h 03');
+
+25/06: compleanno del prof, fagli auguri
+FAI UNA PROVA DI SCRIVERE PARTE DELLA TESI IN INGLESE E FAI VEDERE IL PARAGRAFO/CAPITOLO IN QUESTIONE AL PROF.
 
 Guarda:
 -> precedente indice: FATTO!
