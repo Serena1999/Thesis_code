@@ -22,6 +22,7 @@ add_executable(dependent_data_analysis_autocorrelation_calculated "dependent_dat
 add_executable(visual_autocorrelation "visual_autocorrelation.cpp")
 add_executable(fit_polyffT "fit_polyffT.cpp")
 add_executable(temperature_compute "temperature_compute.cpp")
+add_executable(analysis_rhok_vs_T "analysis_rhok_vs_T.cpp")
 
 target_link_libraries(polyff ${ROOT_LIBRARIES})
 target_link_libraries(autocorr_check ${ROOT_LIBRARIES})
@@ -34,3 +35,4 @@ target_link_libraries(susceptibility_with_errors ${ROOT_LIBRARIES})
 target_link_libraries(visual_susceptibility_with_errors ${ROOT_LIBRARIES})
 target_link_libraries(visual_autocorrelation ${ROOT_LIBRARIES})
 target_link_libraries(fit_polyffT ${ROOT_LIBRARIES})
+target_link_libraries(analysis_rhok_vs_T ${ROOT_LIBRARIES})
