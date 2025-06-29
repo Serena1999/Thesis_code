@@ -23,6 +23,7 @@ add_executable(visual_autocorrelation "visual_autocorrelation.cpp")
 add_executable(fit_polyffT "fit_polyffT.cpp")
 add_executable(temperature_compute "temperature_compute.cpp")
 add_executable(analysis_rhok_vs_T "analysis_rhok_vs_T.cpp")
+add_executable(correction_confid "correction_confid")
 
 target_link_libraries(polyff ${ROOT_LIBRARIES})
 target_link_libraries(autocorr_check ${ROOT_LIBRARIES})

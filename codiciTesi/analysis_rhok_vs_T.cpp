@@ -1,3 +1,16 @@
+/*<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+****                  analysis_rhok_vs_T.cpp:                 ****
+**** Starting from dedicated files ("corrected_mon.dat"), the ****
+**** number nk of monopoles is calculated for each number k of****
+****  windings, for each gauge configuration. Then, averaging ****
+****  over all configurations, the mean of nk (at a given k), ****
+****    the mean of the ratio between nk and n1, the ratio    ****
+****  between the means of nk and n1 are estimated. Two plots ****
+****   are returned for the last 2 quantities mentioned as a  ****
+****                      function of k.                      ****
+****                (author = Serena Bruzzesi)                ****
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
+
 //-----------------------------------------------------------------
 //HEADERS && LIBRARY:
 
@@ -5,9 +18,6 @@
 #include "../root_include.h"
 
 //TODO:
-//INSERISCI L'OPZIONE DI SALTARE LE CONFIGURAZIONI DI TERMALIZZAZIONE; -> 2*
-//INSERISCI MEDIA SU PIù CONFIGURAZIONI -> 1*
-//MODIFICA NOMI IN LATEX -> 3*
 //SALVA DATI SU FILE, COSì CHE POI FAI ANCHE LINEE A PIù T SOVRAPPOSTE -> 4*
 
 //-----------------------------------------------------------------
@@ -25,104 +35,373 @@ void plot_points(
 	double width_canvas
 );
 
+//-----------------------------------------------------------------
+//FUNCTION DECLARATIONS:
+
+void read_file_list_DIRECTORIES_THERM(//SCRIVI SOTTO COME IMPLEMENTARLA, PRENDI COME MINIMO DI TERMALIZZAZIONE IL MASSIMO FRA GLI N_SKIP, COSì SEI SICURA CHE VA BENE;
+	const string& name_file_list,
+	const int skipLines_file_list,
+	vector<string>& directories,
+	vector<int>& n_skip,
+	int step_sample_gauge,
+	int step_sample_fermion
+);
+
+//-----------------------------------------------------------------
+//MAIN:
+
 int main() {
 
-	string input_dir = "11_05_2025/build_good_015_out/";
-	string name_input_file = "mon.dat";
-	string name_image = "results/rhok_vs_rho1_mpi800_n15.png";
-
-	string title = "title";
-	string y_name = "<rho_k/rho_1>"; //MODIFICA POI 
-	double pos_y = 0.020;
-	double heigh_y = 0.45;
-	double width_canvas = 900;
-
+	string mpi = "800";
 	string line;
-	int Ns = 32;
-	int Nt = 8;
-	int Vs = Ns * Ns * Ns; //spatial volume (adimensional)
-	double discard1, discard2, discard3, discard4, discard5, discard6, discard7, discard8, wrap_value;
 
-	vector <double> n_k; //number of monopoles at given |k| wrapping
-	vector <double>  k_array;
-	vector <double> rho_k_norm; //= <rho_k/rho_1>; rho_k = n_k/(Vs*a^3)
+	string list_file = "11_05_2025/file_list_therm_extended.txt";
+	int skipLines_list_file = 1;
+	int step_sample_gauge = 1;
+	int step_sample_fermion = 10;
 
-	ifstream input_file;
-	input_file.open(input_dir + name_input_file);
-	if (!input_file) {
-		cerr << "Error opening input file." << endl;
-		return 1;
+	vector <string> directories;//LEGGILI DA FILE
+	vector <int> n_skip; //LEGGILO DA FILE;
+	string name_input_file = "corrected_mon.dat";
+	int skip_lines_input_file = 0;
+
+	vector <double> mean_rhok, mean_rhok_rho1, mean_rhok_norm;
+	/*
+	-> mean_rhok[ii] = mean of nk[ii] over configurations = <nk[ii]>
+	-> mean_rhok_rho1[ii] = <nk[ii]/nk[0]> (0 corrispondente ad 1 wrapping)
+	-> mean_rhok_norm[ii] = <nk[ii]>/<nk[0]>
+	*/
+
+	string name_image1, name_image2, name_output_file1, name_output_file2;
+
+	string title1 = "#LT #rho_{k} / #rho_{1} #GT vs Number of wrapping:";
+	string title2 = "#LT #rho_{k} #GT / #LT #rho_{1} #GT vs Number of wrapping:";
+
+	string y_name1 = "#LT #rho_{k} / #rho_{1} #GT";
+	string y_name2 = "#LT #rho_{k} #GT / #LT #rho_{1} #GT";
+
+	double pos_y1 = 0.020;
+	double pos_y2 = 0.020;
+
+	double heigh_y1 = 0.45;
+	double heigh_y2 = 0.45;
+
+	double width_canvas1 = 900;
+	double width_canvas2 = 900;
+
+	read_file_list_DIRECTORIES_THERM(
+		list_file,
+		skipLines_list_file,
+		directories,
+		n_skip,
+		step_sample_gauge,
+		step_sample_fermion
+	);
+
+	for (int ii = 0; ii < directories.size(); ++ii) {
+		ifstream input_file;
+		input_file.open(directories[ii] + name_input_file);
+		if (!input_file) {
+			cerr << "Error opening input " << ii << "-th file." << endl;
+			return 1;
+		}
+
+		//we don't consider the first skip_lines_input_file:
+		for (int jj = 0; jj < skip_lines_input_file; ++jj) {
+			if (!getline(input_file, line)) {
+				cerr << "Error: there are less than " << skip_lines_input_file << " lines in the input " << ii << "-th file." << endl;
+				return 1;
+			}
+		}
+
+		//we don't condider the first n_skip[ii] configurations:
+
+		double conf_id = -999, conf_tmp = 999;
+		bool flag_init = 0;
+
+		n_skip[ii] = 0;//MOMENTANEO
+
+		for (int jj = 0; jj < n_skip[ii]; jj++) {
+			while (conf_id != conf_tmp) {
+				if (!getline(input_file, line)) {
+					cerr << "Error: there are less than " << n_skip[ii] << " configurations in the " << ii << "-th input file. " << endl;
+					return 1;
+				}
+				istringstream iss(line);
+				if (iss >> conf_id) {
+					if (jj == 0) {
+						conf_tmp = conf_id;
+						flag_init = 1;
+					}
+				}
+			}
+		}
+
+		//for each configurazion, we compute the densities and then we do the mean:
+		double discard1, discard2, discard3, discard4, discard5, discard6, discard7, wrap_value;
+		double n_accum = 0;
+		int n_conf = 0;
+		vector <double> value_rhok, value_rhok_rho1, value_rhok_norm, k_array;
+		
+		while (getline(input_file, line)) {
+			istringstream iss(line);
+			if (iss >> conf_id >> discard1 >> discard2 >> discard3 >> discard4 >> discard5 >> discard6 >> discard7 >> wrap_value) {
+				if (!flag_init) {
+					conf_tmp = conf_id;
+					flag_init = 1;
+				}
+				if (conf_id != conf_tmp) {
+					//cout << conf_id << endl;
+					//cout << conf_id << endl;
+					//cout << discard1 << endl;
+					//cout << discard2 << endl;
+					//cout << discard3 << endl;
+					//cout << discard4 << endl;
+					//cout << discard5 << endl;
+					//cout << discard6 << endl;
+					//cout << discard7 << endl;
+					//cout << wrap_value << endl;
+					//cout << endl;
+					if ((value_rhok.empty()) || (value_rhok[0] == 0)) {
+						cout << "No monopoles with only one wrapping for conf_id = " << to_string(conf_tmp) << endl;
+						cout << "--> so we omit this configuration." << endl;
+						conf_tmp = conf_id;
+					}
+					else {
+						++n_conf;
+						for (int kk = 0; kk < value_rhok.size(); ++kk) {
+							if (value_rhok_rho1.size() <= kk) {
+								value_rhok_rho1.resize(kk + 1, 0.0);
+							}
+							value_rhok_rho1[kk] = value_rhok[kk] / (double)value_rhok[0];
+							if (kk >= mean_rhok.size()) {
+								mean_rhok.resize(kk + 1, 0.0);
+								mean_rhok_rho1.resize(kk + 1, 0.0);
+							}
+							value_rhok[kk] /= n_accum;
+							mean_rhok[kk] += value_rhok[kk];
+							value_rhok_rho1[kk] /= n_accum;
+							mean_rhok_rho1[kk] += value_rhok_rho1[kk];
+						}
+					}
+					value_rhok.clear();
+					value_rhok_rho1.clear();
+					n_accum = 0;
+					conf_tmp = conf_id;
+				}
+				if (wrap_value == 0) {
+					continue;
+				}
+				if (abs(wrap_value) > value_rhok.size()) {
+					value_rhok.resize(abs(wrap_value), 0.0);
+					value_rhok_rho1.resize(abs(wrap_value), 0.0);
+				}
+				++n_accum;
+				value_rhok[abs(wrap_value) - 1] += 1;
+			}
+			else {
+				cerr << "Skipped line (badly formatted) from" << (ii + 1) << "-th input file: " << line << endl;
+			}
+		}
+		if (conf_id == conf_tmp) {
+			if ((value_rhok.empty()) || (value_rhok[0] == 0)) {
+				cout << "No monopoles with only one wrapping for conf_id = " << to_string(conf_tmp) << endl;
+				cout << "--> so we omit this configuration." << endl;
+			}
+			else {
+				++n_conf;
+				for (int kk = 0; kk < value_rhok.size(); ++kk) {
+					value_rhok_rho1[kk] = value_rhok[kk] / (double)value_rhok[0];
+					//cout << "value_rhok_rho1.size() = " << value_rhok_rho1.size() << endl;
+					if (kk >= mean_rhok.size()) {
+						mean_rhok.resize(kk + 1, 0.0);
+						mean_rhok_rho1.resize(kk + 1, 0.0);
+					}
+					value_rhok[kk] /= n_accum;
+					mean_rhok[kk] += value_rhok[kk];
+					value_rhok_rho1[kk] /= n_accum;
+					mean_rhok_rho1[kk] += value_rhok_rho1[kk];
+				}
+			}
+			value_rhok.clear();
+			value_rhok_rho1.clear();
+			//if (ii == 12) {
+			//	cout << endl;
+			//	//cout << kk << endl;
+			//	cout << "mean_rhok.size() = " << mean_rhok.size() << endl;
+			//	cout << endl;
+			//}
+		}
+
+		input_file.close();
+
+		cout << mean_rhok.size() << endl;
+		cout << mean_rhok_rho1.size() << endl;
+		cout << n_conf << endl;
+
+		if(mean_rhok.size() <= 1){
+			cout << "No monopoles with more than 1 wrapping in " << ii << "-th iteration" << endl;
+			cout << "Not considered " << ii << "-th iteration" << endl;
+			continue;
+		}
+
+		if (mean_rhok[0] == 0) {
+			cout << "No monopoles with 1 wrapping in " << ii << "-th iteration" << endl;
+			cout << "Not considered " << ii << "-th iteration" << endl;
+			continue;
+		}
+
+		for (int kk = 0; kk < mean_rhok.size(); ++kk) {
+			mean_rhok[kk] /= n_conf;
+			mean_rhok_rho1[kk] /= n_conf;
+		}
+
+		if (mean_rhok_rho1.size() > 1) {
+			mean_rhok_rho1.erase(mean_rhok_rho1.begin()); //non ci interessa rho_1/rho_1 = 1
+		}
+		else {
+			cout << "No monopoles with more than 1 wrapping in " << ii << "-th iteration" << endl;
+			cout << "Not considered " << ii << "-th iteration" << endl;
+			continue;
+		}
+
+		for (int kk = 1; kk < mean_rhok.size(); ++kk) {
+			mean_rhok_norm.push_back(mean_rhok[kk] / mean_rhok[0]);
+			k_array.push_back(kk + 1);
+		}
+
+		//images:
+		name_image1 = "results/rhok_rho1_mpi" + mpi + "_" + to_string(ii + 1) + "thTemperature.png"; //<rho_k/rho_1>
+		name_image2 = "results/rhok_norm_mpi" + mpi + "_" + to_string(ii + 1) + "thTemperature.png"; //<rho_k>/<rho_1>
+
+		if (mean_rhok_norm.size() > 1) {
+			plot_points(
+				k_array,
+				mean_rhok_rho1,
+				name_image1,
+				title1,
+				y_name1,
+				5.0,
+				pos_y1,
+				heigh_y1,
+				width_canvas1
+			);
+
+			plot_points(
+				k_array,
+				mean_rhok_norm,
+				name_image2,
+				title2,
+				y_name2,
+				5.0,
+				pos_y2,
+				heigh_y2,
+				width_canvas2
+			);
+		}
+		else {
+			cout << "No image generated for iteration n°" << ii << endl;
+			cout << "Not enough data points to produce a plot (need at least 2)." << endl;
+		}
+
+		//output_file:
+		name_output_file1 = "results/" + mpi + "_TempN" + to_string(ii + 1) + "_mean_rhok_rho1VSk.txt";
+		name_output_file2 = "results/" + mpi + "_TempN" + to_string(ii + 1) + "_mean_rhok_mean_rho1VSk.txt";
+
+		ofstream output_file1;
+		output_file1.open(name_output_file1);
+		if (!output_file1) {
+			cerr << "Error opening first output file" << endl;
+			return 1;
+		}
+
+		ofstream output_file2;
+		output_file2.open(name_output_file2);
+		if (!output_file2) {
+			cerr << "Error opening second output file" << endl;
+			return 1;
+		}
+
+		output_file1 << "#k \t <rhok/rho1>:" << endl;
+		output_file2 << "#k \t <rhok>/<rho1>:" << endl;
+
+		output_file1 << setprecision(numeric_limits<double>::max_digits10);
+		output_file2 << setprecision(numeric_limits<double>::max_digits10);
+
+		for (int kk = 0; kk < k_array.size(); ++kk) {
+			output_file1 << k_array[kk] << "\t" << mean_rhok_rho1[kk] << endl;
+			output_file2 << k_array[kk] << "\t" << mean_rhok_norm[kk] << endl;
+		}
+
+		output_file1.close();
+		output_file2.close();
+
+		mean_rhok.clear();
+		mean_rhok_norm.clear();
+		mean_rhok_rho1.clear();
+		k_array.clear();
 	}
-	
-	//reading monopoles vs |k|
 
-	while (getline(input_file, line)) {
+	return 0;
+}
+
+//-----------------------------------------------------------------
+//FUNCTION DEFINITIONS:
+
+void read_file_list_DIRECTORIES_THERM(
+	const string& name_file_list,
+	const int skipLines_file_list,
+	vector<string>& directories,
+	vector<int>& n_skip,
+	int step_sample_gauge,
+	int step_sample_fermion
+) {
+	string line;
+	ifstream file_list;
+	file_list.open(name_file_list);
+	if (!file_list) {
+		cout << "Error opening file list" << endl;
+		return;
+	}
+
+	for (int i = 0; i < skipLines_file_list; i++) {
+		if (!getline(file_list, line)) {
+			cerr << "Error: there are less than " << skipLines_file_list << " lines in the file list." << endl;
+			return;
+		}
+	}
+
+	while (getline(file_list, line)) {
+		if (line.empty()) {
+			cerr << "Skipped blank/whitespace-only line in file: " << name_file_list << endl;
+			continue;
+		}
 		istringstream iss(line);
-		if (iss >> discard1 >> discard2 >> discard3 >> discard4 >> discard5 >> discard6 >> discard7 >> discard8 >> wrap_value) {
-			if (wrap_value == 0) {
-				continue;
+		string dir, gauge, ferm;
+		int max_n_therm;
+		vector <int> n_therm(4, 0);
+		if (iss >> dir >> gauge >> n_therm[0] >> n_therm[1] >> ferm >> n_therm[2] >> n_therm[3]) {
+			directories.push_back(dir);
+			n_therm[0] /= step_sample_gauge;
+			n_therm[1] /= step_sample_gauge;
+			n_therm[2] /= step_sample_fermion;
+			n_therm[3] /= step_sample_fermion;
+			max_n_therm = n_therm[0];
+			for (int ii = 1; ii < n_therm.size(); ++ii) {
+				if (max_n_therm < n_therm[ii]) {
+					max_n_therm = n_therm[ii];
+				}
 			}
-			while(abs(wrap_value) > n_k.size()) {
-				n_k.push_back(0);
-			}
-			n_k[abs(wrap_value) - 1] += 1;
+			n_skip.push_back(max_n_therm);
 		}
 		else {
 			cerr << "Poorly formatted line: " << line << endl;
 		}
 	}
 
-	input_file.close();
-
-	if (n_k.size() > 1) {
-		for (int ii = 1; ii < n_k.size(); ii++) {//vogliamo da rho_2/rho_1 in su con numeri di avvolgimenti
-			if (n_k[0] == 0) {
-				cout << "No monopoles with 1 wrapping: you need more statistics";
-				return 1;
-			}
-			rho_k_norm.push_back((double)n_k[ii] / (double)n_k[0]);
-			k_array.push_back(ii + 1);
-		}
-	}
-	else {
-		cout << "No monopoles exept with n_wrap = 1" << endl;
-		return 1;
-	}
-	ofstream minimal_output;
-	minimal_output.open("results/minimal_output.txt");
-	if (!minimal_output) {
-		cerr << "Error opening minimal output file." << endl;
-		return 1;
-	}
-	
-	if (rho_k_norm.size() == 1) {
-		cout << endl;
-		cout << "File: " << (input_dir + name_input_file) << endl;
-		cout << "We have only n_wrap in 1 and 2" << endl;
-		cout << "rho_2/rho_1 = " << rho_k_norm[0];
-		minimal_output << "File: " << (input_dir + name_input_file) << endl;
-		minimal_output << "We have only n_wrap in 1 and 2" << endl;
-		minimal_output << "rho_2/rho_1 = " << rho_k_norm[0];
-		return 1;
-	}
-
-	minimal_output.close();
-
-
-	plot_points(
-		k_array,
-		rho_k_norm,
-		name_image,
-		title,
-		y_name,
-		5.0,
-		pos_y,
-		heigh_y,
-		width_canvas
-	);
-
-	return 0;
+	file_list.close();
 }
+
 
 //-----------------------------------------------------------------
 //ROOT MACRO TO GRAPH:
