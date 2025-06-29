@@ -18,7 +18,13 @@
 #include "../root_include.h"
 
 //TODO:
-//SALVA DATI SU FILE, COSì CHE POI FAI ANCHE LINEE A PIù T SOVRAPPOSTE -> 4*
+// MANDA DI NUOVO UNO DEI FILE USCITI STRANI DI MON, SALVANDO IL MON VECCHIO IN QUALCHE MODO, PER VEDERE SE CAMBIA QUALCOSA: 
+// ---> FORSE CE Dà DIVIDERE QUESTA FASE IN PIù PARTI, VERIFICA CIò.
+//DEVI VEDERE SE IL BLOCKING AFFLIGGE LE MISURE SUI MONOPOLI... BASTA FARE AUTOCORR_CHECK APPOSITO PER IL SOLO NK: 
+// --> fai un file che ti calcolo nk vs k + uno successivo che fa come autocorr_check; 
+//PER L'ULTIMO ARRAY, IL CALCOLO DELL'ERRORE NON è BANALE... ESSENDO <>/<>, CREDO DI DOVER RICORRERE AL BOOTSTRAP. TODO
+//POI FATTI RESTITUIRE ANCHE GLI ERRORI SUI FILE DI OUTPUT;
+//POI FAI ANCHE LINEE A PIù T SOVRAPPOSTE, CON FIT -> 4*
 
 //-----------------------------------------------------------------
 //ROOT MACRO TO DO FIT AND GRAPH:
@@ -71,6 +77,8 @@ int main() {
 	-> mean_rhok_rho1[ii] = <nk[ii]/nk[0]> (0 corrispondente ad 1 wrapping)
 	-> mean_rhok_norm[ii] = <nk[ii]>/<nk[0]>
 	*/
+	vector <double> mean0_2, mean1_2, mean2_2; //mean of squares
+	vector <double> err_rhok, err_rhok_rho1, err_rhok_norm; //standard deviation from the mean
 
 	string name_image1, name_image2, name_output_file1, name_output_file2;
 
@@ -142,7 +150,7 @@ int main() {
 		double n_accum = 0;
 		int n_conf = 0;
 		vector <double> value_rhok, value_rhok_rho1, value_rhok_norm, k_array;
-		
+
 		while (getline(input_file, line)) {
 			istringstream iss(line);
 			if (iss >> conf_id >> discard1 >> discard2 >> discard3 >> discard4 >> discard5 >> discard6 >> discard7 >> wrap_value) {
@@ -176,12 +184,16 @@ int main() {
 							value_rhok_rho1[kk] = value_rhok[kk] / (double)value_rhok[0];
 							if (kk >= mean_rhok.size()) {
 								mean_rhok.resize(kk + 1, 0.0);
+								mean0_2.resize(kk + 1, 0.0);
 								mean_rhok_rho1.resize(kk + 1, 0.0);
+								mean1_2.resize(kk + 1, 0.0);
 							}
 							value_rhok[kk] /= n_accum;
 							mean_rhok[kk] += value_rhok[kk];
+							mean0_2[kk] += (value_rhok[kk] * value_rhok[kk]);
 							value_rhok_rho1[kk] /= n_accum;
 							mean_rhok_rho1[kk] += value_rhok_rho1[kk];
+							mean1_2[kk] += (value_rhok_rho1[kk] * value_rhok_rho1[kk]);
 						}
 					}
 					value_rhok.clear();
@@ -215,12 +227,16 @@ int main() {
 					//cout << "value_rhok_rho1.size() = " << value_rhok_rho1.size() << endl;
 					if (kk >= mean_rhok.size()) {
 						mean_rhok.resize(kk + 1, 0.0);
+						mean0_2.resize(kk + 1, 0.0);
 						mean_rhok_rho1.resize(kk + 1, 0.0);
+						mean1_2.resize(kk + 1, 0.0);
 					}
 					value_rhok[kk] /= n_accum;
 					mean_rhok[kk] += value_rhok[kk];
+					mean0_2[kk] += (value_rhok[kk] * value_rhok[kk]);
 					value_rhok_rho1[kk] /= n_accum;
 					mean_rhok_rho1[kk] += value_rhok_rho1[kk];
+					mean1_2[kk] += (value_rhok_rho1[kk] * value_rhok_rho1[kk]);
 				}
 			}
 			value_rhok.clear();
@@ -254,6 +270,14 @@ int main() {
 		for (int kk = 0; kk < mean_rhok.size(); ++kk) {
 			mean_rhok[kk] /= n_conf;
 			mean_rhok_rho1[kk] /= n_conf;
+			mean0_2[kk] /= n_conf;
+			mean1_2[kk] /= n_conf;
+
+			err_rhok.push_back(mean0_2[kk] - mean_rhok[kk] * mean_rhok[kk]);
+			err_rhok_rho1.push_back(mean1_2[kk] - mean_rhok_rho1[kk] * mean_rhok_rho1[kk]);
+
+			err_rhok[kk] /= (n_conf - 1);
+			err_rhok_rho1[kk] /= (n_conf - 1);
 		}
 
 		if (mean_rhok_rho1.size() > 1) {
@@ -267,6 +291,7 @@ int main() {
 
 		for (int kk = 1; kk < mean_rhok.size(); ++kk) {
 			mean_rhok_norm.push_back(mean_rhok[kk] / mean_rhok[0]);
+			//PER QUESTO CASO, IL CALCOLO DELL'ERRORE NON è BANALE... ESSENDO <>/<>, CREDO DI DOVER RICORRERE AL BOOTSTRAP. TODO
 			k_array.push_back(kk + 1);
 		}
 
