@@ -1254,6 +1254,62 @@ template <class T> int blocking_more_faster(T* mean, T* var_m, vector<T>& draws,
 	return 1;
 }
 
+//Function to compute sample mean and sample variance of an observable, described by a function of two real parameters, 
+// implementing Bootstrap technique, without blocking (we are assuming to have non-autocorrelated draws or to have done
+// the blocking resample in a previous step;
+// Using the same implementation of blocking_more_faster.
+template <class S, class D, class F, class T> bool bootstrap_2in(int n_steps, S sampler, D dist_index, F func, vector <T>& x1, vector <T>& x2, T* mean_f, T* var_f) {
+	//0 if success, 1 if failure
+	/*
+		-> n_steps = number of iteration of bootstrap procedure;
+		-> dist_index = dist defined as std::uniform_int_distribution<> dist_int(0, x1.size() - 1), useful to choose randomly the draws in our sample;
+		-> func = function that defines the observable we want to study. It accepts 2 real parameters: they are sampled from x1 and x2 passed into the
+				  function and ordered in f exactly as they are ordered in this call. BE CAREFUL NOT TO SWAP THEIR ORDER.
+		-> x1 = vector containing the samples of the first parameter of f;
+		-> x2 = vector containing the samples of the first parameter of f;
+		-> mean_f = it will contain the sample mean of f;
+		-> var_f = it will contain the sample variance of f (BE CAREFUL: IT IS NOT THE VARIANCE OF THE MEAN: IN THIS CONTEXT, THE SAMPLE ONE SHOULD BE USED:
+				   in fact, the standard deviation of the mean decreases as the number of repetitions increases, but here the only thing I'm interested in
+				   seeing is how much f fluctuates, I don't have to decrease the error)
+	*/
+
+	if (x1.size() != x2.size() || x1.empty()) {
+		cerr << "Error: vectors x1 and x2 must have the same non-zero size." << endl;
+		return 1;
+	}
+
+	int index, n_sample = x1.size();
+	T mean_x1, mean_x2, mean_f2 = 0, value;
+
+	(*mean_f) = 0;
+	(*var_f) = 0;
+
+	for (int ii = 0; ii < n_steps; ++ii) {
+
+		mean_x1 = 0;
+		mean_x2 = 0;
+
+		for (int jj = 0; jj < n_sample; ++jj) {
+			index = dist_index(sampler.rng);
+			mean_x1 += x1[index];
+			mean_x2 += x2[index];
+		}
+		mean_x1 /= (double)n_sample;
+		mean_x2 /= (double)n_sample;
+
+		value = func(mean_x1, mean_x2);
+		(*mean_f) += value;
+		mean_f2 += (value * value);
+	}
+
+	(*mean_f) /= (double)n_steps;
+	mean_f2 /= (double)n_steps;
+	(*var_f) = mean_f2 - (*mean_f) * (*mean_f);
+	(*var_f) *= (double)n_steps;
+	(*var_f) /= (double)(n_steps - 1);
+
+	return 0;
+}
 
 //-----------------------------------------------------------------
 //I/O FUNCTIONS:

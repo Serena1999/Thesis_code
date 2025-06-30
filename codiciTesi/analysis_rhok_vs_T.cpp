@@ -33,9 +33,10 @@
 //-----------------------------------------------------------------
 //ROOT MACRO TO DO FIT AND GRAPH:
 
-void plot_points(
+void plot_points_errors(
 	vector<double>& x,
 	vector<double>& y,
+	vector<double>& y_err,
 	string name_image,
 	string title,
 	string y_name,
@@ -46,7 +47,7 @@ void plot_points(
 );
 
 //-----------------------------------------------------------------
-//FUNCTION DECLARATIONS:
+//FUNCTION DECLARATIONS AND DEFINITIONS:
 
 void read_file_list_DIRECTORIES_THERM(//SCRIVI SOTTO COME IMPLEMENTARLA, PRENDI COME MINIMO DI TERMALIZZAZIONE IL MASSIMO FRA GLI N_SKIP, COSì SEI SICURA CHE VA BENE;
 	const string& name_file_list,
@@ -56,6 +57,10 @@ void read_file_list_DIRECTORIES_THERM(//SCRIVI SOTTO COME IMPLEMENTARLA, PRENDI 
 	int step_sample_gauge,
 	int step_sample_fermion
 );
+
+double f(double rho_k, double rho_1) {
+	return rho_k / rho_1;
+}
 
 //-----------------------------------------------------------------
 //MAIN:
@@ -75,6 +80,9 @@ int main() {
 	string name_input_file = "corrected_mon.dat";
 	int skip_lines_input_file = 0;
 
+	int n_boot_steps = 100; //for estimate errors of secondary observables with Bootstrap.
+	int seed = 1; //for estimate errors of secondary observables with Bootstrap.
+
 	vector <double> mean_rhok, mean_rhok_rho1, mean_rhok_norm;
 	/*
 	-> mean_rhok[ii] = mean of nk[ii] over configurations = <nk[ii]>
@@ -91,6 +99,9 @@ int main() {
 
 	string y_name1 = "#LT #rho_{k} / #rho_{1} #GT";
 	string y_name2 = "#LT #rho_{k} #GT / #LT #rho_{1} #GT";
+
+	double pos_title1 = 0.5;
+	double pos_title2 = 0.5;
 
 	double pos_y1 = 0.020;
 	double pos_y2 = 0.020;
@@ -109,6 +120,9 @@ int main() {
 		step_sample_gauge,
 		step_sample_fermion
 	);
+
+	sample_gen sampler;
+	sampler.init(seed);
 
 	for (int ii = 0; ii < directories.size(); ++ii) {
 		ifstream input_file;
@@ -154,6 +168,7 @@ int main() {
 		double n_accum = 0;
 		int n_conf = 0;
 		vector <double> value_rhok, value_rhok_rho1, value_rhok_norm, k_array;
+		vector <vector<double>> matrix_value_rhok;
 
 		while (getline(input_file, line)) {
 			istringstream iss(line);
@@ -192,6 +207,10 @@ int main() {
 								mean_rhok_rho1.resize(kk + 1, 0.0);
 								mean1_2.resize(kk + 1, 0.0);
 							}
+							if (kk >= matrix_value_rhok.size()) {
+								matrix_value_rhok.resize(kk + 1, vector<double>());
+							}
+							matrix_value_rhok[kk].push_back(value_rhok[kk]);
 							value_rhok[kk] /= n_accum;
 							mean_rhok[kk] += value_rhok[kk];
 							mean0_2[kk] += (value_rhok[kk] * value_rhok[kk]);
@@ -235,6 +254,10 @@ int main() {
 						mean_rhok_rho1.resize(kk + 1, 0.0);
 						mean1_2.resize(kk + 1, 0.0);
 					}
+					if (kk >= matrix_value_rhok.size()) {
+						matrix_value_rhok.resize(kk + 1, vector<double>());
+					}
+					matrix_value_rhok[kk].push_back(value_rhok[kk]);
 					value_rhok[kk] /= n_accum;
 					mean_rhok[kk] += value_rhok[kk];
 					mean0_2[kk] += (value_rhok[kk] * value_rhok[kk]);
@@ -282,10 +305,19 @@ int main() {
 
 			err_rhok[kk] /= (n_conf - 1);
 			err_rhok_rho1[kk] /= (n_conf - 1);
+
+			if (err_rhok_rho1[kk] < 0) {
+				cout << "err_rhok_rho1[" << to_string(kk) << "] < 0" << endl;
+				err_rhok_rho1[kk] = 0;
+			}
+			else {
+				err_rhok_rho1[kk] = sqrt(err_rhok_rho1[kk]);
+			}
 		}
 
 		if (mean_rhok_rho1.size() > 1) {
 			mean_rhok_rho1.erase(mean_rhok_rho1.begin()); //non ci interessa rho_1/rho_1 = 1
+			err_rhok_rho1.erase(err_rhok_rho1.begin());
 		}
 		else {
 			cout << "No monopoles with more than 1 wrapping in " << ii << "-th iteration" << endl;
@@ -293,10 +325,54 @@ int main() {
 			continue;
 		}
 
+		int n_not_considered = 0;
+
 		for (int kk = 1; kk < mean_rhok.size(); ++kk) {
-			mean_rhok_norm.push_back(mean_rhok[kk] / mean_rhok[0]);
-			//PER QUESTO CASO, IL CALCOLO DELL'ERRORE NON è BANALE... ESSENDO <>/<>, CREDO DI DOVER RICORRERE AL BOOTSTRAP. TODO
+
+			if (matrix_value_rhok[kk].empty() || matrix_value_rhok[0].empty()) {
+				cerr << "Warning: empty data for Bootstrap at k=" << kk << endl;
+				++n_not_considered;
+				continue;
+			}
+
+			vector <double> x1_vec, x2_vec;
+
+			for (int jj = 0; jj < min(matrix_value_rhok[kk].size(), matrix_value_rhok[0].size()); ++jj) {
+				if (matrix_value_rhok[0][jj] != 0) {
+					x1_vec.push_back(matrix_value_rhok[kk][jj]);
+					x2_vec.push_back(matrix_value_rhok[0][jj]);
+				}
+				else {
+					cout << "Omitted a zero rho_1 due to division issue" << endl;
+				}
+			}
+
+			mean_rhok_norm.push_back(0);
+			err_rhok_norm.push_back(0);
+			uniform_int_distribution<> dist_int(0, x1_vec.size() - 1);
+
+			if (bootstrap_2in(n_boot_steps, sampler, dist_int, f, x1_vec, x2_vec, &mean_rhok_norm[kk - 1 - n_not_considered], &err_rhok_norm[kk - 1 - n_not_considered]))
+			{
+				cout << "Error in Bootstrap for (ii, kk) = (" << to_string(ii) << ", " << to_string(kk) << endl;
+				return 1;
+			}
+
+			if (isnan(err_rhok_norm[kk - 1 - n_not_considered])) {
+				cout << "Encontered NaN in Bootstrap" << endl;
+				err_rhok_norm.resize(kk - 1 - n_not_considered, 0.0);;
+				break;
+			}
+			else if (err_rhok_norm[kk - 1 - n_not_considered] >= 0) {
+				err_rhok_norm[kk - 1 - n_not_considered] = sqrt(err_rhok_norm[kk - 1 - n_not_considered]);
+			}
+			else {
+				cout << "Encontered negative value in Bootstrap" << endl;
+				err_rhok_norm.resize(kk - 1 - n_not_considered, 0.0);;
+				break;
+			}
 			k_array.push_back(kk + 1);
+			x1_vec.clear();
+			x2_vec.clear();
 		}
 
 		//images:
@@ -304,25 +380,28 @@ int main() {
 		name_image2 = "results/rhok_norm_mpi" + mpi + "_" + to_string(ii + 1) + "thTemperature.png"; //<rho_k>/<rho_1>
 
 		if (mean_rhok_norm.size() > 1) {
-			plot_points(
+			
+			plot_points_errors(
 				k_array,
 				mean_rhok_rho1,
+				err_rhok_rho1,
 				name_image1,
 				title1,
 				y_name1,
-				5.0,
+				pos_title1,
 				pos_y1,
 				heigh_y1,
 				width_canvas1
 			);
-
-			plot_points(
+			
+			plot_points_errors(
 				k_array,
 				mean_rhok_norm,
+				err_rhok_norm,
 				name_image2,
 				title2,
 				y_name2,
-				5.0,
+				pos_title2,
 				pos_y2,
 				heigh_y2,
 				width_canvas2
@@ -351,15 +430,15 @@ int main() {
 			return 1;
 		}
 
-		output_file1 << "#k \t <rhok/rho1>:" << endl;
-		output_file2 << "#k \t <rhok>/<rho1>:" << endl;
+		output_file1 << "#k \t <rhok/rho1> \t err(rhok/rho1):" << endl;
+		output_file2 << "#k \t <rhok>/<rho1> \t err(<rhok>/<rho1>):" << endl;
 
 		output_file1 << setprecision(numeric_limits<double>::max_digits10);
 		output_file2 << setprecision(numeric_limits<double>::max_digits10);
 
 		for (int kk = 0; kk < k_array.size(); ++kk) {
-			output_file1 << k_array[kk] << "\t" << mean_rhok_rho1[kk] << endl;
-			output_file2 << k_array[kk] << "\t" << mean_rhok_norm[kk] << endl;
+			output_file1 << k_array[kk] << "\t" << mean_rhok_rho1[kk] << "\t" << err_rhok_rho1[kk] << endl;
+			output_file2 << k_array[kk] << "\t" << mean_rhok_norm[kk] << "\t" << err_rhok_norm[kk] << endl;
 		}
 
 		output_file1.close();
@@ -369,6 +448,9 @@ int main() {
 		mean_rhok_norm.clear();
 		mean_rhok_rho1.clear();
 		k_array.clear();
+		err_rhok.clear();
+		err_rhok_rho1.clear();
+		err_rhok_norm.clear();
 	}
 
 	return 0;
@@ -435,9 +517,10 @@ void read_file_list_DIRECTORIES_THERM(
 //-----------------------------------------------------------------
 //ROOT MACRO TO GRAPH:
 
-void plot_points(
+void plot_points_errors(
 	vector<double>& x,
 	vector<double>& y,
+	vector<double>& y_err,
 	string name_image,
 	string title,
 	string y_name,
@@ -447,7 +530,7 @@ void plot_points(
 	double width_canvas
 ) {
 
-	if (x.size() != y.size()) {
+	if (x.size() != y.size() || y.size() != y_err.size()) {
 		cerr << "Error: mismatched vector sizes in plot_points_errors()." << endl;
 		return;
 	}
@@ -457,7 +540,7 @@ void plot_points(
 	canvas->SetGrid();//to set grid
 
 	// 1. Graph with only error bars:
-	TGraph* g = new TGraph(x.size(), x.data(), y.data());
+	TGraphErrors* g_errors = new TGraphErrors(x.size(), x.data(), y.data(), nullptr, y_err.data());
 
 	//Using std::max_element: (useful to create my histogram object)
 	//	-> std::max_element takes two iterators that define the range of the array to operate on. 
@@ -465,16 +548,17 @@ void plot_points(
 	//The usage of std::min_element is analogous but with for minimum element.
 	auto min_x = *min_element(x.begin(), x.end());
 	auto max_x = *max_element(x.begin(), x.end());
-	auto min_y = *min_element(y.begin(), y.end());
-	auto max_y = *max_element(y.begin(), y.end());
+	auto min_y = *min_element(y.begin(), y.end()) - *max_element(y_err.begin(), y_err.end());
+	auto max_y = *max_element(y.begin(), y.end()) + *max_element(y_err.begin(), y_err.end());
 
-	g->SetLineColor(kBlack);//color of error bars
-	g->SetMarkerColor(kBlack);
-	g->SetMarkerStyle(20);
-	g->SetTitle("");
-	g->GetXaxis()->SetLimits(min_x, max_x);
-	g->GetYaxis()->SetRangeUser(min_y - 0.01 * fabs(min_y), max_y + 0.01 * fabs(max_y));
-	g->Draw("AP");
+	g_errors->SetLineColor(kBlack);//color of error bars
+	g_errors->SetMarkerColor(kBlack);
+	g_errors->SetMarkerStyle(20);
+	g_errors->SetTitle("");
+	g_errors->GetXaxis()->SetLimits(0, max_x + 1);
+	//g_errors->GetYaxis()->SetRangeUser(min_y - 0.01 * fabs(min_y), max_y + 0.01 * fabs(max_y));
+	g_errors->GetYaxis()->SetRangeUser(0, max_y + 0.01 * fabs(max_y));
+	g_errors->Draw("AP");
 
 	// 2. Graph with only the line joining the points:
 	TGraph* g_line = new TGraph(x.size(), x.data(), y.data());
@@ -490,7 +574,7 @@ void plot_points(
 	latex.SetTextSize(0.05); //changes text size for title
 	latex.DrawLatex(pos_title, 0.94, title.c_str());
 	latex.SetTextSize(0.04); //changes text size for axis labels
-	latex.DrawLatex(0.45, 0.03, "k");
+	latex.DrawLatex(0.45, 0.03, "T[MeV]");
 	latex.SetTextAngle(90);
 	latex.DrawLatex(pos_y, heigh_y, y_name.c_str());
 
@@ -503,6 +587,6 @@ void plot_points(
 
 	//DELETE:
 	delete g_line;
-	delete g;
+	delete g_errors;
 	delete canvas;
 }
