@@ -1,3 +1,14 @@
+/*<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+****                analysis_rhok_vs_T_fit.cpp:               ****
+****Best fit of output .txt results of analysis_rhok_vs_T.cpp.****
+****                (author = Serena Bruzzesi)                ****
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
+
+//GLI ERRORI NULLI MI DANNO PROBLEMI DI CHI2... 
+// NON SONO NORMALI, PENSO CHE RISOLVANO QUANDO USERò I DATI GIUSTI.
+// ALTRIMENTI VA COMUNQUE MESSO A MANO UN VALORE MINIMO PER L'ERRORE.
+// PENSAVO UNA COSA DEL TIPO: min(err != 0)/100.0;
+
 //-----------------------------------------------------------------
 //HEADERS && LIBRARY:
 
@@ -10,7 +21,7 @@
  -> 1 for rho_k/rho_1 = exp(-par[0]*(x-1))/pow(x, 2.5)
  -> 2 for rho_k/rho_1 = x^(1-par[0])
 */
-const bool bool_choose_at_eye = 0; //0 if you want an automatic set of parameters, 1 if you want to impose them by hand;
+const bool bool_choose_at_eye = 1; //0 if you want an automatic set of parameters, 1 if you want to impose them by hand;
 // -> if 1, modify the corrisponding if condition in par_estimate function to choose parameters;
 
 
@@ -38,11 +49,13 @@ const bool bool_choose_at_eye = 0; //0 if you want an automatic set of parameter
 		p[0] = 1;
 		p[1] = 1;
 
-		if (bool_choose_at_eye || (x.size() < n_par_fit)) {//TO CHANGE THE FOLLOWING FOR "CHOOSE BY EYE" SETTING
+		if (bool_choose_at_eye || (x.size() < n_par_fit) || (x.size() <= 3)) {//TO CHANGE THE FOLLOWING FOR "CHOOSE BY EYE" SETTING
 			if (x.size() < n_par_fit) {
 				cerr << "Not enough points for estimate." << endl;
 				return 1;
 			}
+			cout << "Parameters used for fit: p0 = " << p[0]
+				<< ", p1 = " << p[1] << endl;
 			return 0;
 		}
 
@@ -101,6 +114,7 @@ const bool bool_choose_at_eye = 0; //0 if you want an automatic set of parameter
 				cerr << "Not enough points for estimate." << endl;
 				return 1;
 			}
+			cout << "Parameters used for fit: p0 = " << p[0] << endl;
 			return 0;
 		}
 	
@@ -148,6 +162,7 @@ const bool bool_choose_at_eye = 0; //0 if you want an automatic set of parameter
 				cerr << "Not enough points for estimate." << endl;
 				return 1;
 			}
+			cout << "Parameters used for fit: p0 = " << p[0] << endl;
 			return 0;
 		}
 	
@@ -209,23 +224,199 @@ void read_name_files(
 //MAIN:
 int main() {
 
-	string directory = "11_05_2025/";
+	string directory = "11_05_2025/rhok_vs_k/";
 	string name_file_list = "file_list.txt";
 	int skiplines_input_file = 1;
 
 	vector <string> files;
 	read_name_files(files, directory + name_file_list);
 
-	vector <double> k, nk;
+	vector <string> y_name = {//BE CAREFUL TO CHOOSE WELL;
+		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
+		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
+		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
+		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
+		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
+		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
+		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
+		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
+		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
+		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
+		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
+		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
+		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
+		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
+		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
+		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
+		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
+		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
+		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
+		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
+		"#LT #rho_{k} / #rho_{1} #GT",
+		"#LT #rho_{k} / #rho_{1} #GT",
+		"#LT #rho_{k} / #rho_{1} #GT",
+		"#LT #rho_{k} / #rho_{1} #GT",
+		"#LT #rho_{k} / #rho_{1} #GT",
+		"#LT #rho_{k} / #rho_{1} #GT",
+		"#LT #rho_{k} / #rho_{1} #GT",
+		"#LT #rho_{k} / #rho_{1} #GT",
+		"#LT #rho_{k} / #rho_{1} #GT",
+		"#LT #rho_{k} / #rho_{1} #GT",
+		"#LT #rho_{k} / #rho_{1} #GT",
+		"#LT #rho_{k} / #rho_{1} #GT",
+		"#LT #rho_{k} / #rho_{1} #GT",
+		"#LT #rho_{k} / #rho_{1} #GT",
+		"#LT #rho_{k} / #rho_{1} #GT",
+		"#LT #rho_{k} / #rho_{1} #GT",
+		"#LT #rho_{k} / #rho_{1} #GT",
+		"#LT #rho_{k} / #rho_{1} #GT",
+		"#LT #rho_{k} / #rho_{1} #GT",
+		"#LT #rho_{k} / #rho_{1} #GT"
+	};
+
+	vector <double> pos_title = {//BE CAREFUL TO CHOOSE WELL;
+		0.5,
+		0.5,
+		0.5,
+		0.5,
+		0.5,
+		0.5,
+		0.5,
+		0.5,
+		0.5,
+		0.5,
+		0.5,
+		0.5,
+		0.5,
+		0.5,
+		0.5,
+		0.5,
+		0.5,
+		0.5,
+		0.5,
+		0.5,
+		0.5,
+		0.5,
+		0.5,
+		0.5,
+		0.5,
+		0.5,
+		0.5,
+		0.5,
+		0.5,
+		0.5,
+		0.5,
+		0.5,
+		0.5,
+		0.5,
+		0.5,
+		0.5,
+		0.5,
+		0.5,
+		0.5,
+		0.5
+	};
+
+	vector <double> pos_y = {//BE CAREFUL TO CHOOSE WELL;
+		0.020,
+		0.020,
+		0.020,
+		0.020,
+		0.020,
+		0.020,
+		0.020,
+		0.020,
+		0.020,
+		0.020,
+		0.020,
+		0.020,
+		0.020,
+		0.020,
+		0.020,
+		0.020,
+		0.020,
+		0.020,
+		0.020,
+		0.020,
+		0.020,
+		0.020,
+		0.020,
+		0.020,
+		0.020,
+		0.020,
+		0.020,
+		0.020,
+		0.020,
+		0.020,
+		0.020,
+		0.020,
+		0.020,
+		0.020,
+		0.020,
+		0.020,
+		0.020,
+		0.020,
+		0.020,
+		0.020
+	};
+
+	vector <double> heigh_y = {//BE CAREFUL TO CHOOSE WELL;
+		0.45,
+		0.45,
+		0.45,
+		0.45,
+		0.45,
+		0.45,
+		0.45,
+		0.45,
+		0.45,
+		0.45,
+		0.45,
+		0.45,
+		0.45,
+		0.45,
+		0.45,
+		0.45,
+		0.45,
+		0.45,
+		0.45,
+		0.45,
+		0.45,
+		0.45,
+		0.45,
+		0.45,
+		0.45,
+		0.45,
+		0.45,
+		0.45,
+		0.45,
+		0.45,
+		0.45,
+		0.45,
+		0.45,
+		0.45,
+		0.45,
+		0.45,
+		0.45,
+		0.45,
+		0.45,
+		0.45
+	};
+
 	string line;
+	string name_image, base_name, title;
+	size_t pos;
 
 	for (int ii = 0; ii < files.size(); ++ii) {
+		
+		vector <double> k, nk, err_nk;
 
 		ifstream input_file;
 		input_file.open(directory + files[ii]);
 		if (!input_file) {
-			cerr << "Error opening in" << ii <<"-th input file." << endl;
-			return;
+			cerr << directory + files[ii] << endl;
+			cerr << "Error opening " << ii <<"-th input file." << endl;
+			return 1;
 		}
 
 		for (int jj = 0; jj < skiplines_input_file; ++jj) {
@@ -241,35 +432,49 @@ int main() {
 				continue;
 			}
 			istringstream iss(line);
-			double k_value, nk_value;
-			if (iss >> k_value >> nk_value) {
+			double k_value, nk_value, err_nk_value;
+			if (iss >> k_value >> nk_value >> err_nk_value) {
 				k.push_back(k_value);
 				nk.push_back(nk_value);
+				err_nk.push_back(err_nk_value);
 			}
-		else {
-			cerr << "Poorly formatted line: " << line << endl;
+			else {
+				cerr << "Poorly formatted line: " << line << endl;
+			}
 		}
 
-		fit_plot_points_errors(
-				k,
-				nk,//DOVEVO CALCOLARE ANCHE ERRORE... TORNO A PRIMA
-				const vector<double>&y_err,
-				const string name_image,
-				const string title,
-				const string y_name,
-				const double pos_title,
-				const double pos_y,
-				const double heigh_y,
-				const int n_par_fit
-			);
-
-
-
-
-		}
 		input_file.close();
-	}
 
+		if (nk.empty() || nk.size() <= n_par_fit) {
+			cout << "No sufficient points to fit for " << files[ii] << endl;
+		}
+		else {
+			pos = files[ii].find_last_of(".");
+			if (pos != std::string::npos) {
+				base_name = files[ii].substr(0, pos); //I remove extension using substr
+			}
+
+			name_image = "results/FIT_function_" + to_string(CHOOSE_FIT_FUNCTION) + "_" + base_name + ".png"; //<rho_k/rho_1>
+			title = "Fit result:";
+
+			fit_plot_points_errors(
+				k,
+				nk,
+				err_nk,
+				name_image,
+				title,
+				y_name[ii],
+				pos_title[ii],
+				pos_y[ii],
+				heigh_y[ii],
+				n_par_fit
+			);
+		}
+
+		k.clear();
+		nk.clear();
+		err_nk.clear();
+	}
 	return 0;
 }
 
@@ -348,8 +553,6 @@ void fit_plot_points_errors(
 		return;
 	}
 
-	cout << y_err[4] << endl;
-
 	vector <double> par(n_par_fit, 0);
 
 	//CANVAS creation: (to draw the graph)
@@ -381,7 +584,7 @@ void fit_plot_points_errors(
 	gStyle->SetOptFit(1111);
 
 	double fit_min = 0;
-	double fit_max = max_x + 200;
+	double fit_max = max_x;
 
 	TF1* p_plot = new TF1("fit_function", fit_function, fit_min, fit_max, n_par_fit);
 

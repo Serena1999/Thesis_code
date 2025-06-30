@@ -34,3 +34,4 @@
 
 - "correction_confid.cpp": to correct files from confid erroneously duplicated.
 
+- "analysis_rhok_vs_T_fit.cpp": Best fit of output .txt results of analysis_rhok_vs_T.cpp.
