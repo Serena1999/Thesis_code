@@ -1,13 +1,11 @@
 /*<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-****                  analysis_rhok_vs_T.cpp:                 ****
+****                 autocorr_check_rhok.cpp:                 ****
 **** Starting from dedicated files ("corrected_mon.dat"), the ****
 **** number nk of monopoles is calculated for each number k of****
-****  windings, for each gauge configuration. Then, averaging ****
-****  over all configurations, the mean of nk (at a given k), ****
-****    the mean of the ratio between nk and n1, the ratio    ****
-****  between the means of nk and n1 are estimated. Two plots ****
-****   are returned for the last 2 quantities mentioned as a  ****
-****                      function of k.                      ****
+**** windings, for each gauge configuration. Then, we compute ****
+****  nk/n1 for each k, estimate its variance by varying the  ****
+****        dimension of blocks in blocking procedure.        ****
+****   In output: images and file with <nk/n1> vs dim_block.  ****
 ****                (author = Serena Bruzzesi)                ****
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
 
@@ -17,18 +15,9 @@
 #include "../library.h"
 #include "../root_include.h"
 
-//IMPORTANT CONSIDERATIONS:
-// -> BLOCKING SEEMS UNECESSARY FROM AUTOCORR_CHECK_RHOK.CPP (TO VERIFY BETTER)... SO FOR NOW I IMPLEMENT THE INDEPENDENT ESTIMATE OF VARIANCE FOR <nk/n1> 
 
-
-//TODO:
-// MANDA DI NUOVO UNO DEI FILE USCITI STRANI DI MON, SALVANDO IL MON VECCHIO IN QUALCHE MODO, PER VEDERE SE CAMBIA QUALCOSA: 
-// ---> FORSE CE Dà DIVIDERE QUESTA FASE IN PIù PARTI, VERIFICA CIò.
-//DEVI VEDERE SE IL BLOCKING AFFLIGGE LE MISURE SUI MONOPOLI... BASTA FARE AUTOCORR_CHECK APPOSITO PER IL SOLO NK: 
-// --> fai un file che ti calcolo nk vs k + uno successivo che fa come autocorr_check; 
-//PER L'ULTIMO ARRAY, IL CALCOLO DELL'ERRORE NON è BANALE... ESSENDO <>/<>, CREDO DI DOVER RICORRERE AL BOOTSTRAP. TODO
-//POI FATTI RESTITUIRE ANCHE GLI ERRORI SUI FILE DI OUTPUT;
-//POI FAI ANCHE LINEE A PIù T SOVRAPPOSTE, CON FIT -> 4*
+//RIUSALO QUANDO AVRAI TOLTO CORRETTAMENTE N_THERM, CIOè QUANDO HAI TUTTE LE CONFIGURAZIONI CORRETTE.
+//IMPORTANT! DA QUESTO FILE, SEMBRA CHE IL BLOCKING NON SERVA PER I VALORI RHO_K/RHO_1.
 
 //-----------------------------------------------------------------
 //ROOT MACRO TO DO FIT AND GRAPH:
@@ -62,6 +51,8 @@ void read_file_list_DIRECTORIES_THERM(//SCRIVI SOTTO COME IMPLEMENTARLA, PRENDI 
 
 int main() {
 
+	double n_sub_ratio = 0.5;//=0.5*len(data) -> you can modify this number from 0 to 1;
+
 	string mpi = "800";
 	string line;
 
@@ -75,32 +66,26 @@ int main() {
 	string name_input_file = "corrected_mon.dat";
 	int skip_lines_input_file = 0;
 
-	vector <double> mean_rhok, mean_rhok_rho1, mean_rhok_norm;
 	/*
 	-> mean_rhok[ii] = mean of nk[ii] over configurations = <nk[ii]>
 	-> mean_rhok_rho1[ii] = <nk[ii]/nk[0]> (0 corrispondente ad 1 wrapping)
 	-> mean_rhok_norm[ii] = <nk[ii]>/<nk[0]>
 	*/
-	vector <double> mean0_2, mean1_2, mean2_2; //mean of squares
-	vector <double> err_rhok, err_rhok_rho1, err_rhok_norm; //standard deviation from the mean
+	vector <double> var_rhok_rho1; //standard deviation from the mean
+	double mean;
 
-	string name_image1, name_image2, name_output_file1, name_output_file2;
+	string name_image, name_output_file;
 
-	string title1 = "#LT #rho_{k} / #rho_{1} #GT vs Number of wrapping:";
-	string title2 = "#LT #rho_{k} #GT / #LT #rho_{1} #GT vs Number of wrapping:";
+	string title = "var(#rho_{k} / #rho_{1}) vs dimension of blocks:";
 
-	string y_name1 = "#LT #rho_{k} / #rho_{1} #GT";
-	string y_name2 = "#LT #rho_{k} #GT / #LT #rho_{1} #GT";
-
-	double pos_y1 = 0.020;
-	double pos_y2 = 0.020;
-
-	double heigh_y1 = 0.45;
-	double heigh_y2 = 0.45;
-
-	double width_canvas1 = 900;
-	double width_canvas2 = 900;
-
+	string y_name = "var(#rho_{k} / #rho_{1})";
+	
+	double pos_y = 0.020;
+	
+	double heigh_y = 0.45;
+	
+	double width_canvas = 900;
+	
 	read_file_list_DIRECTORIES_THERM(
 		list_file,
 		skipLines_list_file,
@@ -153,7 +138,8 @@ int main() {
 		double discard1, discard2, discard3, discard4, discard5, discard6, discard7, wrap_value;
 		double n_accum = 0;
 		int n_conf = 0;
-		vector <double> value_rhok, value_rhok_rho1, value_rhok_norm, k_array;
+		vector <double> value_rhok, value_rhok_rho1;
+		vector <vector<double>> matrix_value_rhok;
 
 		while (getline(input_file, line)) {
 			istringstream iss(line);
@@ -186,18 +172,10 @@ int main() {
 								value_rhok_rho1.resize(kk + 1, 0.0);
 							}
 							value_rhok_rho1[kk] = value_rhok[kk] / (double)value_rhok[0];
-							if (kk >= mean_rhok.size()) {
-								mean_rhok.resize(kk + 1, 0.0);
-								mean0_2.resize(kk + 1, 0.0);
-								mean_rhok_rho1.resize(kk + 1, 0.0);
-								mean1_2.resize(kk + 1, 0.0);
+							if (kk >= matrix_value_rhok.size()) {
+								matrix_value_rhok.resize(kk + 1, vector<double>());
 							}
-							value_rhok[kk] /= n_accum;
-							mean_rhok[kk] += value_rhok[kk];
-							mean0_2[kk] += (value_rhok[kk] * value_rhok[kk]);
-							value_rhok_rho1[kk] /= n_accum;
-							mean_rhok_rho1[kk] += value_rhok_rho1[kk];
-							mean1_2[kk] += (value_rhok_rho1[kk] * value_rhok_rho1[kk]);
+							matrix_value_rhok[kk].push_back(value_rhok_rho1[kk]);
 						}
 					}
 					value_rhok.clear();
@@ -227,20 +205,14 @@ int main() {
 			else {
 				++n_conf;
 				for (int kk = 0; kk < value_rhok.size(); ++kk) {
-					value_rhok_rho1[kk] = value_rhok[kk] / (double)value_rhok[0];
-					//cout << "value_rhok_rho1.size() = " << value_rhok_rho1.size() << endl;
-					if (kk >= mean_rhok.size()) {
-						mean_rhok.resize(kk + 1, 0.0);
-						mean0_2.resize(kk + 1, 0.0);
-						mean_rhok_rho1.resize(kk + 1, 0.0);
-						mean1_2.resize(kk + 1, 0.0);
+					if (value_rhok_rho1.size() <= kk) {
+						value_rhok_rho1.resize(kk + 1, 0.0);
 					}
-					value_rhok[kk] /= n_accum;
-					mean_rhok[kk] += value_rhok[kk];
-					mean0_2[kk] += (value_rhok[kk] * value_rhok[kk]);
-					value_rhok_rho1[kk] /= n_accum;
-					mean_rhok_rho1[kk] += value_rhok_rho1[kk];
-					mean1_2[kk] += (value_rhok_rho1[kk] * value_rhok_rho1[kk]);
+					value_rhok_rho1[kk] = value_rhok[kk] / (double)value_rhok[0];
+					if (kk >= matrix_value_rhok.size()) {
+						matrix_value_rhok.resize(kk + 1, vector<double>());
+					}
+					matrix_value_rhok[kk].push_back(value_rhok_rho1[kk]);
 				}
 			}
 			value_rhok.clear();
@@ -252,123 +224,80 @@ int main() {
 			//	cout << endl;
 			//}
 		}
-
+		
 		input_file.close();
 
-		cout << mean_rhok.size() << endl;
-		cout << mean_rhok_rho1.size() << endl;
-		cout << n_conf << endl;
+		for (int kk = 0; kk < matrix_value_rhok.size(); ++kk) {
 
-		if(mean_rhok.size() <= 1){
-			cout << "No monopoles with more than 1 wrapping in " << ii << "-th iteration" << endl;
-			cout << "Not considered " << ii << "-th iteration" << endl;
-			continue;
+			name_output_file = "results/" + mpi + "_TempN" + to_string(ii + 1) + "_mean_rho" + to_string(kk + 1) + "_rho1VSk.txt";;
+
+			ofstream output_file; //declaration of output file
+			output_file.open(name_output_file);
+			if (!output_file) {
+				cout << "Error opening output file " << name_output_file << endl;
+				return 1;
+			}
+
+			output_file << setprecision(numeric_limits<double>::max_digits10);
+			output_file << "#dim_block \t var(rho" << to_string(kk + 1) << "/rho1):" << endl;
+
+			int n_sub_max = floor(n_sub_ratio * matrix_value_rhok[kk].size());
+			vector <double> dim_block_vec;
+
+			if (dim_block_vec.size() != var_rhok_rho1.size()) {
+				cout << "There is a conceptual errors in vector dimensiong." << endl;
+				return 1;
+			}
+
+
+			for (int dim_block = 1; dim_block <= n_sub_max; dim_block++) {
+				var_rhok_rho1.push_back(0);
+				if (!blocking_faster(&mean, &var_rhok_rho1[dim_block - 1], matrix_value_rhok[kk], dim_block)) {
+					var_rhok_rho1.resize(dim_block - 1, 0.0);
+					break;
+				}
+				if (!isnan(var_rhok_rho1[dim_block - 1])) {
+					output_file << dim_block << "\t" << var_rhok_rho1[dim_block - 1] << endl;
+					dim_block_vec.push_back(dim_block);
+				}
+				else {
+					var_rhok_rho1.resize(dim_block - 1, 0.0);
+					break;
+				}
+			}
+
+			output_file.close();
+
+			name_image = "results/rho" + to_string(kk + 1) + "_rho1_mpi" + mpi + "_" + to_string(ii + 1) + "thTemperature.png";
+
+			if (var_rhok_rho1.size() > 1) {
+				vector <double> n_sub_d;
+				copy(dim_block_vec.begin(), dim_block_vec.end(), std::back_inserter(n_sub_d));
+
+				plot_points(
+					n_sub_d,
+					var_rhok_rho1,
+					name_image,
+					title,
+					y_name,
+					5.0,
+					pos_y,
+					heigh_y,
+					width_canvas
+				);
+				n_sub_d.clear();
+			}
+			else {
+				cout << "No sufficient point to graph for " << to_string(ii + 1) << " T and " << to_string(kk + 1) << " number of windings" << endl;
+			}
+
+			var_rhok_rho1.clear();
+			dim_block_vec.clear();
 		}
 
-		if (mean_rhok[0] == 0) {
-			cout << "No monopoles with 1 wrapping in " << ii << "-th iteration" << endl;
-			cout << "Not considered " << ii << "-th iteration" << endl;
-			continue;
-		}
-
-		for (int kk = 0; kk < mean_rhok.size(); ++kk) {
-			mean_rhok[kk] /= n_conf;
-			mean_rhok_rho1[kk] /= n_conf;
-			mean0_2[kk] /= n_conf;
-			mean1_2[kk] /= n_conf;
-
-			err_rhok.push_back(mean0_2[kk] - mean_rhok[kk] * mean_rhok[kk]);
-			err_rhok_rho1.push_back(mean1_2[kk] - mean_rhok_rho1[kk] * mean_rhok_rho1[kk]);
-
-			err_rhok[kk] /= (n_conf - 1);
-			err_rhok_rho1[kk] /= (n_conf - 1);
-		}
-
-		if (mean_rhok_rho1.size() > 1) {
-			mean_rhok_rho1.erase(mean_rhok_rho1.begin()); //non ci interessa rho_1/rho_1 = 1
-		}
-		else {
-			cout << "No monopoles with more than 1 wrapping in " << ii << "-th iteration" << endl;
-			cout << "Not considered " << ii << "-th iteration" << endl;
-			continue;
-		}
-
-		for (int kk = 1; kk < mean_rhok.size(); ++kk) {
-			mean_rhok_norm.push_back(mean_rhok[kk] / mean_rhok[0]);
-			//PER QUESTO CASO, IL CALCOLO DELL'ERRORE NON è BANALE... ESSENDO <>/<>, CREDO DI DOVER RICORRERE AL BOOTSTRAP. TODO
-			k_array.push_back(kk + 1);
-		}
-
-		//images:
-		name_image1 = "results/rhok_rho1_mpi" + mpi + "_" + to_string(ii + 1) + "thTemperature.png"; //<rho_k/rho_1>
-		name_image2 = "results/rhok_norm_mpi" + mpi + "_" + to_string(ii + 1) + "thTemperature.png"; //<rho_k>/<rho_1>
-
-		if (mean_rhok_norm.size() > 1) {
-			plot_points(
-				k_array,
-				mean_rhok_rho1,
-				name_image1,
-				title1,
-				y_name1,
-				5.0,
-				pos_y1,
-				heigh_y1,
-				width_canvas1
-			);
-
-			plot_points(
-				k_array,
-				mean_rhok_norm,
-				name_image2,
-				title2,
-				y_name2,
-				5.0,
-				pos_y2,
-				heigh_y2,
-				width_canvas2
-			);
-		}
-		else {
-			cout << "No image generated for iteration n°" << ii << endl;
-			cout << "Not enough data points to produce a plot (need at least 2)." << endl;
-		}
-
-		//output_file:
-		name_output_file1 = "results/" + mpi + "_TempN" + to_string(ii + 1) + "_mean_rhok_rho1VSk.txt";
-		name_output_file2 = "results/" + mpi + "_TempN" + to_string(ii + 1) + "_mean_rhok_mean_rho1VSk.txt";
-
-		ofstream output_file1;
-		output_file1.open(name_output_file1);
-		if (!output_file1) {
-			cerr << "Error opening first output file" << endl;
-			return 1;
-		}
-
-		ofstream output_file2;
-		output_file2.open(name_output_file2);
-		if (!output_file2) {
-			cerr << "Error opening second output file" << endl;
-			return 1;
-		}
-
-		output_file1 << "#k \t <rhok/rho1>:" << endl;
-		output_file2 << "#k \t <rhok>/<rho1>:" << endl;
-
-		output_file1 << setprecision(numeric_limits<double>::max_digits10);
-		output_file2 << setprecision(numeric_limits<double>::max_digits10);
-
-		for (int kk = 0; kk < k_array.size(); ++kk) {
-			output_file1 << k_array[kk] << "\t" << mean_rhok_rho1[kk] << endl;
-			output_file2 << k_array[kk] << "\t" << mean_rhok_norm[kk] << endl;
-		}
-
-		output_file1.close();
-		output_file2.close();
-
-		mean_rhok.clear();
-		mean_rhok_norm.clear();
-		mean_rhok_rho1.clear();
-		k_array.clear();
+		value_rhok.clear();
+		value_rhok_rho1.clear();
+		matrix_value_rhok.clear();
 	}
 
 	return 0;
@@ -473,7 +402,7 @@ void plot_points(
 	g->SetMarkerStyle(20);
 	g->SetTitle("");
 	g->GetXaxis()->SetLimits(min_x, max_x);
-	g->GetYaxis()->SetRangeUser(min_y - 0.01 * fabs(min_y), max_y + 0.01 * fabs(max_y));
+	g->GetYaxis()->SetRangeUser(min_y, max_y);
 	g->Draw("AP");
 
 	// 2. Graph with only the line joining the points:
@@ -490,7 +419,7 @@ void plot_points(
 	latex.SetTextSize(0.05); //changes text size for title
 	latex.DrawLatex(pos_title, 0.94, title.c_str());
 	latex.SetTextSize(0.04); //changes text size for axis labels
-	latex.DrawLatex(0.45, 0.03, "k");
+	latex.DrawLatex(0.45, 0.03, "dim_block");
 	latex.SetTextAngle(90);
 	latex.DrawLatex(pos_y, heigh_y, y_name.c_str());
 
