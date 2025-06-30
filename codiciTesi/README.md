@@ -28,6 +28,8 @@
 
 - "temperature_compute.cpp": simple script to compute temperature in MeV, given Nt e a[fm] values.
 
+- "autocorr_check_rhok.cpp": Starting from dedicated files ("corrected_mon.dat"), the number nk of monopoles is calculated for each number k of windings, for each gauge configuration. Then, we compute nk/n1 for each k, estimate its variance by varying the dimension of blocks in blocking procedure. In output: images and file with <nk/n1> vs dim_block.
+
 - "analysis_rhok_vs_T.cpp": Starting from dedicated files ("corrected_mon.dat"), the number nk of monopoles is calculated for each number k of windings, for each gauge configuration. Then, averaging over all configurations, the mean of nk (at a given k), the mean of the ratio between nk and n1, the ratio between the means of nk and n1 are estimated. Two plots are returned for the last 2 quantities mentioned as a function of k.
 
 - "correction_confid.cpp": to correct files from confid erroneously duplicated.
