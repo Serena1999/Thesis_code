@@ -3,9 +3,11 @@
 ****      Starting from dedicated files ("mon.dat"), the      ****
 **** number nk of monopoles is calculated for each number k of****
 **** windings, for each gauge configuration. Then, we compute ****
-****  nk/n1 for each k, estimate its variance by varying the  ****
-****        dimension of blocks in blocking procedure.        ****
-****   In output: images and file with <nk/n1> vs dim_block.  ****
+****    nk and nk/n1 for each k, estimate their variance by   ****
+****  varying the dimension of blocks in blocking procedure.  ****
+****             In output: images and files with             ****
+****                     <nk> vs dim_block                    ****
+****                   <nk/n1> vs dim_block.                  ****
 ****                (author = Serena Bruzzesi)                ****
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
 
@@ -15,6 +17,8 @@
 #include "../library.h"
 #include "../root_include.h"
 
+
+//FINISH TO IMPLEMENT ALSO FOR N_K + UPDATE README. THEN DO OTHER FILE ALSO FOR RHO_TOT AND R_C. + UPDATE README (DO IT IN 02/07/2025)
 
 //RIUSALO QUANDO AVRAI TOLTO CORRETTAMENTE N_THERM, CIOè QUANDO HAI TUTTE LE CONFIGURAZIONI CORRETTE.
 //IMPORTANT! DA QUESTO FILE, SEMBRA CHE IL BLOCKING NON SERVA PER I VALORI RHO_K/RHO_1.
