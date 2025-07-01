@@ -1,6 +1,6 @@
 /*<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 ****                  analysis_rhok_vs_T.cpp:                 ****
-****   Starting from dedicated files ("corrected_mon.dat"),   ****
+****      Starting from dedicated files ("mon.dat"), the      ****
 ****    computes total monopole density per configuration.    ****
 ****    Averages over configurations at each temperature T.   ****
 ****    Plots <rho_tot/T^3> with its error vs temperature.    ****
@@ -78,7 +78,7 @@ int main() {
 
 	vector <string> directories;//LEGGILI DA FILE
 	vector <int> n_skip; //LEGGILO DA FILE;
-	string name_input_file = "corrected_mon.dat";
+	string name_input_file = "mon.dat";
 	int skip_lines_input_file = 0;
 
 	string name_file_lpc = "11_05_2025/LCP_800MeV_dimblock_extended.txt";

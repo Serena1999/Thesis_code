@@ -1,6 +1,6 @@
 /*<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 ****                 autocorr_check_rhok.cpp:                 ****
-**** Starting from dedicated files ("corrected_mon.dat"), the ****
+****      Starting from dedicated files ("mon.dat"), the      ****
 **** number nk of monopoles is calculated for each number k of****
 **** windings, for each gauge configuration. Then, we compute ****
 ****  nk/n1 for each k, estimate its variance by varying the  ****
@@ -63,7 +63,7 @@ int main() {
 
 	vector <string> directories;//LEGGILI DA FILE
 	vector <int> n_skip; //LEGGILO DA FILE;
-	string name_input_file = "corrected_mon.dat";
+	string name_input_file = "mon.dat";
 	int skip_lines_input_file = 0;
 
 	/*

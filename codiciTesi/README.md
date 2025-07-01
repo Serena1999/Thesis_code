@@ -28,14 +28,14 @@
 
 - "temperature_compute.cpp": simple script to compute temperature in MeV, given Nt e a[fm] values.
 
-- "autocorr_check_rhok.cpp": Starting from dedicated files ("corrected_mon.dat"), the number nk of monopoles is calculated for each number k of windings, for each gauge configuration. Then, we compute nk/n1 for each k, estimate its variance by varying the dimension of blocks in blocking procedure. In output: images and file with <nk/n1> vs dim_block.
+- "autocorr_check_rhok.cpp": Starting from dedicated files ("mon.dat"), the number nk of monopoles is calculated for each number k of windings, for each gauge configuration. Then, we compute nk/n1 for each k, estimate its variance by varying the dimension of blocks in blocking procedure. In output: images and file with <nk/n1> vs dim_block.
 
-- "analysis_rhok_vs_T.cpp": Starting from dedicated files ("corrected_mon.dat"), the number nk of monopoles is calculated for each number k of windings, for each gauge configuration. Then, averaging over all configurations, the mean of nk (at a given k), the mean of the ratio between nk and n1, the ratio between the means of nk and n1 are estimated. Two plots are returned for the last 2 quantities mentioned as a function of k.
+- "analysis_rhok_vs_T.cpp": Starting from dedicated files ("mon.dat"), the number nk of monopoles is calculated for each number k of windings, for each gauge configuration. Then, averaging over all configurations, the mean of nk (at a given k), the mean of the ratio between nk and n1, the ratio between the means of nk and n1 are estimated. Two plots are returned for the last 2 quantities mentioned as a function of k.
 
 - "correction_confid.cpp": to correct files from confid erroneously duplicated.
 
 - "analysis_rhok_vs_T_fit.cpp": Best fit of output .txt results of analysis_rhok_vs_T.cpp.
 
-- "analysis_rhok_vs_T.cpp": Starting from dedicated files ("corrected_mon.dat"), computes total monopole density per configuration. Averages over configurations at each temperature T. Plots <rho_tot/T^3> with its error vs temperature.
+- "analysis_rhok_vs_T.cpp": Starting from dedicated files ("mon.dat"), computes total monopole density per configuration. Averages over configurations at each temperature T. Plots <rho_tot/T^3> with its error vs temperature.
 
 - "cluster_lenght.cpp": starting from dedicated files ("mon_clusters.dat"), for each configuration, it calculates the length of the largest cluster (max_l) and the sum of the lengths of all clusters present (sum_l). With this information, it calculates the parameter r_c = max_l/sum_l for each gauge configuration. It then estimates the mean <r_c> and the standard deviation from the mean over all configurations. It returns an output .txt file with temperature, <r_c> and standard deviation and an image for <r_c> vs temperature.

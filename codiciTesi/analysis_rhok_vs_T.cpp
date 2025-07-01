@@ -1,6 +1,6 @@
 /*<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 ****                  analysis_rhok_vs_T.cpp:                 ****
-**** Starting from dedicated files ("corrected_mon.dat"), the ****
+****      Starting from dedicated files ("mon.dat"), the      ****
 **** number nk of monopoles is calculated for each number k of****
 ****  windings, for each gauge configuration. Then, averaging ****
 ****  over all configurations, the mean of nk (at a given k), ****
@@ -77,7 +77,7 @@ int main() {
 
 	vector <string> directories;//LEGGILI DA FILE
 	vector <int> n_skip; //LEGGILO DA FILE;
-	string name_input_file = "corrected_mon.dat";
+	string name_input_file = "mon.dat";
 	int skip_lines_input_file = 0;
 
 	int n_boot_steps = 100; //for estimate errors of secondary observables with Bootstrap.
