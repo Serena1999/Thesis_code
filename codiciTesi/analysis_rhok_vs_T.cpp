@@ -574,7 +574,7 @@ void plot_points_errors(
 	latex.SetTextSize(0.05); //changes text size for title
 	latex.DrawLatex(pos_title, 0.94, title.c_str());
 	latex.SetTextSize(0.04); //changes text size for axis labels
-	latex.DrawLatex(0.45, 0.03, "T[MeV]");
+	latex.DrawLatex(0.45, 0.03, "k");
 	latex.SetTextAngle(90);
 	latex.DrawLatex(pos_y, heigh_y, y_name.c_str());
 
