@@ -540,9 +540,12 @@ int main() {
 			title = "Fit result:";
 
 			for (int kk = 0; kk < nk.size(); ++kk) {
-				if (err_nk[kk] == 0) {
-					cout << "Found 0-error: I consider minimal double" << endl;
-					err_nk[kk] = numeric_limits<double>::min();
+				if (nk[kk] == 0) {
+					cout << "Found 0-error: I remove it: doesn't make sense -> it is associated to the of very little statistics" << endl;
+					nk.erase(nk.begin() + kk);
+					err_nk.erase(err_nk.begin() + kk);
+					k.erase(k.begin() + kk);
+					kk--;
 				}
 			}
 
@@ -672,8 +675,15 @@ void fit_plot_points_errors(
 	output_file << setprecision(numeric_limits<double>::max_digits10);
 	output_file << "FIT RESULTS:" << endl;
 	output_file << "CHOOSE_FIT_FUNCTION \t" << CHOOSE_FIT_FUNCTION << endl;
+	output_file << "array lenght \t" << x.size() << endl;
 	output_file << "INITIAL PARAMETERS:" << endl;
 	output_file << "\t -> number of initial parameters \t" << n_par_fit << endl;
+	output_file << "\t -> number of degrees of freedom \t" << (x.size() - n_par_fit) << endl;
+
+	cout << "array lenght \t" << x.size() << endl;
+	cout << "INITIAL PARAMETERS:" << endl;
+	cout << "\t -> number of initial parameters \t" << n_par_fit << endl;
+	cout << "\t -> number of degrees of freedom \t" << (x.size() - n_par_fit) << endl;
 
 	//CANVAS creation: (to draw the graph)
 	TCanvas* canvas = new TCanvas("canvas", "Canvas for Drawing Points", 900, 600);
