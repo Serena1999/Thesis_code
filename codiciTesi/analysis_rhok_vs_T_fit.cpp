@@ -15,11 +15,11 @@
 #include "../library.h"
 #include "../root_include.h"
 
-#define CHOOSE_FIT_FUNCTION 1
+#define CHOOSE_FIT_FUNCTION 2
 /*
  -> 0 for rho_k/rho_1 = exp(-par[0]*(x-1))/pow(x,par[1])
  -> 1 for rho_k/rho_1 = exp(-par[0]*(x-1))/pow(x, 2.5)
- -> 2 for rho_k/rho_1 = x^(1-par[0])
+ -> 2 for rho_k/rho_1 = x^(-par[0])
 */
 const bool bool_choose_at_eye = 0; //0 if you want an automatic set of parameters, 1 if you want to impose them by hand;
 // -> if 1, modify the corrisponding if condition in par_estimate function to choose parameters;
@@ -67,6 +67,7 @@ void silly_plot(
 		double* x, //number of windings
 		double* p //parameters
 	) {
+		//if ((p[0] < 0) || (p[1] < 0)) return 1e100;
 		return exp(-p[0] * (x[0] - 1)) / pow(x[0], p[1]);
 	};
 	
@@ -230,7 +231,7 @@ void silly_plot(
 		double* x, //number of windings
 		double* p //parameters
 	) {
-		return pow(x[0], 1 - p[0]);
+		return pow(x[0], -p[0]);
 	};
 	
 	const int n_par_fit = 1;
@@ -253,9 +254,9 @@ void silly_plot(
 			return 0;
 		}
 	
-		//By a linear fit: (y = pow(x, 1-p[0]) <-> y_log = log(y) = - p[0] * log(x) + log(x) -> z_log = log(y) - log(x) = - p[0] * log(x)
+		//By a linear fit: (y = pow(x, -p[0]) <-> y_log = log(y) = -p[0] * log(x)
 		// -> p[0] *a0 = c
-		// with a0 = -log(x), c = log(y) - log(x) -> we can make linear fit with only p[0] and p[1] unknown)
+		// with a0 = -log(x), c = log(y) -> we can make linear fit with only p[0] and p[1] unknown)
 
 		vector <double> a0, c;
 
@@ -264,7 +265,7 @@ void silly_plot(
 		for (int ii = 0; ii < x.size(); ++ii) {
 			if ((y[ii] > 0) && (x[ii] > 0)) {
 				a0.push_back(-log(x[ii]));
-				c.push_back(log(y[ii]) - log(x[ii]));
+				c.push_back(log(y[ii]));
 
 				//cout << "(a0, c) = (" << a0.back() << ", " << c.back() << ")" << endl;
 
@@ -283,7 +284,7 @@ void silly_plot(
 			p[0] = 0;
 
 			for (int ii = 0; ii < (x.size() - 1); ++ii) {
-				p[0] += 1 - log(y[ii] / x[ii]);
+				p[0] -= log(y[ii] / x[ii]);
 			}
 
 			p[0] /= (x.size() - 1);
@@ -293,9 +294,8 @@ void silly_plot(
 			/*
 			My considerations:
 				y[ii] = pow(x[ii], 1-par[0])
-				-> log(y[ii]) = (1-par[0]) * log(x[ii])
-				--> 1 - par[0] = log(y[ii]/x[ii])
-				---> par[0] = 1 - log(y[ii]/x[ii])
+				-> log(y[ii]) = -par[0] * log(x[ii])
+				--> par[0] = -log(y[ii]/x[ii])
 			*/
 		}
 		else {
@@ -539,6 +539,13 @@ int main() {
 			
 			title = "Fit result:";
 
+			for (int kk = 0; kk < nk.size(); ++kk) {
+				if (err_nk[kk] == 0) {
+					cout << "Found 0-error: I consider minimal double" << endl;
+					err_nk[kk] = numeric_limits<double>::min();
+				}
+			}
+
 			silly_plot(k,
 				nk,
 				err_nk, 
@@ -616,14 +623,7 @@ double chi2_reduced_estimate(
 	double chi2r = 0, res;
 	for (int ii = 0; ii < x.size(); ++ii) {
 		double xx[1] = { x[ii] };
-		if (y_err[ii] == 0) {
-			cout << "Found 0-error: I consider minimal double" << endl;
-			res = (y[ii] - fit_function(xx, par.data())) / numeric_limits<double>::min();
-		}
-		else {
-			res = (y[ii] - fit_function(xx, par.data())) / y_err[ii];
-
-		}
+		res = (y[ii] - fit_function(xx, par.data())) / y_err[ii];
 		res *= res;
 		chi2r += res;
 		//cout << "x["<< ii<< "]:" << x[ii] << endl;
@@ -708,16 +708,12 @@ void fit_plot_points_errors(
 
 	TF1* p_plot = new TF1("fit_function", fit_function, fit_min, fit_max, n_par_fit);
 
-	//p_plot->SetParLimits(0, 1e-10, 10);    // par[0]: solo positivi
-	//p_plot->SetParLimits(1, 0.1, 5);       // par[1]: esponente ragionevole
-	//p_plot->SetParLimits(2, 1e-10, 10);    // par[2]: ripidità positiva
-	//p_plot->SetParLimits(3, min_x, max_x);   // par[3]: centro nella regione dei dati
-
 	par_estimate(x, y, par);
 
 	for (int ii = 0; ii < par.size(); ++ii) {
 		p_plot->SetParameter(ii, par[ii]); //setting the ii-th parameter of the function
 		output_file << "\t -> inital estimate of par[" << ii << "] \t" << par[ii] << endl;
+		p_plot->SetParLimits(ii, 0, 1e3);    // par[ii]: solo positivi
 	}
 
 	p_plot->GetXaxis()->SetRangeUser(min_x, max_x);
