@@ -1311,6 +1311,111 @@ template <class S, class D, class F, class T> bool bootstrap_2in(int n_steps, S 
 	return 0;
 }
 
+//Function to compute sample means, sample variances of the sample mean and covariance between N samples of different 
+// data, given in N input files which names are passed throught a vector,
+// with autocorrelation estimated by the blocking techinque.
+// Using the same implementation of blocking_more_faster.
+template <class T> bool blocking_double_corr_more_faster(
+	vector<T>& means, // -> it will refer to sample means of name_input_files data;
+	vector<vector<T>>& cov_matrix, // -> it will refer to covariance matrix between name_input_files data; (FOR ME: defined as (148) of page 116 statnotes)
+	vector<vector<T>>& corr_matrix, // -> it will refer to correlation matrix between name_input_files data; (FOR ME: defined as (148) of page 116 statnotes)
+	vector<string>& name_input_files, // -> names of input files of data
+	int dim_block, // -> dim_block = block dimension used in blocking procedure.
+	int n_skip, // -> n_skip = number of data to discard from input_file;
+	int n_data // -> n_data = number of data in the file; IT MUST BE THE SAME FOR each input_file
+) {
+
+	T value;
+	vector<T> means_tmp, means2;
+	string line;
+	vector <ifstream> input_files;
+	int n_blocks = n_data / dim_block;//=number of blocks
+	int N = name_input_files.size();
+
+	if (n_blocks < 2) {
+		cerr << "Warning: not enough blocks (" << n_blocks << ") to estimate variance reliably. Returning NaN." << endl;
+		means.assign(N, numeric_limits<T>::quiet_NaN());
+		cov_matrix.assign(N, vector<T>(N, numeric_limits<T>::quiet_NaN()));
+		corr_matrix.assign(N, vector<T>(N, numeric_limits<T>::quiet_NaN()));
+		return 1;
+	}
+
+	int n_max = n_blocks * dim_block;//N_max to consider to compute variance
+
+	means.resize(N, 0);
+	means_tmp.resize(N, 0);
+	means2.resize(N, 0);
+	cov_matrix.resize(N, vector<T>(N, 0));
+	corr_matrix.resize(N, vector<T>(N, 0));
+
+	for (int ii = 0; ii < N; ++ii) {
+		input_files.emplace_back(name_input_files[ii]);
+		//emplace_back() creates and adds an element directly to the end of the vector,
+		// building it in-place. Here it directly builds an ifstream by opening "file.txt"
+
+		if (!(input_files.back())) {//back() returns a reference to the last element of the vector
+			cerr << "Error opening " << (ii + 1) << "-th input file" << endl;
+			return 1;
+		}
+
+		for (int jj = 0; jj < n_skip; ++jj) {
+			if (!getline(input_files[ii], line)) {
+				cerr << "Error: there are less than " << n_skip << " lines in the " << (ii + 1) << "-th file." << endl;
+				return 1;
+			}
+		}
+	}
+
+	for (int ii = 0; ii < n_max; ii += dim_block) {
+		for (int jj = 0; jj < N; ++jj) {//The order of these two for (in ii and jj) is important because we have to refer at the same blocks while sampling the covariances.
+			means_tmp[jj] = 0;
+			for (int kk = 0; kk < dim_block; ++kk) {
+				input_files[jj] >> value;
+				means_tmp[jj] += value;
+			}
+			means_tmp[jj] /= (double)dim_block;
+			means[jj] += means_tmp[jj];
+			means2[jj] += ((means_tmp[jj]) * (means_tmp[jj]));
+			for (int ll = 0; ll < jj; ++ll) {
+				cov_matrix[jj][ll] += means_tmp[jj] * means_tmp[ll];
+			}
+		}
+	}
+
+	for (int ii = 0; ii < N; ++ii) {
+		means[ii] /= n_blocks;
+		means2[ii] /= n_blocks;
+		cov_matrix[ii][ii] = means2[ii] - (means[ii] * means[ii]);
+		corr_matrix[ii][ii] = 1;
+		for (int jj = 0; jj < ii; ++jj) {
+			cov_matrix[ii][jj] /= n_blocks;
+			cov_matrix[ii][jj] -= (means[ii] * means[jj]);
+			if ((cov_matrix[ii][ii] > 0) && (cov_matrix[jj][jj] > 0)) {
+				corr_matrix[ii][jj] = cov_matrix[ii][jj] / (sqrt(cov_matrix[ii][ii] * cov_matrix[jj][jj])); // corr(sampl_mean_a, sampl_mean_b) = cov(sampl_mean_a, sampl_mean_b)/sqrt(var_a * var_b)
+				corr_matrix[jj][ii] = corr_matrix[ii][jj];
+			}
+			else {
+				corr_matrix[ii][jj] = numeric_limits<T>::quiet_NaN();
+				corr_matrix[jj][ii] = numeric_limits<T>::quiet_NaN();
+			}
+			cov_matrix[ii][jj] /= (n_blocks - 1); //cov(sampl_mean_a, sampl_mean_b) = (<sampl_mean_a*sampl_mean_b> - <sampl_mean_a> * <sampl_mean_b>)/( n - 1 )
+			cov_matrix[jj][ii] = cov_matrix[ii][jj];
+		}
+		cov_matrix[ii][ii] /= (n_blocks - 1); //= variance[ii]
+	}
+
+	for (int ii = 0; ii < N; ++ii) {
+		input_files[ii].close();
+	}
+
+	int residual = n_data % dim_block;
+	if (residual != 0) {
+		cout << "Note: " << residual << " data points were discarded to fit full blocks." << endl;
+	}
+
+	return 0;
+}
+
 //-----------------------------------------------------------------
 //I/O FUNCTIONS:
 

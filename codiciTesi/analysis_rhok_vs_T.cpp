@@ -63,10 +63,10 @@ double f(double rho_k, double rho_1) {
 
 int main() {
 
-	string mpi = "800";
+	string mpi = "1500";
 	string line;
 
-	string list_file = "11_05_2025/file_list_therm_extended.txt";
+	string list_file = "19_05_2025/file_list_therm.txt";
 	int skipLines_list_file = 1;
 	int step_sample_gauge = 1;
 	int step_sample_fermion = 10;
@@ -76,7 +76,7 @@ int main() {
 	string name_input_file = "mon.dat";
 	int skip_lines_input_file = 0;
 
-	int n_boot_steps = 100; //for estimate errors of secondary observables with Bootstrap.
+	int n_boot_steps = 200; //for estimate errors of secondary observables with Bootstrap.
 	int seed = 1; //for estimate errors of secondary observables with Bootstrap.
 
 	vector <double> mean_rhok, mean_rhok_rho1, mean_rhok_norm;
@@ -86,6 +86,7 @@ int main() {
 	-> mean_rhok_norm[ii] = <nk[ii]>/<nk[0]>
 	*/
 	vector <double> mean0_2, mean1_2, mean2_2; //mean of squares
+	vector <double> mean_rhok_times_rho1;
 	vector <double> err_rhok, err_rhok_rho1, err_rhok_norm; //standard deviation from the mean
 
 	string name_image1, name_image2, name_output_file1, name_output_file2;
@@ -96,14 +97,14 @@ int main() {
 	string y_name1 = "#LT #rho_{k} / #rho_{1} #GT";
 	string y_name2 = "#LT #rho_{k} #GT / #LT #rho_{1} #GT";
 
-	double pos_title1 = 0.5;
-	double pos_title2 = 0.5;
+	double pos_title1 = 0.2;
+	double pos_title2 = 0.2;
 
-	double pos_y1 = 0.020;
-	double pos_y2 = 0.020;
+	double pos_y1 = 0.03;
+	double pos_y2 = 0.03;
 
-	double heigh_y1 = 0.45;
-	double heigh_y2 = 0.45;
+	double heigh_y1 = 0.4;
+	double heigh_y2 = 0.4;
 
 	double width_canvas1 = 900;
 	double width_canvas2 = 900;
@@ -197,6 +198,9 @@ int main() {
 								value_rhok_rho1.resize(kk + 1, 0.0);
 							}
 							value_rhok_rho1[kk] = value_rhok[kk] / (double)value_rhok[0];
+							if (mean_rhok_times_rho1.size() <= kk) {
+								mean_rhok_times_rho1.resize(kk + 1, 0.0);
+							}
 							if (kk >= mean_rhok.size()) {
 								mean_rhok.resize(kk + 1, 0.0);
 								mean0_2.resize(kk + 1, 0.0);
@@ -213,6 +217,7 @@ int main() {
 							value_rhok_rho1[kk] /= n_accum;
 							mean_rhok_rho1[kk] += value_rhok_rho1[kk];
 							mean1_2[kk] += (value_rhok_rho1[kk] * value_rhok_rho1[kk]);
+							mean_rhok_times_rho1[kk] += value_rhok[kk] * value_rhok[0];
 						}
 					}
 					value_rhok.clear();
@@ -249,6 +254,7 @@ int main() {
 						mean0_2.resize(kk + 1, 0.0);
 						mean_rhok_rho1.resize(kk + 1, 0.0);
 						mean1_2.resize(kk + 1, 0.0);
+						mean_rhok_times_rho1.resize(kk+1, 0.0);
 					}
 					if (kk >= matrix_value_rhok.size()) {
 						matrix_value_rhok.resize(kk + 1, vector<double>());
@@ -260,6 +266,7 @@ int main() {
 					value_rhok_rho1[kk] /= n_accum;
 					mean_rhok_rho1[kk] += value_rhok_rho1[kk];
 					mean1_2[kk] += (value_rhok_rho1[kk] * value_rhok_rho1[kk]);
+					mean_rhok_times_rho1[kk] += value_rhok[kk] * value_rhok[0];
 				}
 			}
 			value_rhok.clear();
@@ -295,12 +302,21 @@ int main() {
 			mean_rhok_rho1[kk] /= n_conf;
 			mean0_2[kk] /= n_conf;
 			mean1_2[kk] /= n_conf;
+			mean_rhok_norm.push_back(mean_rhok[kk] / mean_rhok[0]);
+			mean_rhok_times_rho1[kk] /= n_conf;
+			mean_rhok_times_rho1[kk] -= mean_rhok[kk]* mean_rhok[0];
+			mean_rhok_times_rho1[kk] /= (n_conf - 1); //cov(sampl_mean_a, sampl_mean_b) = (<sampl_mean_a*sampl_mean_b> - <sampl_mean_a> * <sampl_mean_b>)/( n - 1 )
 
 			err_rhok.push_back(mean0_2[kk] - mean_rhok[kk] * mean_rhok[kk]);
 			err_rhok_rho1.push_back(mean1_2[kk] - mean_rhok_rho1[kk] * mean_rhok_rho1[kk]);
 
 			err_rhok[kk] /= (n_conf - 1);
 			err_rhok_rho1[kk] /= (n_conf - 1);
+
+			//COMPUTATION DIRECTLY WITH COVARIANCE, SINCE THERE ARE FEW DATA: (var(f(x,y)) = (df/dx)^2 var(x) + (df/dy)^2 var(y) + (df/dx)*(df/dy)*cov(x,y))
+			double tmp_err = err_rhok[kk] / (mean_rhok[0] * mean_rhok[0]); //= (d(x/y)/dx)^2 * (dx^2)
+			tmp_err += mean_rhok[kk] * mean_rhok[kk] * err_rhok[0] / pow(mean_rhok[0],4); //+= (d(x/y)/dy)^2 * (dy^2)
+			tmp_err -= 2 * mean_rhok[kk] * mean_rhok_times_rho1[kk] / pow(mean_rhok[0], 3);//+= (d(x/y)/dx) * (d(x/y)/dy) * cov(x,y)
 
 			if (err_rhok_rho1[kk] < 0) {
 				cout << "err_rhok_rho1[" << to_string(kk) << "] < 0" << endl;
@@ -309,66 +325,29 @@ int main() {
 			else {
 				err_rhok_rho1[kk] = sqrt(err_rhok_rho1[kk]);
 			}
+
+			if (tmp_err < 0) {
+				cout << "var_rhok_norm[" << to_string(kk) << "] < 0" << endl;
+				tmp_err = 0;
+			}
+			else {
+				tmp_err = sqrt(tmp_err);
+			}
+			err_rhok_norm.push_back(tmp_err);
+			k_array.push_back(kk + 1);
 		}
 
 		if (mean_rhok_rho1.size() > 1) {
 			mean_rhok_rho1.erase(mean_rhok_rho1.begin()); //non ci interessa rho_1/rho_1 = 1
 			err_rhok_rho1.erase(err_rhok_rho1.begin());
+			mean_rhok_norm.erase(mean_rhok_norm.begin());
+			err_rhok_norm.erase(err_rhok_norm.begin());
+			k_array.erase(k_array.begin());
 		}
 		else {
 			cout << "No monopoles with more than 1 wrapping in " << ii << "-th iteration" << endl;
 			cout << "Not considered " << ii << "-th iteration" << endl;
 			continue;
-		}
-
-		int n_not_considered = 0;
-
-		for (int kk = 1; kk < mean_rhok.size(); ++kk) {
-
-			if (matrix_value_rhok[kk].empty() || matrix_value_rhok[0].empty()) {
-				cerr << "Warning: empty data for Bootstrap at k=" << kk << endl;
-				++n_not_considered;
-				continue;
-			}
-
-			vector <double> x1_vec, x2_vec;
-
-			for (int jj = 0; jj < min(matrix_value_rhok[kk].size(), matrix_value_rhok[0].size()); ++jj) {
-				if (matrix_value_rhok[0][jj] != 0) {
-					x1_vec.push_back(matrix_value_rhok[kk][jj]);
-					x2_vec.push_back(matrix_value_rhok[0][jj]);
-				}
-				else {
-					cout << "Omitted a zero rho_1 due to division issue" << endl;
-				}
-			}
-
-			mean_rhok_norm.push_back(0);
-			err_rhok_norm.push_back(0);
-			uniform_int_distribution<> dist_int(0, x1_vec.size() - 1);
-
-			if (bootstrap_2in(n_boot_steps, sampler, dist_int, f, x1_vec, x2_vec, &mean_rhok_norm[kk - 1 - n_not_considered], &err_rhok_norm[kk - 1 - n_not_considered]))
-			{
-				cout << "Error in Bootstrap for (ii, kk) = (" << to_string(ii) << ", " << to_string(kk) << endl;
-				return 1;
-			}
-
-			if (isnan(err_rhok_norm[kk - 1 - n_not_considered])) {
-				cout << "Encontered NaN in Bootstrap" << endl;
-				err_rhok_norm.resize(kk - 1 - n_not_considered, 0.0);;
-				break;
-			}
-			else if (err_rhok_norm[kk - 1 - n_not_considered] >= 0) {
-				err_rhok_norm[kk - 1 - n_not_considered] = sqrt(err_rhok_norm[kk - 1 - n_not_considered]);
-			}
-			else {
-				cout << "Encontered negative value in Bootstrap" << endl;
-				err_rhok_norm.resize(kk - 1 - n_not_considered, 0.0);;
-				break;
-			}
-			k_array.push_back(kk + 1);
-			x1_vec.clear();
-			x2_vec.clear();
 		}
 
 		//images:
@@ -509,7 +488,6 @@ void read_file_list_DIRECTORIES_THERM(
 	file_list.close();
 }
 
-
 //-----------------------------------------------------------------
 //ROOT MACRO TO GRAPH:
 
@@ -551,7 +529,7 @@ void plot_points_errors(
 	g_errors->SetMarkerColor(kBlack);
 	g_errors->SetMarkerStyle(20);
 	g_errors->SetTitle("");
-	g_errors->GetXaxis()->SetLimits(0, max_x + 1);
+	g_errors->GetXaxis()->SetLimits(1, max_x + 1);
 	//g_errors->GetYaxis()->SetRangeUser(min_y - 0.01 * fabs(min_y), max_y + 0.01 * fabs(max_y));
 	g_errors->GetYaxis()->SetRangeUser(0, max_y + 0.01 * fabs(max_y));
 	g_errors->Draw("AP");
@@ -570,7 +548,7 @@ void plot_points_errors(
 	latex.SetTextSize(0.05); //changes text size for title
 	latex.DrawLatex(pos_title, 0.94, title.c_str());
 	latex.SetTextSize(0.04); //changes text size for axis labels
-	latex.DrawLatex(0.45, 0.03, "k");
+	latex.DrawLatex(0.5, 0.03, "k");
 	latex.SetTextAngle(90);
 	latex.DrawLatex(pos_y, heigh_y, y_name.c_str());
 
