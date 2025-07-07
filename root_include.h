@@ -14,3 +14,4 @@
 #include <TMatrixD.h>
 #include <TLine.h>
 #include <TGraphErrors.h>
+#include <TLinearFitter.h>

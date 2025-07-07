@@ -24,6 +24,35 @@
 const bool bool_choose_at_eye = 0; //0 if you want an automatic set of parameters, 1 if you want to impose them by hand;
 // -> if 1, modify the corrisponding if condition in par_estimate function to choose parameters;
 
+//-----------------------------------------------------------------
+//ROOT MACRO TO DO FIT AND GRAPH:
+
+void fit_plot_points_errors(
+	const vector<double>& x,
+	const vector<double>& y,
+	const vector<double>& y_err,
+	const string name_image,
+	const string title,
+	const string y_name,
+	const double pos_title,
+	const double pos_y,
+	const double heigh_y,
+	const int n_par_fit
+);
+
+void silly_plot(
+	const vector<double>& x,
+	const vector<double>& y,
+	const vector<double>& y_err,
+	const string name_image,
+	const string title,
+	const string y_name,
+	const double pos_title,
+	const double pos_y,
+	const double heigh_y,
+	const int n_par_fit
+);
+
 
 //-----------------------------------------------------------------
 //FIT && ESTIMATE OF PARAMETERS FUNCTIONS: 
@@ -59,33 +88,53 @@ const bool bool_choose_at_eye = 0; //0 if you want an automatic set of parameter
 			return 0;
 		}
 
-		if (y[2] != 0) {
-			p[0] = log(y[1] / y[2]);
+		//By a linear fit: (y = exp(-p[0] * (x - 1)) / pow(x, p[1]) <-> y_log = log(y) =  - p[0] * (x-1) - p[1] log(x) 
+		// -> p[0] *a0 + p[1] * a1 = c
+		// with a0 = 1 - x, a1 = - log(x), c = log(y) -> we can make linear fit with only p[0] and p[1] unknown)
+
+		vector <double> a0, a1, c;
+
+		TLinearFitter fitter(2, "x0 ++ x1");
+
+		for (int ii = 0; ii < x.size(); ++ii) {
+			if ((y[ii] > 0) && (x[ii] > 0)) {
+				a0.push_back(1 - x[ii]);
+				a1.push_back(-log(x[ii]));
+				c.push_back(log(y[ii]));
+
+				cout << "(a0, a1, c) = (" << a0.back() << ", " << a1.back() << ", " << c.back() << ")" << endl;
+
+				double vars[] = {a0.back(), a1.back() }; // being c[ii] = x0*a0[ii]+x1*a1[ii];
+				fitter.AddPoint(vars, c.back()); // being c[ii] = x0*a0[ii]+x1*a1[ii];
+			}
+			else {
+				cout << "zero y in par_estimate: not used in par estimate." << endl;
+			}
+			cout << ii << ":\t" << x[ii] << "\t" << y[ii] << endl;
 		}
 
-		if (!bool_choose_at_eye) {
-			p[1] = p[0] * log(2.0 / 3.0);
+		cout << "N punti inseriti nel fit: " << a0.size() << endl;
+
+		if (a0.size() < n_par_fit) {//TO CHANGE THE FOLLOWING FOR "CHOOSE BY EYE" SETTING
+			if (y[2] != 0) {
+				p[0] = log(y[1] / y[2]);
+			}
+
+			if (!bool_choose_at_eye) {
+				p[1] = p[0] * log(2.0 / 3.0);
+			}
+		}
+		else {
+			fitter.Eval();
+			
+			p[0] = fitter.GetParameter(0);
+			p[1] = fitter.GetParameter(1);
+
 		}
 
 		cout << "Parameters used for fit: p0 = " << p[0]
 			<< ", p1 = " << p[1] << endl;
 
-		/*
-		My considerations:
-			y[jj] = exp(-p[0] * (x[jj] - 1)) / pow(x[jj], p[1])
-			divisione:
-			exp(-p[0] * (x[ii] - x[jj])) * pow(x[jj], p[1])/ pow(x[ii], p[1]) = y[ii]/y[jj]
-			-> exp(-p[0] * (x[ii] - x[jj])) * pow(x[jj]/x[ii], p[1]) =  = y[ii]/y[jj]
-			--> per x[jj]=2, x[ii]=1: exp(p[0]) = y[1]/y[2]:
-			if(y[2] != 0){
-				p[0] = log(y[1]/y[2])
-			}
-			else{
-				p[0] = 1
-			}
-			p[1] = -p[0] * (x[2] - x[3]) * (-log(x[3]/x[2])) = p[0] * log(2.0/3.0)
-		*/
-		
 		return 0;
 	}
 
@@ -118,14 +167,48 @@ const bool bool_choose_at_eye = 0; //0 if you want an automatic set of parameter
 			return 0;
 		}
 	
-		p[0] = 0;
+		//By a linear fit: (y = exp(-p[0] * (x - 1)) / pow(x, 2.5) <-> z_log = log(y) + 2.5 log(x) = - p[0] * (x-1)  
+		// -> p[0] *a0 = c
+		// with a0 = 1 - x, c = log(y) + 2.5 log(x) -> we can make linear fit with only p[0] and p[1] unknown)
 
-		for (int ii = 0; ii < (x.size() - 1); ++ii) {
-			p[0] += log(y[ii] * pow(x[ii], 2.5)) / (1 - x[ii]);
+		vector <double> a0, c;
+
+		TLinearFitter fitter(1, "x0");
+
+		for (int ii = 0; ii < x.size(); ++ii) {
+			if ((y[ii] > 0) && (x[ii] > 0)) {
+				a0.push_back(1 - x[ii]);
+				c.push_back(log(y[ii]) + 2.5 * log(x[ii]));
+
+				cout << "(a0, c) = (" << a0.back() << ", " << c.back() << ")" << endl;
+
+				double vars[] = { a0.back()}; // being c[ii] = x0*a0[ii];
+				fitter.AddPoint(vars, c.back()); // being c[ii] = x0*a0[ii];
+			}
+			else {
+				cout << "zero y in par_estimate: not used in par estimate." << endl;
+			}
+			cout << ii << ":\t" << x[ii] << "\t" << y[ii] << endl;
 		}
 
-		p[0] /= (x.size() - 1);
-	
+		cout << "N punti inseriti nel fit: " << a0.size() << endl;
+
+		if (a0.size() < n_par_fit) {//TO CHANGE THE FOLLOWING FOR "CHOOSE BY EYE" SETTING
+			p[0] = 0;
+
+			for (int ii = 0; ii < (x.size() - 1); ++ii) {
+				p[0] += log(y[ii] * pow(x[ii], 2.5)) / (1 - x[ii]);
+			}
+
+			p[0] /= (x.size() - 1);
+		}
+		else {
+			fitter.Eval();
+
+			p[0] = fitter.GetParameter(0);
+
+		}
+
 		cout << "Parameters used for fit: p0 = " << p[0] << endl;
 	
 		/*
@@ -166,44 +249,62 @@ const bool bool_choose_at_eye = 0; //0 if you want an automatic set of parameter
 			return 0;
 		}
 	
-		p[0] = 0;
-	
-		for (int ii = 0; ii < (x.size() - 1); ++ii) {
-			p[0] += 1 - log(y[ii] / x[ii]);
+		//By a linear fit: (y = pow(x, 1-p[0]) <-> y_log = log(y) = - p[0] * log(x) + log(x) -> z_log = log(y) - log(x) = - p[0] * log(x)
+		// -> p[0] *a0 = c
+		// with a0 = -log(x), c = log(y) - log(x) -> we can make linear fit with only p[0] and p[1] unknown)
+
+		vector <double> a0, c;
+
+		TLinearFitter fitter(1, "x0");
+
+		for (int ii = 0; ii < x.size(); ++ii) {
+			if ((y[ii] > 0) && (x[ii] > 0)) {
+				a0.push_back(-log(x[ii]));
+				c.push_back(log(y[ii]) - log(x[ii]));
+
+				cout << "(a0, c) = (" << a0.back() << ", " << c.back() << ")" << endl;
+
+				double vars[] = { a0.back() }; // being c[ii] = x0*a0[ii];
+				fitter.AddPoint(vars, c.back()); // being c[ii] = x0*a0[ii];
+			}
+			else {
+				cout << "zero y in par_estimate: not used in par estimate." << endl;
+			}
+			cout << ii << ":\t" << x[ii] << "\t" << y[ii] << endl;
 		}
-	
-		p[0] /= (x.size() - 1);
-	
-		cout << "Parameters used for fit: p0 = " << p[0] << endl;
-	
-		/*
-		My considerations:
-			y[ii] = pow(x[ii], 1-par[0])
-			-> log(y[ii]) = (1-par[0]) * log(x[ii])
-			--> 1 - par[0] = log(y[ii]/x[ii])
-			---> par[0] = 1 - log(y[ii]/x[ii])
-		*/
+
+		cout << "N punti inseriti nel fit: " << a0.size() << endl;
+
+		if (a0.size() < n_par_fit) {//TO CHANGE THE FOLLOWING FOR "CHOOSE BY EYE" SETTING
+			p[0] = 0;
+
+			for (int ii = 0; ii < (x.size() - 1); ++ii) {
+				p[0] += 1 - log(y[ii] / x[ii]);
+			}
+
+			p[0] /= (x.size() - 1);
+
+			cout << "Parameters used for fit: p0 = " << p[0] << endl;
+
+			/*
+			My considerations:
+				y[ii] = pow(x[ii], 1-par[0])
+				-> log(y[ii]) = (1-par[0]) * log(x[ii])
+				--> 1 - par[0] = log(y[ii]/x[ii])
+				---> par[0] = 1 - log(y[ii]/x[ii])
+			*/
+		}
+		else {
+			fitter.Eval();
+
+			p[0] = fitter.GetParameter(0);
+
+		}
 
 		return 0;
 	}
 
 #endif
-
-//-----------------------------------------------------------------
-//ROOT MACRO TO DO FIT AND GRAPH:
-
-void fit_plot_points_errors(
-	const vector<double>& x,
-	const vector<double>& y,
-	const vector<double>& y_err,
-	const string name_image,
-	const string title,
-	const string y_name,
-	const double pos_title,
-	const double pos_y,
-	const double heigh_y,
-	const int n_par_fit
-);
 
 //-----------------------------------------------------------------
 //FUNCTION DECLARATIONS:
@@ -424,6 +525,19 @@ int main() {
 
 			name_image = "results/FIT_function_" + to_string(CHOOSE_FIT_FUNCTION) + "_" + base_name + ".png"; //<rho_k/rho_1>
 			title = "Fit result:";
+
+			silly_plot(k,
+				nk,
+				err_nk, 
+				"results/silly_plot_"+ to_string(ii+1) + ".png",
+				title,
+				y_name[ii],
+				pos_title[ii],
+				pos_y[ii],
+				heigh_y[ii],
+				n_par_fit
+			);
+
 
 			fit_plot_points_errors(
 				k,
@@ -649,6 +763,88 @@ void fit_plot_points_errors(
 
 	//DELETE:
 	delete p_plot;
+	delete g_errors;
+	delete canvas;
+}
+
+void silly_plot(
+	const vector<double>& x,
+	const vector<double>& y,
+	const vector<double>& y_err,
+	const string name_image,
+	const string title,
+	const string y_name,
+	const double pos_title,
+	const double pos_y,
+	const double heigh_y,
+	const int n_par_fit
+) {
+	if (x.size() != y.size() || y.size() != y_err.size()) {
+		cerr << "Error: mismatched vector sizes in plot_points_errors()." << endl;
+		return;
+	}
+
+	vector <double> par(n_par_fit, 0);
+	vector <double> y_attempt;
+
+	//CANVAS creation: (to draw the graph)
+	TCanvas* canvas = new TCanvas("canvas", "Canvas for Drawing Points", 900, 600);
+	canvas->SetGrid();//to set grid
+
+	// 1. Graph with only error bars:
+	TGraphErrors* g_errors = new TGraphErrors(x.size(), x.data(), y.data(), nullptr, y_err.data());
+
+	//Using std::max_element: (useful to create my histogram object)
+	//	-> std::max_element takes two iterators that define the range of the array to operate on. 
+	//	-> returns an iterator that points to the maximum element found.
+	//The usage of std::min_element is analogous but with for minimum element.
+	auto min_x = *min_element(x.begin(), x.end());
+	auto max_x = *max_element(x.begin(), x.end());
+	auto min_y = *min_element(y.begin(), y.end());
+	auto max_y = *max_element(y.begin(), y.end());
+
+	g_errors->SetLineColor(kBlack);//color of error bars
+	g_errors->SetMarkerColor(kBlack);
+	g_errors->SetMarkerStyle(20);
+	g_errors->SetTitle("");
+	g_errors->GetXaxis()->SetLimits(min_x, max_x);
+	g_errors->GetYaxis()->SetRangeUser(min_y - 0.01 * fabs(min_y), max_y + 0.01 * fabs(max_y));
+	g_errors->Draw("AP");
+
+	// 2. function plot:
+
+	TF1* f1 = new TF1("f", fit_function, min_x, max_x, n_par_fit);
+
+	par_estimate(x, y, par);
+
+	for (int ii = 0; ii < par.size(); ii++) {
+		f1->SetParameter(ii, par[ii]); //setting the ii-th parameter of the function
+	}
+
+	f1->SetLineColor(kRed);
+	f1->Draw("SAME");
+
+	gPad->Update();
+
+	//LATEX: I add LaTeX titles and axis labels:
+	TLatex latex;
+	latex.SetNDC(); //sets the use of Normalized Device Coordinates (NDC).
+	latex.SetTextSize(0.05); //changes text size for title
+	latex.DrawLatex(pos_title, 0.92, title.c_str());
+	latex.SetTextSize(0.04); //changes text size for axis labels
+	latex.DrawLatex(0.45, 0.03, "T[MeV]");
+	latex.SetTextAngle(90);
+	latex.DrawLatex(pos_y, heigh_y, y_name.c_str());
+
+
+	//SAVE: I save the canvas as an image
+	canvas->SaveAs(name_image.c_str());
+
+	//to save also in vectorial pdf form:
+	canvas->SaveAs((name_image.substr(0, name_image.find_last_of(".")) + ".pdf").c_str());
+
+	//DELETE:
+	delete f1;
 	delete g_errors;
 	delete canvas;
 }

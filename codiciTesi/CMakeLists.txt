@@ -2,7 +2,8 @@
 # qui la logica specifica del progetto.
 #
 
-find_package(ROOT REQUIRED COMPONENTS RIO Net Hist Graf Graf3d Gpad Tree Rint Postscript MathCore Physics Matrix)
+find_package(ROOT REQUIRED COMPONENTS RIO Net Hist Graf Graf3d Gpad Tree Rint Postscript MathCore Physics Matrix MathMore Minuit)
+include(${ROOT_USE_FILE}) #Questo imposta in automatico molte opzioni di compilazione/linking che servono a ROOT.
 
 # Include ROOT directories
 include_directories(${ROOT_INCLUDE_DIRS})
