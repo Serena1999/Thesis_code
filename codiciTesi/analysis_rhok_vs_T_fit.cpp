@@ -15,7 +15,7 @@
 #include "../library.h"
 #include "../root_include.h"
 
-#define CHOOSE_FIT_FUNCTION 0
+#define CHOOSE_FIT_FUNCTION 1
 /*
  -> 0 for rho_k/rho_1 = exp(-par[0]*(x-1))/pow(x,par[1])
  -> 1 for rho_k/rho_1 = exp(-par[0]*(x-1))/pow(x, 2.5)
@@ -23,6 +23,9 @@
 */
 const bool bool_choose_at_eye = 0; //0 if you want an automatic set of parameters, 1 if you want to impose them by hand;
 // -> if 1, modify the corrisponding if condition in par_estimate function to choose parameters;
+
+const bool only_one_graph = 0;//to choose to focus only on a single graph
+const int index_graph = 1; //index of the graph to focus on if only_one_graph = 1.
 
 //-----------------------------------------------------------------
 //ROOT MACRO TO DO FIT AND GRAPH:
@@ -37,7 +40,8 @@ void fit_plot_points_errors(
 	const double pos_title,
 	const double pos_y,
 	const double heigh_y,
-	const int n_par_fit
+	const int n_par_fit,
+	string name_out_file
 );
 
 void silly_plot(
@@ -102,7 +106,7 @@ void silly_plot(
 				a1.push_back(-log(x[ii]));
 				c.push_back(log(y[ii]));
 
-				cout << "(a0, a1, c) = (" << a0.back() << ", " << a1.back() << ", " << c.back() << ")" << endl;
+				//cout << "(a0, a1, c) = (" << a0.back() << ", " << a1.back() << ", " << c.back() << ")" << endl;
 
 				double vars[] = {a0.back(), a1.back() }; // being c[ii] = x0*a0[ii]+x1*a1[ii];
 				fitter.AddPoint(vars, c.back()); // being c[ii] = x0*a0[ii]+x1*a1[ii];
@@ -110,10 +114,10 @@ void silly_plot(
 			else {
 				cout << "zero y in par_estimate: not used in par estimate." << endl;
 			}
-			cout << ii << ":\t" << x[ii] << "\t" << y[ii] << endl;
+			//cout << ii << ":\t" << x[ii] << "\t" << y[ii] << endl;
 		}
 
-		cout << "N punti inseriti nel fit: " << a0.size() << endl;
+		//cout << "N punti inseriti nel fit: " << a0.size() << endl;
 
 		if (a0.size() < n_par_fit) {//TO CHANGE THE FOLLOWING FOR "CHOOSE BY EYE" SETTING
 			if (y[2] != 0) {
@@ -180,7 +184,7 @@ void silly_plot(
 				a0.push_back(1 - x[ii]);
 				c.push_back(log(y[ii]) + 2.5 * log(x[ii]));
 
-				cout << "(a0, c) = (" << a0.back() << ", " << c.back() << ")" << endl;
+				//cout << "(a0, c) = (" << a0.back() << ", " << c.back() << ")" << endl;
 
 				double vars[] = { a0.back()}; // being c[ii] = x0*a0[ii];
 				fitter.AddPoint(vars, c.back()); // being c[ii] = x0*a0[ii];
@@ -188,10 +192,10 @@ void silly_plot(
 			else {
 				cout << "zero y in par_estimate: not used in par estimate." << endl;
 			}
-			cout << ii << ":\t" << x[ii] << "\t" << y[ii] << endl;
+			//cout << ii << ":\t" << x[ii] << "\t" << y[ii] << endl;
 		}
 
-		cout << "N punti inseriti nel fit: " << a0.size() << endl;
+		//cout << "N punti inseriti nel fit: " << a0.size() << endl;
 
 		if (a0.size() < n_par_fit) {//TO CHANGE THE FOLLOWING FOR "CHOOSE BY EYE" SETTING
 			p[0] = 0;
@@ -262,7 +266,7 @@ void silly_plot(
 				a0.push_back(-log(x[ii]));
 				c.push_back(log(y[ii]) - log(x[ii]));
 
-				cout << "(a0, c) = (" << a0.back() << ", " << c.back() << ")" << endl;
+				//cout << "(a0, c) = (" << a0.back() << ", " << c.back() << ")" << endl;
 
 				double vars[] = { a0.back() }; // being c[ii] = x0*a0[ii];
 				fitter.AddPoint(vars, c.back()); // being c[ii] = x0*a0[ii];
@@ -270,10 +274,10 @@ void silly_plot(
 			else {
 				cout << "zero y in par_estimate: not used in par estimate." << endl;
 			}
-			cout << ii << ":\t" << x[ii] << "\t" << y[ii] << endl;
+			//cout << ii << ":\t" << x[ii] << "\t" << y[ii] << endl;
 		}
 
-		cout << "N punti inseriti nel fit: " << a0.size() << endl;
+		//cout << "N punti inseriti nel fit: " << a0.size() << endl;
 
 		if (a0.size() < n_par_fit) {//TO CHANGE THE FOLLOWING FOR "CHOOSE BY EYE" SETTING
 			p[0] = 0;
@@ -313,7 +317,8 @@ double chi2_reduced_estimate(
 	const vector<double>& x,
 	const vector<double>& y,
 	const vector<double>& y_err,
-	vector<double>& par
+	vector<double>& par,
+	ofstream& output_file
 );
 
 void read_name_files(
@@ -478,6 +483,12 @@ int main() {
 
 	for (int ii = 0; ii < files.size(); ++ii) {
 		
+		if (only_one_graph) {
+			if (ii != index_graph) {
+				continue;
+			}
+		}
+
 		vector <double> k, nk, err_nk;
 
 		ifstream input_file;
@@ -524,6 +535,8 @@ int main() {
 			}
 
 			name_image = "results/FIT_function_" + to_string(CHOOSE_FIT_FUNCTION) + "_" + base_name + ".png"; //<rho_k/rho_1>
+			string name_out_file = "results/FIT_function_" + to_string(CHOOSE_FIT_FUNCTION) + "_" + base_name + ".txt";
+			
 			title = "Fit result:";
 
 			silly_plot(k,
@@ -549,7 +562,8 @@ int main() {
 				pos_title[ii],
 				pos_y[ii],
 				heigh_y[ii],
-				n_par_fit
+				n_par_fit,
+				name_out_file
 			);
 		}
 
@@ -596,12 +610,20 @@ double chi2_reduced_estimate(
 	const vector<double>& x,
 	const vector<double>& y,
 	const vector<double>& y_err,
-	vector<double>& par
+	vector<double>& par,
+	ofstream& output_file
 ) {
 	double chi2r = 0, res;
 	for (int ii = 0; ii < x.size(); ++ii) {
 		double xx[1] = { x[ii] };
-		res = (y[ii] - fit_function(xx, par.data())) / y_err[ii];
+		if (y_err[ii] == 0) {
+			cout << "Found 0-error: I consider minimal double" << endl;
+			res = (y[ii] - fit_function(xx, par.data())) / numeric_limits<double>::min();
+		}
+		else {
+			res = (y[ii] - fit_function(xx, par.data())) / y_err[ii];
+
+		}
 		res *= res;
 		chi2r += res;
 		//cout << "x["<< ii<< "]:" << x[ii] << endl;
@@ -609,8 +631,10 @@ double chi2_reduced_estimate(
 		//cout << "y_err[" << ii << "]:" << y_err[ii] << endl;
 	}
 	cout << "CHI2 = " << chi2r << endl;
+	output_file << "CHI2 = " << chi2r << endl;
 	chi2r /= (x.size() - par.size());
 	cout << "CHI2 reduced = " << chi2r << endl;
+	output_file << "CHI2 reduced = " << chi2r << endl;
 	return chi2r;
 }
 
@@ -627,7 +651,8 @@ void fit_plot_points_errors(
 	const double pos_title,
 	const double pos_y,
 	const double heigh_y,
-	const int n_par_fit
+	const int n_par_fit,
+	string name_out_file
 ) {
 
 	if (x.size() != y.size() || y.size() != y_err.size()) {
@@ -636,6 +661,19 @@ void fit_plot_points_errors(
 	}
 
 	vector <double> par(n_par_fit, 0);
+
+	ofstream output_file;
+	output_file.open(name_out_file);
+	if (!output_file) {
+		cerr << "Error opening output file: " << name_out_file  << endl;
+		return;
+	}
+
+	output_file << setprecision(numeric_limits<double>::max_digits10);
+	output_file << "FIT RESULTS:" << endl;
+	output_file << "CHOOSE_FIT_FUNCTION \t" << CHOOSE_FIT_FUNCTION << endl;
+	output_file << "INITIAL PARAMETERS:" << endl;
+	output_file << "\t -> number of initial parameters \t" << n_par_fit << endl;
 
 	//CANVAS creation: (to draw the graph)
 	TCanvas* canvas = new TCanvas("canvas", "Canvas for Drawing Points", 900, 600);
@@ -679,6 +717,7 @@ void fit_plot_points_errors(
 
 	for (int ii = 0; ii < par.size(); ++ii) {
 		p_plot->SetParameter(ii, par[ii]); //setting the ii-th parameter of the function
+		output_file << "\t -> inital estimate of par[" << ii << "] \t" << par[ii] << endl;
 	}
 
 	p_plot->GetXaxis()->SetRangeUser(min_x, max_x);
@@ -695,18 +734,22 @@ void fit_plot_points_errors(
 
 	for (int ii = 0; ii < par.size(); ++ii) {
 		par[ii] = p_plot->GetParameter(ii);
+		output_file << "\t -> FINAL estimate of par[" << ii << "] \t" << par[ii] << "+-" << sqrt(fit->GetCovarianceMatrixElement(ii, ii)) << endl;
 	}
 
 	chi2_reduced_estimate(
 		x,
 		y,
 		y_err,
-		par
+		par,
+		output_file
 	);
 
 	double cov[10][10];
 
+	output_file << endl;
 	cout << endl;
+	output_file << "COV_MATRIX" << endl;
 	cout << "COV_MATRIX:" << endl;
 	for (int ii = 0; ii < n_par_fit; ++ii)
 	{
@@ -714,29 +757,35 @@ void fit_plot_points_errors(
 		{
 			cov[ii][jj] = fit->GetCovarianceMatrixElement(ii, jj);
 			cout << cov[ii][jj] << "\t";
+			output_file << cov[ii][jj] << "\t";
 		}
 
 		cout << endl;
+		output_file << endl;
 
 	}
 
 	cout << endl;
+	output_file << endl;
 
 	cout << endl;
+	output_file << endl;
 	cout << "CORR_MATRIX:" << endl;
+	output_file << "CORR_MATRIX:" << endl;
 	for (int ii = 0; ii < n_par_fit; ++ii)
 	{
 		for (int jj = 0; jj < n_par_fit; ++jj)
 		{
 			cout << cov[ii][jj] / sqrt(cov[ii][ii] * cov[jj][jj]) << "\t";
+			output_file << cov[ii][jj] / sqrt(cov[ii][ii] * cov[jj][jj]) << "\t";
 		}
-
+		output_file << endl;
 		cout << endl;
 
 	}
 
 	cout << endl;
-
+	output_file << endl;
 
 
 	p_plot->SetLineColor(kRed);
@@ -765,6 +814,8 @@ void fit_plot_points_errors(
 	delete p_plot;
 	delete g_errors;
 	delete canvas;
+
+	output_file.close();
 }
 
 void silly_plot(
