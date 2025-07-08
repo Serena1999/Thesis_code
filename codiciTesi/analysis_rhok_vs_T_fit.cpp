@@ -15,17 +15,18 @@
 #include "../library.h"
 #include "../root_include.h"
 
-#define CHOOSE_FIT_FUNCTION 2
+#define CHOOSE_FIT_FUNCTION 3
 /*
  -> 0 for rho_k/rho_1 = exp(-par[0]*(x-1))/pow(x,par[1])
  -> 1 for rho_k/rho_1 = exp(-par[0]*(x-1))/pow(x, 2.5)
  -> 2 for rho_k/rho_1 = x^(-par[0])
-*/
+ -> 3 for rho_k/rho_1 = par[2]*exp(-par[0]*(x-1))/pow(x,par[1]) -> MA CHE SENSO AVREBBE PAR[2]?
+ */
 const bool bool_choose_at_eye = 0; //0 if you want an automatic set of parameters, 1 if you want to impose them by hand;
 // -> if 1, modify the corrisponding if condition in par_estimate function to choose parameters;
 
-const bool only_one_graph = 0;//to choose to focus only on a single graph
-const int index_graph = 1; //index of the graph to focus on if only_one_graph = 1.
+const bool only_one_graph = 1;//to choose to focus only on a single graph
+const int index_graph = 0; //index of the graph to focus on if only_one_graph = 1.
 
 //-----------------------------------------------------------------
 //ROOT MACRO TO DO FIT AND GRAPH:
@@ -99,14 +100,13 @@ void silly_plot(
 
 		vector <double> a0, a1, c;
 
-		TLinearFitter fitter(2, "x0 ++ x1");
+		TLinearFitter fitter(2, "x0*x[0] + x1*x[1]");
 
 		for (int ii = 0; ii < x.size(); ++ii) {
 			if ((y[ii] > 0) && (x[ii] > 0)) {
 				a0.push_back(1 - x[ii]);
 				a1.push_back(-log(x[ii]));
 				c.push_back(log(y[ii]));
-
 				//cout << "(a0, a1, c) = (" << a0.back() << ", " << a1.back() << ", " << c.back() << ")" << endl;
 
 				double vars[] = {a0.back(), a1.back() }; // being c[ii] = x0*a0[ii]+x1*a1[ii];
@@ -126,15 +126,20 @@ void silly_plot(
 			}
 
 			if (!bool_choose_at_eye) {
-				p[1] = p[0] * log(2.0 / 3.0);
+				p[1] = p[0] * log(3.0 / 2.0);
 			}
 		}
 		else {
 			fitter.Eval();
-			
 			p[0] = fitter.GetParameter(0);
 			p[1] = fitter.GetParameter(1);
+			cout << p[0] << endl;
+			cout << p[1] << endl;
+		}
 
+		if ((p[0] < 0)|| (p[1] < 0)) {//this case isn't physical
+			p[0] = log(y[1] / y[2]);
+			p[1] = p[0] * log(3.0 / 2.0);
 		}
 
 		cout << "Parameters used for fit: p0 = " << p[0]
@@ -304,6 +309,99 @@ void silly_plot(
 			p[0] = fitter.GetParameter(0);
 
 		}
+
+		return 0;
+	}
+
+#elif CHOOSE_FIT_FUNCTION == 3
+
+	double fit_function(
+		double* x, //number of windings
+		double* p //parameters
+	) {
+		//if ((p[0] < 0) || (p[1] < 0)) return 1e100;
+		return p[2] * exp(-p[0] * (x[0] - 1)) / pow(x[0], p[1]);
+	}
+
+	const int n_par_fit = 3;
+
+	bool par_estimate(
+		//return 0 if success, 1 if not;
+		const vector<double>& x, //temperatures
+		const vector<double>& y, //observables
+		vector<double>& p //parameters
+	) {
+
+		p[0] = 0.13;
+		p[1] = 1;
+		p[2] = 0.166;
+
+		if (bool_choose_at_eye || (x.size() < n_par_fit) || (x.size() <= 3)) {//TO CHANGE THE FOLLOWING FOR "CHOOSE BY EYE" SETTING
+			if (x.size() < n_par_fit) {
+				cerr << "Not enough points for estimate." << endl;
+				return 1;
+			}
+			cout << "Parameters used for fit: p0 = " << p[0]
+				<< ", p1 = " << p[1]
+				<< ", p2 = " << p[2] << endl;
+			return 0;
+		}
+
+		//By a linear fit: (y = p[2]* exp(-p[0] * (x - 1)) / pow(x, p[1]) = exp(-p[0] *(x-1) + log(p[2]))/pow(x, p[1]<-> y_log = log(y) =  - p[0] * (x-1) + log(p[2]) - p[1] log(x) 
+		// -> p[0] *a0 + p[1] * a1 + new_p2 = c
+		// with a0 = 1 - x, a1 = - log(x), c = log(y), new_p2 = log(p[2]) -> we can make linear fit with only p[0] and p[1] unknown)
+
+		vector <double> a0, a1, a2, c;
+		double new_p2;
+
+		TLinearFitter fitter(3, "x0*x[0] + x1*x[1] + x2*x[2]");
+
+		for (int ii = 0; ii < x.size(); ++ii) {
+			if ((y[ii] > 0) && (x[ii] > 0)) {
+				a0.push_back(1 - x[ii]);
+				a1.push_back(-log(x[ii]));
+				a2.push_back(1);
+				c.push_back(log(y[ii]));
+				//cout << "(a0, a1, c) = (" << a0.back() << ", " << a1.back() << ", " << c.back() << ")" << endl;
+
+				double vars[] = { a0.back(), a1.back(), a2.back() }; // being c[ii] = x0*a0[ii]+x1*a1[ii];
+				fitter.AddPoint(vars, c.back()); // being c[ii] = x0*a0[ii]+x1*a1[ii];
+			}
+			else {
+				cout << "zero y in par_estimate: not used in par estimate." << endl;
+			}
+			//cout << ii << ":\t" << x[ii] << "\t" << y[ii] << endl;
+		}
+
+		//cout << "N punti inseriti nel fit: " << a0.size() << endl;
+
+		if (a0.size() < n_par_fit) {//TO CHANGE THE FOLLOWING FOR "CHOOSE BY EYE" SETTING
+			if (y[2] != 0) {
+				p[0] = log(y[1] / y[2]);
+			}
+			p[1] = p[0] * log(3.0 / 2.0);
+			p[2] = 1;
+		}
+		else {
+			fitter.Eval();
+			p[0] = fitter.GetParameter(0);
+			p[1] = fitter.GetParameter(1);
+			new_p2 = fitter.GetParameter(2);
+			p[2] = exp(new_p2);
+			cout << p[0] << endl;
+			cout << p[1] << endl;
+			cout << p[2] << endl;
+		}
+
+		if ((p[0] < 0) || (p[1] < 0)) {//this case isn't physical
+			p[0] = log(y[1] / y[2]);
+			p[1] = p[0] * log(3.0 / 2.0);
+			p[2] = 1;
+		}
+
+		cout << "Parameters used for fit: p0 = " << p[0]
+			<< ", p1 = " << p[1]
+			<< ", p2 = " << p[2] << endl;
 
 		return 0;
 	}
@@ -723,7 +821,7 @@ void fit_plot_points_errors(
 	for (int ii = 0; ii < par.size(); ++ii) {
 		p_plot->SetParameter(ii, par[ii]); //setting the ii-th parameter of the function
 		output_file << "\t -> inital estimate of par[" << ii << "] \t" << par[ii] << endl;
-		p_plot->SetParLimits(ii, 0, 1e3);    // par[ii]: solo positivi
+		p_plot->SetParLimits(ii, 0, 1e6);    // par[ii]: solo positivi
 	}
 
 	p_plot->GetXaxis()->SetRangeUser(min_x, max_x);
