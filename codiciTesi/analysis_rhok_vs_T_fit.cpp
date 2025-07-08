@@ -15,7 +15,7 @@
 #include "../library.h"
 #include "../root_include.h"
 
-#define CHOOSE_FIT_FUNCTION 3
+#define CHOOSE_FIT_FUNCTION 0
 /*
  -> 0 for rho_k/rho_1 = exp(-par[0]*(x-1))/pow(x,par[1])
  -> 1 for rho_k/rho_1 = exp(-par[0]*(x-1))/pow(x, 2.5)
@@ -25,7 +25,7 @@
 const bool bool_choose_at_eye = 0; //0 if you want an automatic set of parameters, 1 if you want to impose them by hand;
 // -> if 1, modify the corrisponding if condition in par_estimate function to choose parameters;
 
-const bool only_one_graph = 1;//to choose to focus only on a single graph
+const bool only_one_graph = 0;//to choose to focus only on a single graph
 const int index_graph = 0; //index of the graph to focus on if only_one_graph = 1.
 
 //-----------------------------------------------------------------
@@ -434,7 +434,7 @@ void read_name_files(
 //MAIN:
 int main() {
 
-	string directory = "19_05_2025/rhok_vs_k/";
+	string directory = "11_05_2025/rhok_vs_k/";
 	string name_file_list = "file_list.txt";
 	int skiplines_input_file = 1;
 
@@ -458,6 +458,14 @@ int main() {
 		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
 		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
 		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
+		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
+		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
+		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
+		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
+		"#LT #rho_{k} / #rho_{1} #GT",
+		"#LT #rho_{k} / #rho_{1} #GT",
+		"#LT #rho_{k} / #rho_{1} #GT",
+		"#LT #rho_{k} / #rho_{1} #GT",
 		"#LT #rho_{k} / #rho_{1} #GT",
 		"#LT #rho_{k} / #rho_{1} #GT",
 		"#LT #rho_{k} / #rho_{1} #GT",
@@ -477,6 +485,14 @@ int main() {
 	};
 
 	vector <double> pos_title = {//BE CAREFUL TO CHOOSE WELL;
+		0.5,
+		0.5,
+		0.5,
+		0.5,
+		0.5,
+		0.5,
+		0.5,
+		0.5,
 		0.5,
 		0.5,
 		0.5,
@@ -543,10 +559,26 @@ int main() {
 		0.020,
 		0.020,
 		0.020,
+		0.020,
+		0.020,
+		0.020,
+		0.020,
+		0.020,
+		0.020,
+		0.020,
+		0.020,
 		0.020
 	};
 
 	vector <double> heigh_y = {//BE CAREFUL TO CHOOSE WELL;
+		0.45,
+		0.45,
+		0.45,
+		0.45,
+		0.45,
+		0.45,
+		0.45,
+		0.45,
 		0.45,
 		0.45,
 		0.45,

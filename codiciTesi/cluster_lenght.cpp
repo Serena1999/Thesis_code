@@ -69,13 +69,13 @@ void read_file_list_DIRECTORIES_THERM(//SCRIVI SOTTO COME IMPLEMENTARLA, PRENDI 
 
 int main() {
 
-	string mpi = "1500";
-	int mpi_int = 1500;
+	string mpi = "800";
+	int mpi_int = 800;
 	string line;
 
 	int Nt = 8;
 
-	string list_file = "19_05_2025/file_list_therm.txt";
+	string list_file = "11_05_2025/file_list_therm_extended.txt";
 	int skipLines_list_file = 1;
 	int step_sample_gauge = 1;
 	int step_sample_fermion = 10;
@@ -85,7 +85,7 @@ int main() {
 	string name_input_file = "mon_clusters.dat";
 	int skip_lines_input_file = 0;
 
-	string name_file_lpc = "19_05_2025/LCP_1500MeV_dimblock.txt";
+	string name_file_lpc = "11_05_2025/LCP_800MeV_dimblock_extended.txt";
 	int skipLines_file_lpc = 2;
 	vector <double> aml, beta, afm, temp;
 
@@ -156,7 +156,7 @@ int main() {
 		double conf_id = -999, conf_tmp = 999;
 		bool flag_init = 0;
 
-		n_skip[ii] = 0;//MOMENTANEO
+		//n_skip[ii] = 0;//MOMENTANEO
 
 		for (int jj = 0; jj < n_skip[ii]; jj++) {
 			while (conf_id != conf_tmp) {

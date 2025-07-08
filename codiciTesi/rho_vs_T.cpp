@@ -63,15 +63,15 @@ void read_file_list_DIRECTORIES_THERM(//SCRIVI SOTTO COME IMPLEMENTARLA, PRENDI 
 
 int main() {
 
-	string mpi = "1500";
-	int mpi_int = 1500;
+	string mpi = "800";
+	int mpi_int = 800;
 	string line;
 
 	int Nt = 8;
 	int Ns = 32;
 	int ad_Vs = Ns * Ns * Ns; //adimensional spatial volume
 
-	string list_file = "19_05_2025/file_list_therm.txt";
+	string list_file = "11_05_2025/file_list_therm_extended.txt";
 	int skipLines_list_file = 1;
 	int step_sample_gauge = 1;
 	int step_sample_fermion = 10;
@@ -81,7 +81,7 @@ int main() {
 	string name_input_file = "mon.dat";
 	int skip_lines_input_file = 0;
 
-	string name_file_lpc = "19_05_2025/LCP_1500MeV_dimblock.txt";
+	string name_file_lpc = "11_05_2025/LCP_800MeV_dimblock_extended.txt";
 	int skipLines_file_lpc = 2;
 	vector <double> aml, beta, afm, temp;
 
@@ -107,18 +107,18 @@ int main() {
 	string name_image = "results/rho_tot_mpi" + mpi + ".png";
 	string name_output_file = "results/rho_tot_mpi" + mpi + ".txt";
 
-	string title = "#LT #rho / V_{s}^{3} #GT vs temperature:";
-	
-	string y_name = "#LT #rho / V_{s}^{3} #GT";
+	string title = "#LT #rho / T^{3} #GT vs temperature:";
+
+	string y_name = "#LT #rho / T^{3} #GT";
 
 	double pos_title = 0.3;
-	
+
 	double pos_y = 0.04;
-	
+
 	double heigh_y = 0.4;
-	
+
 	double width_canvas = 800;
-	
+
 	read_file_list_DIRECTORIES_THERM(
 		list_file,
 		skipLines_list_file,
@@ -176,7 +176,7 @@ int main() {
 		int n_conf = 0;
 		vector <double> nk;
 		double rho_T3_value;
-		
+
 		while (getline(input_file, line)) {
 			istringstream iss(line);
 			if (iss >> conf_id >> discard1 >> discard2 >> discard3 >> discard4 >> discard5 >> discard6 >> discard7 >> wrap_value) {
@@ -239,7 +239,7 @@ int main() {
 				mean_rho_T3[ii] += rho_T3_value;
 				mean_2[ii] += (rho_T3_value * rho_T3_value);
 			}
-			nk.clear();	
+			nk.clear();
 			//if (ii == 12) {
 			//	cout << endl;
 			//	//cout << kk << endl;
@@ -254,7 +254,7 @@ int main() {
 		}
 
 		double factor = pow(Nt, 3) / ad_Vs;
-		/* 
+		/*
 		look at formula 32 of page 10 of second article given by professor.
 		*/
 
@@ -262,15 +262,15 @@ int main() {
 		mean_2[ii] /= (double)n_conf;
 
 		mean_rho_T3[ii] *= factor;
-		mean_2[ii] *= factor;
+		mean_2[ii] *= (factor * factor);
 
 		err_rho_T3.push_back(mean_2[ii] - mean_rho_T3[ii] * mean_rho_T3[ii]);
-		
+
 		if (n_conf == 1) {
 			cout << "No sufficient configurations to evaluete error for configuration of " << to_string(ii + 1) << "-th temperature: T = " << temp[ii] << endl;
 			continue;
 		}
-		
+
 		err_rho_T3[ii] /= (double)(n_conf - 1);
 
 		if (err_rho_T3[ii] < 0) {
@@ -294,7 +294,7 @@ int main() {
 
 	//images:
 	name_image = "results/rho_tot_mpi" + mpi + ".png";
-	
+
 	if (err_rho_T3.size() > 1) {
 
 		plot_points_errors(
@@ -311,7 +311,7 @@ int main() {
 		);
 	}
 	else {
-		cout << "No image generated since:"<< endl;
+		cout << "No image generated since:" << endl;
 		cout << "Not enough data points to produce a plot (need at least 2)." << endl;
 	}
 
@@ -327,7 +327,7 @@ int main() {
 	output_file << "#T[MeV] \t <rho_tot/T^3>[adimensional] \t  \t error(rho_tot/T^3):" << endl;
 
 	output_file << setprecision(numeric_limits<double>::max_digits10);
-	
+
 	for (int ii = 0; ii < mean_rho_T3.size(); ++ii) {
 		output_file << temp[ii] << "\t" << mean_rho_T3[ii] << "\t" << err_rho_T3[ii] << endl;
 	}

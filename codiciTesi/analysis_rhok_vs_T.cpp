@@ -63,10 +63,10 @@ double f(double rho_k, double rho_1) {
 
 int main() {
 
-	string mpi = "1500";
+	string mpi = "800";
 	string line;
 
-	string list_file = "19_05_2025/file_list_therm.txt";
+	string list_file = "11_05_2025/file_list_therm_extended.txt";
 	int skipLines_list_file = 1;
 	int step_sample_gauge = 1;
 	int step_sample_fermion = 10;
@@ -320,8 +320,10 @@ int main() {
 				err_rhok_rho1[kk] = sqrt(err_rhok_rho1[kk]);
 			}
 
-			if (tmp_err < 0) {
+			if ((tmp_err < 0) && (kk!=0)) {
 				cout << "var_rhok_norm[" << to_string(kk) << "] < 0" << endl;
+				cout << kk << endl;
+				cout << tmp_err << endl;
 				tmp_err = 0;
 			}
 			else {
