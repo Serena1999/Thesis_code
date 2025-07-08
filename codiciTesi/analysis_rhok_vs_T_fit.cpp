@@ -100,36 +100,42 @@ void silly_plot(
 
 		vector <double> a0, a1, c;
 
-		TLinearFitter fitter(2, "x0*x[0] + x1*x[1]");
+		double eps_y = 0;// 1e-6; //value minimum to consider for y[ii] in par_estimate
+		int n_first_point = x.size(); //I use only the first n_first_point points if x.size()>10
+
+		//TLinearFitter fitter(2, "x0*x[0] + x1*x[1]");
+		//TLinearFitter fitter(2, "x0 + x1");
+		TLinearFitter fitter(2, "x0 ++ x1"); //https://root.cern/doc/v636/fitLinear2_8C.html
 
 		for (int ii = 0; ii < x.size(); ++ii) {
-			if ((y[ii] > 0) && (x[ii] > 0)) {
+			if ((y[ii] > eps_y) && (x[ii] > 0) && (n_first_point != 0)) {
+				n_first_point--;
 				a0.push_back(1 - x[ii]);
 				a1.push_back(-log(x[ii]));
 				c.push_back(log(y[ii]));
-				//cout << "(a0, a1, c) = (" << a0.back() << ", " << a1.back() << ", " << c.back() << ")" << endl;
-
+				cout << "(a0, a1, c) = (" << a0.back() << ", " << a1.back() << ", " << c.back() << ")" << endl;
+				
 				double vars[] = {a0.back(), a1.back() }; // being c[ii] = x0*a0[ii]+x1*a1[ii];
 				fitter.AddPoint(vars, c.back()); // being c[ii] = x0*a0[ii]+x1*a1[ii];
 			}
 			else {
 				cout << "zero y in par_estimate: not used in par estimate." << endl;
+				cout << "(y[ii], x[ii]) = (" << y[ii] << "\t" << x[ii] << endl;
 			}
 			//cout << ii << ":\t" << x[ii] << "\t" << y[ii] << endl;
 		}
 
 		//cout << "N punti inseriti nel fit: " << a0.size() << endl;
 
-		if (a0.size() < n_par_fit) {//TO CHANGE THE FOLLOWING FOR "CHOOSE BY EYE" SETTING
-			if (y[2] != 0) {
-				p[0] = log(y[1] / y[2]);
-			}
-
-			if (!bool_choose_at_eye) {
-				p[1] = p[0] * log(3.0 / 2.0);
-			}
+		if (y[2] != 0) {
+			p[0] = log(y[1] / y[2]);
 		}
-		else {
+
+		if (!bool_choose_at_eye) {
+			p[1] = p[0] * log(3.0 / 2.0);
+		}
+		
+		if (a0.size() > n_par_fit){
 			fitter.Eval();
 			p[0] = fitter.GetParameter(0);
 			p[1] = fitter.GetParameter(1);
@@ -137,7 +143,7 @@ void silly_plot(
 			cout << p[1] << endl;
 		}
 
-		if ((p[0] < 0)|| (p[1] < 0)) {//this case isn't physical
+		if((p[0] < 0)|| (p[1] < 0) ||(isnan(p[0])) || (isnan(p[1]))) {//this case isn't physical
 			p[0] = log(y[1] / y[2]);
 			p[1] = p[0] * log(3.0 / 2.0);
 		}

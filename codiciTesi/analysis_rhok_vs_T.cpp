@@ -76,9 +76,6 @@ int main() {
 	string name_input_file = "mon.dat";
 	int skip_lines_input_file = 0;
 
-	int n_boot_steps = 200; //for estimate errors of secondary observables with Bootstrap.
-	int seed = 1; //for estimate errors of secondary observables with Bootstrap.
-
 	vector <double> mean_rhok, mean_rhok_rho1, mean_rhok_norm;
 	/*
 	-> mean_rhok[ii] = mean of nk[ii] over configurations = <nk[ii]>
@@ -118,9 +115,6 @@ int main() {
 		step_sample_fermion
 	);
 
-	sample_gen sampler;
-	sampler.init(seed);
-
 	for (int ii = 0; ii < directories.size(); ++ii) {
 		ifstream input_file;
 		input_file.open(directories[ii] + name_input_file);
@@ -142,7 +136,7 @@ int main() {
 		double conf_id = -999, conf_tmp = 999;
 		bool flag_init = 0;
 
-		n_skip[ii] = 0;//MOMENTANEO
+		//n_skip[ii] = 0;//MOMENTANEO
 
 		for (int jj = 0; jj < n_skip[ii]; jj++) {
 			while (conf_id != conf_tmp) {
@@ -162,7 +156,7 @@ int main() {
 
 		//for each configurazion, we compute the densities and then we do the mean:
 		double discard1, discard2, discard3, discard4, discard5, discard6, discard7, wrap_value;
-		double n_accum = 0;
+		//double n_accum = 0;
 		int n_conf = 0;
 		vector <double> value_rhok, value_rhok_rho1, value_rhok_norm, k_array;
 		vector <vector<double>> matrix_value_rhok;
@@ -211,10 +205,10 @@ int main() {
 								matrix_value_rhok.resize(kk + 1, vector<double>());
 							}
 							matrix_value_rhok[kk].push_back(value_rhok[kk]);
-							value_rhok[kk] /= n_accum;
+							//value_rhok[kk] /= n_accum;
 							mean_rhok[kk] += value_rhok[kk];
 							mean0_2[kk] += (value_rhok[kk] * value_rhok[kk]);
-							value_rhok_rho1[kk] /= n_accum;
+							//value_rhok_rho1[kk] /= n_accum;
 							mean_rhok_rho1[kk] += value_rhok_rho1[kk];
 							mean1_2[kk] += (value_rhok_rho1[kk] * value_rhok_rho1[kk]);
 							mean_rhok_times_rho1[kk] += value_rhok[kk] * value_rhok[0];
@@ -222,7 +216,7 @@ int main() {
 					}
 					value_rhok.clear();
 					value_rhok_rho1.clear();
-					n_accum = 0;
+					//n_accum = 0;
 					conf_tmp = conf_id;
 				}
 				if (wrap_value == 0) {
@@ -232,7 +226,7 @@ int main() {
 					value_rhok.resize(abs(wrap_value), 0.0);
 					value_rhok_rho1.resize(abs(wrap_value), 0.0);
 				}
-				++n_accum;
+				//++n_accum;
 				value_rhok[abs(wrap_value) - 1] += 1;
 			}
 			else {
@@ -260,10 +254,10 @@ int main() {
 						matrix_value_rhok.resize(kk + 1, vector<double>());
 					}
 					matrix_value_rhok[kk].push_back(value_rhok[kk]);
-					value_rhok[kk] /= n_accum;
+					//value_rhok[kk] /= n_accum;
 					mean_rhok[kk] += value_rhok[kk];
 					mean0_2[kk] += (value_rhok[kk] * value_rhok[kk]);
-					value_rhok_rho1[kk] /= n_accum;
+					//value_rhok_rho1[kk] /= n_accum;
 					mean_rhok_rho1[kk] += value_rhok_rho1[kk];
 					mean1_2[kk] += (value_rhok_rho1[kk] * value_rhok_rho1[kk]);
 					mean_rhok_times_rho1[kk] += value_rhok[kk] * value_rhok[0];
