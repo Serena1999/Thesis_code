@@ -63,15 +63,15 @@ void read_file_list_DIRECTORIES_THERM(//SCRIVI SOTTO COME IMPLEMENTARLA, PRENDI 
 
 int main() {
 
-	string mpi = "800";
-	int mpi_int = 800;
+	string mpi = "1500";
+	int mpi_int = 1500;
 	string line;
 
 	int Nt = 8;
 	int Ns = 32;
 	int ad_Vs = Ns * Ns * Ns; //adimensional spatial volume
 
-	string list_file = "11_05_2025/file_list_therm_extended.txt";
+	string list_file = "19_05_2025/file_list_therm.txt";
 	int skipLines_list_file = 1;
 	int step_sample_gauge = 1;
 	int step_sample_fermion = 10;
@@ -81,7 +81,7 @@ int main() {
 	string name_input_file = "mon.dat";
 	int skip_lines_input_file = 0;
 
-	string name_file_lpc = "11_05_2025/LCP_800MeV_dimblock_extended.txt";
+	string name_file_lpc = "19_05_2025/LCP_1500MeV_dimblock.txt";
 	int skipLines_file_lpc = 2;
 	vector <double> aml, beta, afm, temp;
 
@@ -104,8 +104,8 @@ int main() {
 	vector <double> mean_2; //mean of squares
 	vector <double> err_rho_T3; //standard deviation from the mean
 
-	string name_image = "results/rho_tot_mpi" + mpi + ".png";
-	string name_output_file = "results/rho_tot_mpi" + mpi + ".txt";
+	string name_image = "results/rho_tot_mpi" + mpi + "_attempt.png";
+	string name_output_file = "results/rho_tot_mpi" + mpi + "_attempt.txt";
 
 	string title = "#LT #rho / T^{3} #GT vs temperature:";
 
@@ -205,7 +205,8 @@ int main() {
 						++n_conf;
 						rho_T3_value = 0;
 						for (int kk = 0; kk < nk.size(); ++kk) {
-							rho_T3_value += kk * nk[kk];
+							//rho_T3_value += kk * nk[kk];
+							rho_T3_value += nk[kk];
 						}
 						mean_rho_T3[ii] += rho_T3_value;
 						mean_2[ii] += (rho_T3_value * rho_T3_value);
@@ -234,7 +235,8 @@ int main() {
 				++n_conf;
 				rho_T3_value = 0;
 				for (int kk = 0; kk < nk.size(); ++kk) {
-					rho_T3_value += kk * nk[kk];
+					//rho_T3_value += kk * nk[kk];
+					rho_T3_value += nk[kk];
 				}
 				mean_rho_T3[ii] += rho_T3_value;
 				mean_2[ii] += (rho_T3_value * rho_T3_value);
@@ -291,9 +293,6 @@ int main() {
 		cout << mean_2[ii] << endl;
 		cout << n_conf << endl;
 	}
-
-	//images:
-	name_image = "results/rho_tot_mpi" + mpi + ".png";
 
 	if (err_rho_T3.size() > 1) {
 
