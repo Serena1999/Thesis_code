@@ -206,6 +206,9 @@ int main() {
 							}
 							matrix_value_rhok[kk].push_back(value_rhok[kk]);
 							//value_rhok[kk] /= n_accum;
+							//if (value_rhok[kk] != 0) {
+							//	cout << "(k, nk) = (" << (kk + 1) << ", " << value_rhok[kk] << ")" << endl; //small check
+							//}
 							mean_rhok[kk] += value_rhok[kk];
 							mean0_2[kk] += (value_rhok[kk] * value_rhok[kk]);
 							//value_rhok_rho1[kk] /= n_accum;
