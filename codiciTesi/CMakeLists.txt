@@ -30,6 +30,7 @@ add_executable(autocorr_check_rhok "autocorr_check_rhok.cpp")
 add_executable(rho_vs_T "rho_vs_T.cpp")
 add_executable(cluster_lenght "cluster_lenght.cpp")
 add_executable(simple_rendering "simple_rendering.cpp")
+add_executable(fit_muT "fit_muT.cpp")
 
 
 target_link_libraries(polyff ${ROOT_LIBRARIES})
@@ -49,3 +50,4 @@ target_link_libraries(autocorr_check_rhok ${ROOT_LIBRARIES})
 target_link_libraries(rho_vs_T ${ROOT_LIBRARIES})
 target_link_libraries(cluster_lenght ${ROOT_LIBRARIES})
 target_link_libraries(simple_rendering ${ROOT_LIBRARIES})
+target_link_libraries(fit_muT ${ROOT_LIBRARIES})
