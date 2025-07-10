@@ -205,8 +205,8 @@ int main() {
 						++n_conf;
 						rho_T3_value = 0;
 						for (int kk = 0; kk < nk.size(); ++kk) {
-							//rho_T3_value += kk * nk[kk];
-							rho_T3_value += nk[kk];
+							rho_T3_value += kk * nk[kk];
+							//rho_T3_value += nk[kk];
 						}
 						mean_rho_T3[ii] += rho_T3_value;
 						mean_2[ii] += (rho_T3_value * rho_T3_value);
@@ -235,8 +235,8 @@ int main() {
 				++n_conf;
 				rho_T3_value = 0;
 				for (int kk = 0; kk < nk.size(); ++kk) {
-					//rho_T3_value += kk * nk[kk];
-					rho_T3_value += nk[kk];
+					rho_T3_value += kk * nk[kk];
+					//rho_T3_value += nk[kk];
 				}
 				mean_rho_T3[ii] += rho_T3_value;
 				mean_2[ii] += (rho_T3_value * rho_T3_value);

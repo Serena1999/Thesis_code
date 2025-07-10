@@ -15,3 +15,4 @@
 #include <TLine.h>
 #include <TGraphErrors.h>
 #include <TLinearFitter.h>
+#include <TApplication.h>

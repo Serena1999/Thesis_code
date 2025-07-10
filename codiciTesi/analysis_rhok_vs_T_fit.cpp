@@ -15,7 +15,7 @@
 #include "../library.h"
 #include "../root_include.h"
 
-#define CHOOSE_FIT_FUNCTION 0
+#define CHOOSE_FIT_FUNCTION 1
 /*
  -> 0 for rho_k/rho_1 = exp(-par[0]*(x-1))/pow(x,par[1])
  -> 1 for rho_k/rho_1 = exp(-par[0]*(x-1))/pow(x, 2.5)
@@ -26,7 +26,10 @@ const bool bool_choose_at_eye = 0; //0 if you want an automatic set of parameter
 // -> if 1, modify the corrisponding if condition in par_estimate function to choose parameters;
 
 const bool only_one_graph = 0;//to choose to focus only on a single graph
-const int index_graph = 0; //index of the graph to focus on if only_one_graph = 1.
+const int index_graph = 12; //index of the graph to focus on if only_one_graph = 1.
+
+const int discard_until = 4;
+
 
 //-----------------------------------------------------------------
 //ROOT MACRO TO DO FIT AND GRAPH:
@@ -650,6 +653,9 @@ int main() {
 			istringstream iss(line);
 			double k_value, nk_value, err_nk_value;
 			if (iss >> k_value >> nk_value >> err_nk_value) {
+				if (k_value <= discard_until) {
+					continue;
+				}
 				k.push_back(k_value);
 				nk.push_back(nk_value);
 				err_nk.push_back(err_nk_value);
@@ -670,8 +676,8 @@ int main() {
 				base_name = files[ii].substr(0, pos); //I remove extension using substr
 			}
 
-			name_image = "results/FIT_function_" + to_string(CHOOSE_FIT_FUNCTION) + "_" + base_name + ".png"; //<rho_k/rho_1>
-			string name_out_file = "results/FIT_function_" + to_string(CHOOSE_FIT_FUNCTION) + "_" + base_name + ".txt";
+			name_image = "results/FIT_function_" + to_string(CHOOSE_FIT_FUNCTION) + "_" + base_name + "_discard_until_" + to_string(discard_until) + ".png"; //<rho_k/rho_1>
+			string name_out_file = "results/FIT_function_" + to_string(CHOOSE_FIT_FUNCTION) + "_" + base_name +"_discard_until_" + to_string(discard_until) + ".txt";
 			
 			title = "Fit result:";
 
