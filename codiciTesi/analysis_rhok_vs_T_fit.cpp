@@ -437,7 +437,7 @@ void read_name_files(
 //MAIN:
 int main() {
 
-	string directory = "11_05_2025/rhok_vs_k/";
+	string directory = "19_05_2025/rhok_vs_k/";
 	string name_file_list = "file_list.txt";
 	int skiplines_input_file = 1;
 
@@ -461,10 +461,10 @@ int main() {
 		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
 		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
 		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
-		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
-		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
-		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
-		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
+//		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
+//		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
+//		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
+//		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
 		"#LT #rho_{k} / #rho_{1} #GT",
 		"#LT #rho_{k} / #rho_{1} #GT",
 		"#LT #rho_{k} / #rho_{1} #GT",
@@ -480,22 +480,22 @@ int main() {
 		"#LT #rho_{k} / #rho_{1} #GT",
 		"#LT #rho_{k} / #rho_{1} #GT",
 		"#LT #rho_{k} / #rho_{1} #GT",
-		"#LT #rho_{k} / #rho_{1} #GT",
-		"#LT #rho_{k} / #rho_{1} #GT",
-		"#LT #rho_{k} / #rho_{1} #GT",
-		"#LT #rho_{k} / #rho_{1} #GT",
+//		"#LT #rho_{k} / #rho_{1} #GT",
+//		"#LT #rho_{k} / #rho_{1} #GT",
+//		"#LT #rho_{k} / #rho_{1} #GT",
+//		"#LT #rho_{k} / #rho_{1} #GT",
 		"#LT #rho_{k} / #rho_{1} #GT"
 	};
 
 	vector <double> pos_title = {//BE CAREFUL TO CHOOSE WELL;
-		0.5,
-		0.5,
-		0.5,
-		0.5,
-		0.5,
-		0.5,
-		0.5,
-		0.5,
+//		0.5,
+//		0.5,
+//		0.5,
+//		0.5,
+//		0.5,
+//		0.5,
+//		0.5,
+//		0.5,
 		0.5,
 		0.5,
 		0.5,
@@ -531,14 +531,14 @@ int main() {
 	};
 
 	vector <double> pos_y = {//BE CAREFUL TO CHOOSE WELL;
-		0.020,
-		0.020,
-		0.020,
-		0.020,
-		0.020,
-		0.020,
-		0.020,
-		0.020,
+//		0.020,
+//		0.020,
+//		0.020,
+//		0.020,
+//		0.020,
+//		0.020,
+//		0.020,
+//		0.020,
 		0.020,
 		0.020,
 		0.020,
@@ -574,14 +574,14 @@ int main() {
 	};
 
 	vector <double> heigh_y = {//BE CAREFUL TO CHOOSE WELL;
-		0.45,
-		0.45,
-		0.45,
-		0.45,
-		0.45,
-		0.45,
-		0.45,
-		0.45,
+//		0.45,
+//		0.45,
+//		0.45,
+//		0.45,
+//		0.45,
+//		0.45,
+//		0.45,
+//		0.45,
 		0.45,
 		0.45,
 		0.45,

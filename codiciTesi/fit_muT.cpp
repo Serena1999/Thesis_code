@@ -97,55 +97,51 @@ bool par_estimate(
 int main(int argc, char** argv) {
 
 	//TO CHOOSE:
-	string mpi = "800";
+	string mpi = "1500";
 	string quantity = "1"; //1 for <rhok>/<rho1>, 2 for <rhok/rho1> 
 
 	TApplication app("App", &argc, argv);
 	
-	string name_out_file = "results/FIT_MUT_" + quantity + "_mpi" + mpi + ".png";
+	string name_out_file = "results/FIT_MUT_" + quantity + "_mpi" + mpi + ".txt";
 	string name_image = "results/FIT_MUT_" + quantity + "_mpi" + mpi + ".png";
 
-
 	vector <double> x = {
-		243.377,
-		257.347,
-		271.711,
-		286.507,
-		301.786,
-		317.618,
-		334.088,
-		351.294,
-		369.346,
-		388.360,
-		404.645
+	244.89 ,
+	261.844,
+	279.271,
+	297.374,
+	316.388,
+	336.545,
+	358.027,
+	380.897,
+	404.993,
+	433.553
 	};
 
 	vector <double> y = {
-		0.284661,//INDECISA SE METTERLO
-		0.398901,
-		0.545283,
-		0.77939,
-		0.96586,
-		1.09371,
-		1.36387,//ho messo 1, se non va bene metti 2
-		1.56162,
-		1.75081,
-		1.87469,
-		2.13651
+		0.528143,
+		1.09037 ,
+		1.22604 ,
+		1.69116 ,
+		1.96273 ,
+		2.20709 ,
+		2.55058 ,
+		2.77996 ,
+		3.07537 ,
+		3.40656
 	};
 
 	vector <double> dy = {
-		0.108201,//INDECISA SE METTERLO
-		0.193213,
-		0.357746,
-		0.0816677,
-		0.16642,
-		0.0754943,
-		0.0374763, //ho messo 1, se non va bene metti 2
-		0.0200966,
-		0.0147706,
-		0.0160792,
-		0.0775104//INDECISA SE METTERLO
+		0.200577 ,
+		0.0871921,
+		0.0542246,
+		0.0411082,
+		0.0579388,
+		0.0670202,
+		0.11059	 ,
+		0.0626644,
+		0.0697073,
+		0.0258094
 	};
 
 	fit_plot_points_errors(
@@ -461,7 +457,7 @@ void silly_plot(
 
 
 /*
-VALUE USED FOR MPI = 800 MEV:
+VALUE USED FOR MPI = 800 MEV and <rhok>/<rho1>:
 	vector <double> x = {
 		243.377,
 		257.347,
@@ -471,9 +467,9 @@ VALUE USED FOR MPI = 800 MEV:
 		317.618,
 		334.088,
 		351.294,
-		369.346,
-		388.360,
-		404.645
+		369.346//,
+//		388.360//,
+//		404.645
 	};
 
 	vector <double> y = {
@@ -485,9 +481,9 @@ VALUE USED FOR MPI = 800 MEV:
 		1.09371,
 		1.36387,//ho messo 1, se non va bene metti 2
 		1.56162,
-		1.75081,
-		1.87469,
-		2.13651
+		1.75081//,
+//		1.87469//,
+//		2.13651
 	};
 
 	vector <double> dy = {
@@ -499,9 +495,96 @@ VALUE USED FOR MPI = 800 MEV:
 		0.0754943,
 		0.0374763, //ho messo 1, se non va bene metti 2
 		0.0200966,
-		0.0147706,
-		0.0160792,
-		0.0775104//INDECISA SE METTERLO
+		0.0147706//,
+//		0.0160792//,
+//		0.0775104//INDECISA SE METTERLO
 	};
+
+	USED FOR MPI = 800 MEV AND <RHOK/RHO1>:
+
+		vector <double> x = {
+		243.377,
+		257.347,
+		271.711,
+		286.507,
+		301.786,
+		317.618,
+		334.088,
+		351.294,
+		369.346//,
+//		388.360//,
+//		404.645
+	};
+
+	vector <double> y = {
+			0.277787,//INDECISA SE METTERLO
+			0.392144,
+			0.538699,
+			0.768353,
+			0.952251,
+			1.08448,
+			1.34192, //ho messo 1, se non va bene metti 2
+			1.54398,
+			1.72737//,
+//			1.85577//,
+//			2.1217
+	};
+
+	vector <double> dy = {
+		0.117498,//INDECISA SE METTERLO
+		0.171818,
+		0.471515,
+		0.0832165,
+		0.180344,
+		0.0902923,
+		0.0359896, //ho messo 1, se non va bene metti 2
+		0.0201032,
+		0.0159643//,
+//		0.0192587//,
+//		0.0775332//INDECISA SE METTERLO
+	};
+
+	VALUE USED FOR MPI = 1500 MEV and <rhok>/<rho1>:
+		vector <double> x = {
+	244.89 ,
+	261.844,
+	279.271,
+	297.374,
+	316.388,
+	336.545,
+	358.027,
+	380.897,
+	404.993,
+	433.553
+	};
+
+	vector <double> y = {
+		0.543064,
+		0.9274  ,
+		1.24625 ,
+		1.70588 ,
+		1.80587 ,
+		2.23249 ,
+		2.57356,
+		2.79353,
+		3.09302,
+		3.44086
+	};
+
+	vector <double> dy = {
+		0.22407  ,
+		0.114908 ,
+		0.0321993,
+		0.0421979,
+		0.345458 ,
+		0.0771824,
+		0.111547 ,
+		0.0753449,
+		0.0787561,
+		0.0623854
+	};
+
+	VALUE USED FOR MPI = 1500 MEV and <rhok/rho1>:
+
 
 */
