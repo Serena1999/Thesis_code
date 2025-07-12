@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------
+ï»¿//-----------------------------------------------------------------
 //HEADERS && LIBRARY:
 
 #include "../library.h"
@@ -6,6 +6,9 @@
 
 const bool bool_choose_at_eye = 0; //0 if you want an automatic set of parameters, 1 if you want to impose them by hand;
 // -> if 1, modify the corrisponding if condition in par_estimate function to choose parameters;
+
+const int discard_until = 1; //to discard x[ii] with ii < discard_until
+const int discard_last = 2; //to discard the last discard_last indexes
 
 //-----------------------------------------------------------------
 //ROOT MACRO TO DO FIT AND GRAPH:
@@ -82,7 +85,54 @@ bool par_estimate(
 		return 0;
 	}
 
-	//SE VEDI CHE SERVE, IMPLEMENTA ROBA PIù ARTICOLATA
+	//SE VEDI CHE SERVE, IMPLEMENTA ROBA PIÃ¹ ARTICOLATA
+
+	// p1 estimate: an x value such as y is near 0
+	double min_y = *min_element(y.begin(), y.end());
+	auto it = find(y.begin(), y.end(), min_y);
+	int index_min_y = distance(y.begin(), it);
+	p[1] = x[index_min_y] - 1.0; // 1.0  is a small margin
+
+	if (p[1] < 0) p[1] = 0.0; // to avoid negative values
+
+	// p2 estimate: via fit log(y) = p2 * log(x - p1)
+	vector<double> x_new, y_new;
+	for (int ii = 0; ii < x.size(); ++ii) {
+		double dx = x[ii] - p[1];
+		if ((dx > 0) && (y[ii] > 0)) {
+			x_new.push_back(log(dx));
+			y_new.push_back(log(y[ii]));
+		}
+	}
+
+	if (x_new.size() < 2) {
+		cerr << "Not enough valid points for log-log estimate." << endl;
+		return 1;
+	}
+
+	// linear fit y_new = p2 * x_new + log(p0):
+	double sum_x = 0, sum_y = 0, sum_xx = 0, sum_xy = 0;
+	int N = x.size();
+	for (int ii = 0; ii < N; ++ii) {
+		sum_x += x_new[ii];
+		sum_y += y_new[ii];
+		sum_xx += x_new[ii] * x_new[ii];
+		sum_xy += x_new[ii] * y_new[ii];
+	}
+
+	double denom = N * sum_xx - sum_x * sum_x;
+	if (denom == 0) {
+		cerr << "Denominator zero in linear fit estimate." << endl;
+		cout << "Parameters used for fit: p0 = " << p[0]
+			<< ", p1 = " << p[1]
+			<< ", p2 = " << p[2] << endl;
+
+		return 1;
+	}
+
+	p[2] = (N * sum_xy - sum_x * sum_y) / denom;
+	double log_p0 = (sum_y - p[2] * sum_x) / N;
+	p[0] = exp(log_p0);
 
 	cout << "Parameters used for fit: p0 = " << p[0]
 		<< ", p1 = " << p[1]
@@ -98,12 +148,22 @@ int main(int argc, char** argv) {
 
 	//TO CHOOSE:
 	string mpi = "1500";
-	string quantity = "1"; //1 for <rhok>/<rho1>, 2 for <rhok/rho1> 
+	string quantity = "2"; //1 for <rhok>/<rho1>, 2 for <rhok/rho1> 
 
 	TApplication app("App", &argc, argv);
 	
-	string name_out_file = "results/FIT_MUT_" + quantity + "_mpi" + mpi + ".txt";
-	string name_image = "results/FIT_MUT_" + quantity + "_mpi" + mpi + ".png";
+	string name_out_file;
+	string name_image;
+
+	if(discard_until != 0){
+		name_out_file = "results/FIT_MUT_" + quantity + "_mpi" + mpi + ".txt";
+		name_image = "results/FIT_MUT_" + quantity + "_mpi" + mpi + ".png";
+	}
+	else {
+		name_out_file = "results/FIT_MUT_" + quantity + "_mpi" + mpi + "discard_until" + discard_until + "discard_last" + discard_last + ".txt";
+		name_image = "results/FIT_MUT_" + quantity + "_mpi" + mpi + "discard_until" + discard_until + "discard_last" + discard_last + ".png";
+	}
+	
 
 	vector <double> x = {
 	244.89 ,
@@ -119,30 +179,53 @@ int main(int argc, char** argv) {
 	};
 
 	vector <double> y = {
-		0.543064,
-		0.9274  ,
-		1.24625 ,
-		1.70588 ,
-		1.80587 ,
-		2.23249 ,
-		2.57356,
-		2.79353,
-		3.09302,
-		3.44086
+		0.528143,
+		1.09037 ,
+		1.22604 ,
+		1.69116 ,
+		1.96273 ,
+		2.20709 ,
+		2.55058 ,
+		2.77996 ,
+		3.07537 ,
+		3.40656
 	};
 
 	vector <double> dy = {
-		0.22407  ,
-		0.114908 ,
-		0.0321993,
-		0.0421979,
-		0.345458 ,
-		0.0771824,
-		0.111547 ,
-		0.0753449,
-		0.0787561,
-		0.0623854
+		0.200577 ,
+		0.0871921,
+		0.0542246,
+		0.0411082,
+		0.0579388,
+		0.0670202,
+		0.11059	 ,
+		0.0626644,
+		0.0697073,
+		0.0258094
 	};
+
+	int index = 0;
+	while (index < discard_until) {
+		x.erase(x.begin());
+		y.erase(y.begin());
+		dy.erase(dy.begin());
+		index++;
+	}
+
+	index = discard_last;
+
+	while (index > 0) {
+		if (!x.empty()) {
+			x.pop_back();
+			y.pop_back();
+			dy.pop_back();
+			index--;
+		}
+		else {
+			cout << "NO POINTS" << endl;
+			return 1;
+		}
+	}
 
 	fit_plot_points_errors(
 		x,
@@ -282,8 +365,8 @@ void fit_plot_points_errors(
 	g_errors->Fit(p_plot, "SW"); // S = return result, W = use weights (i.e., y errors)
 
 	TVirtualFitter* fit = TVirtualFitter::GetFitter(); //to get fit results;
-	//ATTENTA!! Spesso, ROOT stampa "Chi2" come la media dei residui quadratici(RMS²), NON come la vera somma pesata!
-	//Questo è uno di questi casi, dei valori ci si può fidare se il chi2 stimato con l'apposita funzione nel seguito è ragionevole.
+	//ATTENTA!! Spesso, ROOT stampa "Chi2" come la media dei residui quadratici(RMSÂ²), NON come la vera somma pesata!
+	//Questo Ã¨ uno di questi casi, dei valori ci si puÃ² fidare se il chi2 stimato con l'apposita funzione nel seguito Ã¨ ragionevole.
 
 	for (int ii = 0; ii < par.size(); ++ii) {
 		par[ii] = p_plot->GetParameter(ii);
@@ -467,9 +550,9 @@ VALUE USED FOR MPI = 800 MEV and <rhok>/<rho1>:
 		317.618,
 		334.088,
 		351.294,
-		369.346//,
-//		388.360//,
-//		404.645
+		369.346,
+		388.360,
+		404.645
 	};
 
 	vector <double> y = {
@@ -481,9 +564,9 @@ VALUE USED FOR MPI = 800 MEV and <rhok>/<rho1>:
 		1.09371,
 		1.36387,//ho messo 1, se non va bene metti 2
 		1.56162,
-		1.75081//,
-//		1.87469//,
-//		2.13651
+		1.75081,
+		1.87469,
+		2.13651	//alternativamente: 1.94737
 	};
 
 	vector <double> dy = {
@@ -495,9 +578,9 @@ VALUE USED FOR MPI = 800 MEV and <rhok>/<rho1>:
 		0.0754943,
 		0.0374763, //ho messo 1, se non va bene metti 2
 		0.0200966,
-		0.0147706//,
-//		0.0160792//,
-//		0.0775104//INDECISA SE METTERLO
+		0.0147706,
+		0.0160792,
+		0.0775104//alternativamente:0.740985 //INDECISA SE METTERLO
 	};
 
 	USED FOR MPI = 800 MEV AND <RHOK/RHO1>:
@@ -511,9 +594,9 @@ VALUE USED FOR MPI = 800 MEV and <rhok>/<rho1>:
 		317.618,
 		334.088,
 		351.294,
-		369.346//,
-//		388.360//,
-//		404.645
+		369.346,
+		388.360,
+		404.645
 	};
 
 	vector <double> y = {
@@ -525,9 +608,9 @@ VALUE USED FOR MPI = 800 MEV and <rhok>/<rho1>:
 			1.08448,
 			1.34192, //ho messo 1, se non va bene metti 2
 			1.54398,
-			1.72737//,
-//			1.85577//,
-//			2.1217
+			1.72737,
+			1.85577,
+			2.1217//alternativamente: 1.94685
 	};
 
 	vector <double> dy = {
@@ -539,9 +622,9 @@ VALUE USED FOR MPI = 800 MEV and <rhok>/<rho1>:
 		0.0902923,
 		0.0359896, //ho messo 1, se non va bene metti 2
 		0.0201032,
-		0.0159643//,
-//		0.0192587//,
-//		0.0775332//INDECISA SE METTERLO
+		0.0159643,
+		0.0192587,
+		0.0775332//alternativamente: 0.648966//INDECISA SE METTERLO
 	};
 
 	VALUE USED FOR MPI = 1500 MEV and <rhok>/<rho1>:
