@@ -8,7 +8,6 @@
 //HEADERS && LIBRARY:
 
 #include "../library.h"
-#include "../root_include.h"
 
 //-----------------------------------------------------------------
 //GLOBAL CONSTANTS:
@@ -23,7 +22,7 @@ const bool debug_mode = 0;
 //-----------------------------------------------------------------
 //DECLARATIONS:
 
-void read_file_LPC(
+void read_file_LPC_0T(
 	const string& name_file_lpc,
 	const int Nt,
 	const int skipLines_file_lpc,
@@ -31,27 +30,19 @@ void read_file_LPC(
 	vector<double>& aml,
 	vector<double>& beta,
 	vector<double>& afm,
-	vector<double>& temp,
-	vector<int>& dim_block_modP,
-	vector<int>& dim_block_reP,
-	vector<int>& dim_block_imP,
-	vector<int>& dim_block_modff,
-	vector<int>& dim_block_reff,
-	vector<int>& dim_block_imff
+	vector<double>& temp
 );
 
-void read_file_list(
+void read_file_list_0T(
 	const string& name_file_list,
 	const int skipLines_file_list,
 	const int skipLines,
-	vector<string>& directories,
-	vector<string>& gauge_files,
-	vector<string>& fermion_files,
-	vector<int>& n_skip_rep,
-	vector<int>& n_skip_imp,
+	vector<string>& paths,
 	vector<int>& n_skip_reff,
 	vector<int>& n_skip_imff,
-	int step_sample_gauge,
+	vector<int>& dim_block_modff,
+	vector<int>& dim_block_reff,
+	vector<int>& dim_block_imff,
 	int step_sample_fermion
 );
 
@@ -73,27 +64,27 @@ void stats_thesis(
 //MAIN:
 
 int main() {
+	
 	int Nt = 32; //BE CAREFUL TO CHOOSE IT WELL;
 	int skipLines_file_lpc = 2, skipLines_file_list = 1, skipLines = 1;
 	int step_sample_fermion = 10;
 	double mpi = 800; //MeV //BE CAREFUL TO CHOOSE IT WELL;
 	bool bool_startFile_poly = 1, bool_startFile_ff = 1;//BE CAREFUL TO CHOOSE IT WELL;
-	double temp_value;
-	vector<int> append_mode_ff = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };//20 entries (same size of beta);
-	vector<int> n_skip_rep, n_skip_imp, n_skip_reff, n_skip_imff;
-	vector<int> dim_block_modP, dim_block_reP, dim_block_imP, dim_block_modff, dim_block_reff, dim_block_imff;
+	vector<int> append_mode_ff = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};//20 entries (same size of beta);
+	
+	vector<int> n_skip_reff, n_skip_imff;
+	vector<int> dim_block_modff, dim_block_reff, dim_block_imff;
 	vector<double> aml, beta, afm, temp;//T = \hbar * c /(Nt * a[fm]) (1.60), Nt = 8; 
-	vector<string> directories, gauge_files, fermion_files;
-	ostringstream mpi_stream;//TO INTRODUCE ALSO IN NUMERICAL METHODS CODE: IT IS USEFUL;
+	double temp_value;
+	vector<string> paths;
+	ostringstream mpi_stream;
 	mpi_stream << fixed << setprecision(1) << mpi; //set to 1 decimal place
 	string mpi_string = mpi_stream.str(); // conversion into string
 	string name_output_file_ff = "results/0T_" + mpi_string + "_ff_results.txt";
 	string name_file_lpc = "11_05_2025/LCP_800MeV_dimblock_extended.txt";
-	string name_file_list = "11_05_2025/file_list_therm_extended.txt";
+	string name_file_list = "11_05_2025/file_list_therm_0T.txt";
 
-	//RIPARTI DA QUI A SISTEMARE... DEVI ANCHE CAMBIARE ESTENSIONE A .TXT AI FILE DI 0T_*... vedi quanti n_skip togliere per termalizzazione
-
-	read_file_LPC(
+	read_file_LPC_0T(
 		name_file_lpc,
 		Nt,
 		skipLines_file_lpc,
@@ -101,40 +92,21 @@ int main() {
 		aml,
 		beta,
 		afm,
-		temp,
-		dim_block_modP,
-		dim_block_reP,
-		dim_block_imP,
-		dim_block_modff,
-		dim_block_reff,
-		dim_block_imff
+		temp
 	);
 
-	read_file_list(
+	read_file_list_0T(
 		name_file_list,
 		skipLines_file_list,
 		skipLines,
-		directories,
-		gauge_files,
-		fermion_files,
-		n_skip_rep,
-		n_skip_imp,
+		paths,
 		n_skip_reff,
 		n_skip_imff,
-		step_sample_gauge,
+		dim_block_modff,
+		dim_block_reff,
+		dim_block_imff,
 		step_sample_fermion
 	);
-
-	if (bool_startFile_poly) {
-		ofstream output_file; //declaration of output file
-		output_file.open(name_output_file_poly);
-		if (!output_file) {
-			cerr << "Error opening output file" << endl;
-			return 1;
-		}
-		output_file << "# T \t |<P * P^dag>| \t err(|<P* P^dag>|) \t Re{P} \t err(Re{P}) \t Im{P} \t err(Im{P})" << endl;
-		output_file.close();
-	}
 
 	if (bool_startFile_ff) {
 		ofstream output_file; //declaration of output file
@@ -151,26 +123,7 @@ int main() {
 	for (int ii = 0; ii < temp.size(); ii++) {
 
 		stats_thesis(
-			directories[ii] + gauge_files[ii],
-			name_output_file_poly,
-			"gauge",
-			append_mode_poly[ii],
-			temp[ii],
-			n_skip_rep[ii],
-			n_skip_imp[ii],
-			dim_block_modP[ii],
-			dim_block_reP[ii],
-			dim_block_imP[ii],
-			skipLines
-
-		);
-		cout << "poly n°" << ii << " DONE! T = " << temp[ii] << endl;
-		cout << endl;
-
-		if (fermion_files[ii] == "NONE") continue;
-
-		stats_thesis(
-			directories[ii] + fermion_files[ii],
+			paths[ii],
 			name_output_file_ff,
 			"fermion",
 			append_mode_ff[ii],
@@ -192,7 +145,7 @@ int main() {
 //-----------------------------------------------------------------
 //FUNCTION DEFINITION:
 
-void read_file_LPC(
+void read_file_LPC_0T(
 	const string& name_file_lpc,
 	const int Nt,
 	const int skipLines_file_lpc,
@@ -200,13 +153,7 @@ void read_file_LPC(
 	vector<double>& aml,
 	vector<double>& beta,
 	vector<double>& afm,
-	vector<double>& temp,
-	vector<int>& dim_block_modP,
-	vector<int>& dim_block_reP,
-	vector<int>& dim_block_imP,
-	vector<int>& dim_block_modff,
-	vector<int>& dim_block_reff,
-	vector<int>& dim_block_imff
+	vector<double>& temp
 ) {
 	string line;
 	ifstream file_lpc;
@@ -231,19 +178,10 @@ void read_file_LPC(
 		}
 		istringstream iss(line);
 		double aml_value, beta_value, afm_value;
-		int dim_block_modP_value, dim_block_reP_value, dim_block_imP_value;
-		int dim_block_modff_value, dim_block_reff_value, dim_block_imff_value;
-		string dir, gauge, ferm;
-		if (iss >> aml_value >> beta_value >> afm_value >> dim_block_modP_value >> dim_block_reP_value >> dim_block_imP_value >> dim_block_modff_value >> dim_block_reff_value >> dim_block_imff_value) {
+		if (iss >> aml_value >> beta_value >> afm_value) {
 			aml.push_back(aml_value);
 			beta.push_back(beta_value);
 			afm.push_back(afm_value);
-			dim_block_modP.push_back(dim_block_modP_value);
-			dim_block_reP.push_back(dim_block_reP_value);
-			dim_block_imP.push_back(dim_block_imP_value);
-			dim_block_modff.push_back(dim_block_modff_value);
-			dim_block_reff.push_back(dim_block_reff_value);
-			dim_block_imff.push_back(dim_block_imff_value);
 		}
 		else {
 			cerr << "Poorly formatted line: " << line << endl;
@@ -257,18 +195,16 @@ void read_file_LPC(
 	file_lpc.close();
 }
 
-void read_file_list(
+void read_file_list_0T(
 	const string& name_file_list,
 	const int skipLines_file_list,
 	const int skipLines,
-	vector<string>& directories,
-	vector<string>& gauge_files,
-	vector<string>& fermion_files,
-	vector<int>& n_skip_rep,
-	vector<int>& n_skip_imp,
+	vector<string>& paths,
 	vector<int>& n_skip_reff,
 	vector<int>& n_skip_imff,
-	int step_sample_gauge,
+	vector<int>& dim_block_modff,
+	vector<int>& dim_block_reff,
+	vector<int>& dim_block_imff,
 	int step_sample_fermion
 ) {
 	string line;
@@ -292,22 +228,18 @@ void read_file_list(
 			continue;
 		}
 		istringstream iss(line);
-		string dir, gauge, ferm;
-		int n_therm_rep, n_therm_imp, n_therm_reff, n_therm_imff;
-		if (iss >> dir >> gauge >> n_therm_rep >> n_therm_imp >> ferm >> n_therm_reff >> n_therm_imff) {
-			directories.push_back(dir);
-			gauge_files.push_back(gauge);
-			fermion_files.push_back(ferm);
-			n_skip_rep.push_back(n_therm_rep / step_sample_gauge);
-			n_skip_imp.push_back(n_therm_imp / step_sample_gauge);
+		string single_path;
+		int n_therm_reff, n_therm_imff, dim_block_modff_value, dim_block_reff_value, dim_block_imff_value;
+		if (iss >> single_path >> n_therm_reff >> n_therm_imff >> dim_block_modff_value >> dim_block_reff_value >> dim_block_imff_value) {
+			paths.push_back(single_path);
 			n_skip_reff.push_back(n_therm_reff / step_sample_fermion);
 			n_skip_imff.push_back(n_therm_imff / step_sample_fermion);
+			dim_block_modff.push_back(dim_block_modff_value);
+			dim_block_reff.push_back(dim_block_reff_value);
+			dim_block_imff.push_back(dim_block_imff_value);
+
 			if ((debug_mode) && (0)) {
-				cout << dir << endl;
-				cout << gauge << endl;
-				cout << ferm << endl;
-				cout << n_therm_rep << endl;
-				cout << n_therm_imp << endl;
+				cout << single_path << endl;
 				cout << n_therm_reff << endl;
 				cout << n_therm_imff << endl;
 			}
