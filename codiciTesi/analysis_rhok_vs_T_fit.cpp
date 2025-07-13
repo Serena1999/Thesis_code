@@ -25,10 +25,12 @@
 const bool bool_choose_at_eye = 0; //0 if you want an automatic set of parameters, 1 if you want to impose them by hand;
 // -> if 1, modify the corrisponding if condition in par_estimate function to choose parameters;
 
-const bool only_one_graph = 0;//to choose to focus only on a single graph
-const int index_graph = 12; //index of the graph to focus on if only_one_graph = 1.
+const bool only_one_graph = 1;//to choose to focus only on a single graph
+const int index_graph = 20; //index of the graph to focus on if only_one_graph = 1. //7 not usable for 800 MeV //3 not usable for 1500 MeV
 
-const int discard_until = 4;
+const int discard_until = 3;
+
+const bool log_scale = 1;
 
 
 //-----------------------------------------------------------------
@@ -38,6 +40,7 @@ void fit_plot_points_errors(
 	const vector<double>& x,
 	const vector<double>& y,
 	const vector<double>& y_err,
+	vector<double>& par,
 	const string name_image,
 	const string title,
 	const string y_name,
@@ -60,6 +63,15 @@ void silly_plot(
 	const double heigh_y,
 	const int n_par_fit
 );
+
+double log_function(
+	double* x,
+	double* p //parameters
+) {
+	//y = exp(-p[0] * (x[0] - 1)) / pow(x[0], 2.5) = exp(-p[0] * (x[0] - 1)) * exp(log{1/pow(x[0], 2.5)}) = exp{ -p[0] * (x[0] - 1) - log(pow(x[0], 2.5)) } =
+	// = exp{ -p[0] * (x[0] - 1) - 2.5 * log(x[0]) }
+	return  -p[0] * (x[0] - 1) - 2.5 * log(x[0]);
+};
 
 
 //-----------------------------------------------------------------
@@ -435,7 +447,7 @@ void read_name_files(
 
 //-----------------------------------------------------------------
 //MAIN:
-int main() {
+int main(int argc, char** argv) {
 
 	string directory = "19_05_2025/rhok_vs_k/";
 	string name_file_list = "file_list.txt";
@@ -445,45 +457,45 @@ int main() {
 	read_name_files(files, directory + name_file_list);
 
 	vector <string> y_name = {//BE CAREFUL TO CHOOSE WELL;
-		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
-		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
-		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
-		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
-		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
-		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
-		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
-		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
-		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
-		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
-		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
-		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
-		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
-		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
-		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
-		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
 //		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
 //		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
 //		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
 //		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
-		"#LT #rho_{k} / #rho_{1} #GT",
-		"#LT #rho_{k} / #rho_{1} #GT",
-		"#LT #rho_{k} / #rho_{1} #GT",
-		"#LT #rho_{k} / #rho_{1} #GT",
-		"#LT #rho_{k} / #rho_{1} #GT",
-		"#LT #rho_{k} / #rho_{1} #GT",
-		"#LT #rho_{k} / #rho_{1} #GT",
-		"#LT #rho_{k} / #rho_{1} #GT",
-		"#LT #rho_{k} / #rho_{1} #GT",
-		"#LT #rho_{k} / #rho_{1} #GT",
-		"#LT #rho_{k} / #rho_{1} #GT",
-		"#LT #rho_{k} / #rho_{1} #GT",
-		"#LT #rho_{k} / #rho_{1} #GT",
-		"#LT #rho_{k} / #rho_{1} #GT",
-		"#LT #rho_{k} / #rho_{1} #GT",
+		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
+		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
+		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
+		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
+		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
+		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
+		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
+		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
+		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
+		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
+		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
+		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
+		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
+		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
+		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
+		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
 //		"#LT #rho_{k} / #rho_{1} #GT",
 //		"#LT #rho_{k} / #rho_{1} #GT",
 //		"#LT #rho_{k} / #rho_{1} #GT",
 //		"#LT #rho_{k} / #rho_{1} #GT",
+		"#LT #rho_{k} / #rho_{1} #GT",
+		"#LT #rho_{k} / #rho_{1} #GT",
+		"#LT #rho_{k} / #rho_{1} #GT",
+		"#LT #rho_{k} / #rho_{1} #GT",
+		"#LT #rho_{k} / #rho_{1} #GT",
+		"#LT #rho_{k} / #rho_{1} #GT",
+		"#LT #rho_{k} / #rho_{1} #GT",
+		"#LT #rho_{k} / #rho_{1} #GT",
+		"#LT #rho_{k} / #rho_{1} #GT",
+		"#LT #rho_{k} / #rho_{1} #GT",
+		"#LT #rho_{k} / #rho_{1} #GT",
+		"#LT #rho_{k} / #rho_{1} #GT",
+		"#LT #rho_{k} / #rho_{1} #GT",
+		"#LT #rho_{k} / #rho_{1} #GT",
+		"#LT #rho_{k} / #rho_{1} #GT",
 		"#LT #rho_{k} / #rho_{1} #GT"
 	};
 
@@ -676,9 +688,15 @@ int main() {
 				base_name = files[ii].substr(0, pos); //I remove extension using substr
 			}
 
-			name_image = "results/FIT_function_" + to_string(CHOOSE_FIT_FUNCTION) + "_" + base_name + "_discard_until_" + to_string(discard_until) + ".png"; //<rho_k/rho_1>
+			if (log_scale) {
+				name_image = "results/LOG_FIT_function_" + to_string(CHOOSE_FIT_FUNCTION) + "_" + base_name + "_discard_until_" + to_string(discard_until) + ".png";
+			}
+			else {
+				name_image = "results/FIT_function_" + to_string(CHOOSE_FIT_FUNCTION) + "_" + base_name + "_discard_until_" + to_string(discard_until) + ".png"; //<rho_k/rho_1>
+
+			}
 			string name_out_file = "results/FIT_function_" + to_string(CHOOSE_FIT_FUNCTION) + "_" + base_name +"_discard_until_" + to_string(discard_until) + ".txt";
-			
+
 			title = "Fit result:";
 
 			for (int kk = 0; kk < nk.size(); ++kk) {
@@ -704,10 +722,16 @@ int main() {
 			);
 
 
+			vector <double> par(n_par_fit, 0);
+
+			TApplication app("App", &argc, argv);
+			
+
 			fit_plot_points_errors(
 				k,
 				nk,
 				err_nk,
+				par,
 				name_image,
 				title,
 				y_name[ii],
@@ -717,6 +741,7 @@ int main() {
 				n_par_fit,
 				name_out_file
 			);
+
 		}
 
 		k.clear();
@@ -790,6 +815,7 @@ void fit_plot_points_errors(
 	const vector<double>& x,
 	const vector<double>& y,
 	const vector<double>& y_err,
+	vector<double>& par,
 	const string name_image,
 	const string title,
 	const string y_name,
@@ -804,8 +830,6 @@ void fit_plot_points_errors(
 		cerr << "Error: mismatched vector sizes in plot_points_errors()." << endl;
 		return;
 	}
-
-	vector <double> par(n_par_fit, 0);
 
 	ofstream output_file;
 	output_file.open(name_out_file);
@@ -828,8 +852,11 @@ void fit_plot_points_errors(
 	cout << "\t -> number of degrees of freedom \t" << (x.size() - n_par_fit) << endl;
 
 	//CANVAS creation: (to draw the graph)
-	TCanvas* canvas = new TCanvas("canvas", "Canvas for Drawing Points", 900, 600);
-	canvas->SetGrid();//to set grid
+	TCanvas* canvas = new TCanvas("canvas2", "Canvas for Drawing Points", 900, 600);
+	
+	if (!log_scale) {
+		canvas->SetGrid();//to set grid
+	}
 
 	// 1. Graph with only error bars:
 	TGraphErrors* g_errors = new TGraphErrors(x.size(), x.data(), y.data(), nullptr, y_err.data());
@@ -838,16 +865,17 @@ void fit_plot_points_errors(
 	//	-> std::max_element takes two iterators that define the range of the array to operate on. 
 	//	-> returns an iterator that points to the maximum element found.
 	//The usage of std::min_element is analogous but with for minimum element.
+
 	auto min_x = *min_element(x.begin(), x.end());
 	auto max_x = *max_element(x.begin(), x.end());
-	auto min_y = *min_element(y.begin(), y.end());
-	auto max_y = *max_element(y.begin(), y.end());
+	auto min_y = *min_element(y.begin(), y.end()) - *max_element(y_err.begin(), y_err.end());
+	auto max_y = *max_element(y.begin(), y.end()) + *max_element(y_err.begin(), y_err.end());
 
 	g_errors->SetLineColor(kBlack);//color of error bars
 	g_errors->SetMarkerColor(kBlack);
 	g_errors->SetMarkerStyle(20);
 	g_errors->SetTitle("");
-	g_errors->GetXaxis()->SetLimits(min_x, max_x);
+	g_errors->GetXaxis()->SetLimits(min_x - 1, max_x + 1);
 	g_errors->GetYaxis()->SetRangeUser(min_y - 0.01 * fabs(min_y), max_y + 0.01 * fabs(max_y));
 	g_errors->Draw("AP");
 
@@ -856,7 +884,7 @@ void fit_plot_points_errors(
 	gStyle->SetOptFit(1111);
 
 	double fit_min = 0;
-	double fit_max = max_x;
+	double fit_max = max_x + 1;
 
 	TF1* p_plot = new TF1("fit_function", fit_function, fit_min, fit_max, n_par_fit);
 
@@ -865,7 +893,7 @@ void fit_plot_points_errors(
 	for (int ii = 0; ii < par.size(); ++ii) {
 		p_plot->SetParameter(ii, par[ii]); //setting the ii-th parameter of the function
 		output_file << "\t -> inital estimate of par[" << ii << "] \t" << par[ii] << endl;
-		p_plot->SetParLimits(ii, 0, 1e6);    // par[ii]: solo positivi
+		//p_plot->SetParLimits(ii, 0, 1e6);    // par[ii]: solo positivi
 	}
 
 	p_plot->GetXaxis()->SetRangeUser(min_x, max_x);
@@ -952,19 +980,28 @@ void fit_plot_points_errors(
 	latex.DrawLatex(pos_y, heigh_y, (y_name).c_str());
 
 
+	if (log_scale) {
+		canvas->SetLogy();
+	}
+
 	//SAVE: I save the canvas as an image
 	canvas->SaveAs(name_image.c_str());
 
 	//to save also in vectorial pdf form:
 	canvas->SaveAs((name_image.substr(0, name_image.find_last_of(".")) + ".pdf").c_str());
 
+	output_file.close();
+
+	if (only_one_graph) {
+		gApplication->Run(true); // <--- TRUE = non bloccare il terminale
+	}
+
 	//DELETE:
 	delete p_plot;
 	delete g_errors;
 	delete canvas;
-
-	output_file.close();
 }
+
 
 void silly_plot(
 	const vector<double>& x,

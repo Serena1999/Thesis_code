@@ -91,7 +91,7 @@ int main() {
 	string name_file_lpc = "11_05_2025/LCP_800MeV_dimblock_extended.txt";
 	string name_file_list = "11_05_2025/file_list_therm_extended.txt";
 
-	//RIPARTI DA QUI A SISTEMARE... DEVI ANCHE CAMBIARE ESTENSIONE A .TXT AI FILE DI 0T_*
+	//RIPARTI DA QUI A SISTEMARE... DEVI ANCHE CAMBIARE ESTENSIONE A .TXT AI FILE DI 0T_*... vedi quanti n_skip togliere per termalizzazione
 
 	read_file_LPC(
 		name_file_lpc,

@@ -1,4 +1,4 @@
-/*<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+ï»¿/*<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 ****                  analysis_rhok_vs_T.cpp:                 ****
 ****      Starting from dedicated files ("mon.dat"), the      ****
 **** number nk of monopoles is calculated for each number k of****
@@ -24,7 +24,7 @@
 //TODO:
 //DEVI VEDERE SE IL BLOCKING AFFLIGGE LE MISURE SUI MONOPOLI... BASTA FARE AUTOCORR_CHECK APPOSITO PER IL SOLO NK: 
 // --> fai un file che ti calcolo nk vs k + uno successivo che fa come autocorr_check; 
-//POI FAI ANCHE LINEE A PIù T SOVRAPPOSTE, CON FIT -> 4*
+//POI FAI ANCHE LINEE A PIÃ¹ T SOVRAPPOSTE, CON FIT -> 4*
 
 //-----------------------------------------------------------------
 //ROOT MACRO TO DO FIT AND GRAPH:
@@ -45,7 +45,7 @@ void plot_points_errors(
 //-----------------------------------------------------------------
 //FUNCTION DECLARATIONS AND DEFINITIONS:
 
-void read_file_list_DIRECTORIES_THERM(//SCRIVI SOTTO COME IMPLEMENTARLA, PRENDI COME MINIMO DI TERMALIZZAZIONE IL MASSIMO FRA GLI N_SKIP, COSì SEI SICURA CHE VA BENE;
+void read_file_list_DIRECTORIES_THERM(//SCRIVI SOTTO COME IMPLEMENTARLA, PRENDI COME MINIMO DI TERMALIZZAZIONE IL MASSIMO FRA GLI N_SKIP, COSÃ¬ SEI SICURA CHE VA BENE;
 	const string& name_file_list,
 	const int skipLines_file_list,
 	vector<string>& directories,
@@ -294,6 +294,8 @@ int main() {
 			continue;
 		}
 
+		int n_wrap = 1;
+
 		for (int kk = 0; kk < mean_rhok.size(); ++kk) {
 			mean_rhok[kk] /= n_conf;
 			mean_rhok_rho1[kk] /= n_conf;
@@ -310,14 +312,55 @@ int main() {
 			err_rhok[kk] /= (n_conf - 1);
 			err_rhok_rho1[kk] /= (n_conf - 1);
 
+			if (mean_rhok[kk] == 0) {
+				cerr << "Warning: mean_rhok[kk] = 0 -> skipping error propagation and kk omitted." << endl;
+				cout << mean_rhok_rho1[kk] << endl;
+				mean_rhok.erase(mean_rhok.begin() + kk);
+				mean_rhok_rho1.erase(mean_rhok_rho1.begin() + kk);
+				mean0_2.erase(mean0_2.begin() + kk);
+				mean1_2.erase(mean1_2.begin() + kk);
+				mean_rhok_norm.erase(mean_rhok_norm.begin() + kk);
+				mean_rhok_times_rho1.erase(mean_rhok_times_rho1.begin() + kk);
+				err_rhok.erase(err_rhok.begin() + kk);
+				err_rhok_rho1.erase(err_rhok_rho1.begin() + kk);
+				kk--;
+				n_wrap++;
+				continue;
+			}
+
 			//COMPUTATION DIRECTLY WITH COVARIANCE, SINCE THERE ARE FEW DATA: (var(f(x,y)) = (df/dx)^2 var(x) + (df/dy)^2 var(y) + (df/dx)*(df/dy)*cov(x,y))
 			double tmp_err = err_rhok[kk] / (mean_rhok[0] * mean_rhok[0]); //= (d(x/y)/dx)^2 * (dx^2)
 			tmp_err += mean_rhok[kk] * mean_rhok[kk] * err_rhok[0] / pow(mean_rhok[0],4); //+= (d(x/y)/dy)^2 * (dy^2)
 			tmp_err -= 2 * mean_rhok[kk] * mean_rhok_times_rho1[kk] / pow(mean_rhok[0], 3);//+= (d(x/y)/dx) * (d(x/y)/dy) * cov(x,y)
 
+			//cout << "---" << endl;
+			//cout << "n_wrap = " << n_wrap << endl;
+			//cout << "mean_rhok[kk] = " << mean_rhok[kk] << endl;
+			//cout << "err_rhok[kk] = " << err_rhok[kk] << endl;
+			//cout << "var_rhok_norm[kk] = " << tmp_err << endl;
+			//cout << "---" << endl;
+
+			if (mean_rhok[kk] <= 10 * tmp_err) {
+				cout << "-------------------WARNING: THE LINEAR APPROXIMATION OF COVARIANCE MAY NOT BE CORRECT TO USE-----------------------" << endl;
+			}
+
 			if (err_rhok_rho1[kk] < 0) {
 				cout << "err_rhok_rho1[" << to_string(kk) << "] < 0" << endl;
 				err_rhok_rho1[kk] = 0;
+			}
+			else if ((err_rhok_rho1[kk] == 0) && (kk != 0)) {//this is simply the case of no statistics
+				cout << "No statistics for " << kk << "idex" << endl;
+				mean_rhok.erase(mean_rhok.begin() + kk);
+				mean_rhok_rho1.erase(mean_rhok_rho1.begin() + kk);
+				mean0_2.erase(mean0_2.begin() + kk);
+				mean1_2.erase(mean1_2.begin() + kk);
+				mean_rhok_norm.erase(mean_rhok_norm.begin() + kk);
+				mean_rhok_times_rho1.erase(mean_rhok_times_rho1.begin() + kk);
+				err_rhok.erase(err_rhok.begin() + kk);
+				err_rhok_rho1.erase(err_rhok_rho1.begin() + kk);
+				kk--;
+				n_wrap++;
+				continue;
 			}
 			else {
 				err_rhok_rho1[kk] = sqrt(err_rhok_rho1[kk]);
@@ -333,7 +376,8 @@ int main() {
 				tmp_err = sqrt(tmp_err);
 			}
 			err_rhok_norm.push_back(tmp_err);
-			k_array.push_back(kk + 1);
+			k_array.push_back(n_wrap);
+			n_wrap++;
 		}
 
 		if (mean_rhok_rho1.size() > 1) {
@@ -382,7 +426,7 @@ int main() {
 			);
 		}
 		else {
-			cout << "No image generated for iteration n°" << ii << endl;
+			cout << "No image generated for iteration nÂ°" << ii << endl;
 			cout << "Not enough data points to produce a plot (need at least 2)." << endl;
 		}
 

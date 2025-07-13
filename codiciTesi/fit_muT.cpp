@@ -7,8 +7,8 @@
 const bool bool_choose_at_eye = 0; //0 if you want an automatic set of parameters, 1 if you want to impose them by hand;
 // -> if 1, modify the corrisponding if condition in par_estimate function to choose parameters;
 
-const int discard_until = 1; //to discard x[ii] with ii < discard_until
-const int discard_last = 2; //to discard the last discard_last indexes
+const int discard_until = 2; //to discard x[ii] with ii < discard_until
+const int discard_last = 1; //to discard the last discard_last indexes
 
 //-----------------------------------------------------------------
 //ROOT MACRO TO DO FIT AND GRAPH:
@@ -17,6 +17,8 @@ void fit_plot_points_errors(
 	const vector<double>& x,
 	const vector<double>& y,
 	const vector<double>& y_err,
+	vector <double> & par,
+	vector <double>& var_par,
 	const string name_image,
 	const string title,
 	const string y_name,
@@ -51,6 +53,13 @@ double chi2_reduced_estimate(
 	ofstream& output_file
 );
 
+double chi2_reduced_estimate(
+	const vector<double>& x,
+	const vector<double>& y,
+	const vector<double>& y_err,
+	vector<double>& par,
+	double* chi2
+);
 //-----------------------------------------------------------------
 //FIT && ESTIMATE OF PARAMETERS FUNCTIONS: 
 
@@ -58,6 +67,9 @@ double fit_function(
 	double* x, //number of windings
 	double* p //parameters
 ) {
+	if (x[0] <= p[1]) {
+		return 0;
+	}
 	return p[0] * pow(x[0] - p[1], p[2]);
 };
 
@@ -155,53 +167,59 @@ int main(int argc, char** argv) {
 	string name_out_file;
 	string name_image;
 
-	if(discard_until != 0){
+	if ((discard_until == 0) && (discard_last == 0)) {
 		name_out_file = "results/FIT_MUT_" + quantity + "_mpi" + mpi + ".txt";
 		name_image = "results/FIT_MUT_" + quantity + "_mpi" + mpi + ".png";
 	}
 	else {
-		name_out_file = "results/FIT_MUT_" + quantity + "_mpi" + mpi + "discard_until" + discard_until + "discard_last" + discard_last + ".txt";
-		name_image = "results/FIT_MUT_" + quantity + "_mpi" + mpi + "discard_until" + discard_until + "discard_last" + discard_last + ".png";
+		name_out_file = "results/FIT_MUT_" + quantity + "_mpi" + mpi + "discard_until" + to_string(discard_until) + "discard_last" + to_string(discard_last) + ".txt";
+		name_image = "results/FIT_MUT_" + quantity + "_mpi" + mpi + "discard_until" + to_string(discard_until) + "discard_last" + to_string(discard_last) + ".png";
 	}
 	
 
 	vector <double> x = {
-	244.89 ,
-	261.844,
-	279.271,
-	297.374,
-	316.388,
-	336.545,
-	358.027,
-	380.897,
-	404.993,
-	433.553
+		211.849,
+		228.254,
+		244.89 ,
+		261.844,
+		279.271,
+		297.374,
+		316.388,
+		336.545,
+		358.027,
+		380.897,
+		404.993,
+		433.553
 	};
 
 	vector <double> y = {
-		0.528143,
-		1.09037 ,
-		1.22604 ,
-		1.69116 ,
-		1.96273 ,
-		2.20709 ,
-		2.55058 ,
-		2.77996 ,
-		3.07537 ,
-		3.40656
+		0.121246, //11 points, from k = 4: T = 211.849
+		0.249843, //9 points, from k = 4: T = 228.254
+		0.530733,  //7 points, from k = 4: T = 244.89
+		0.907386, //6 points, from k = 3: T = 261.844
+		1.35453,  //(??)4 points, from k = 2: T = 279.271
+		1.69766, //5 points, from k = 2: T = 297.374
+		1.95734, //4 points, from k = 2: T = 316.388
+		2.21152, //3 points, from k = 2: T = 336.545
+		2.54757,  //3 points, from k = 2: T = 358.027
+		2.77543, //3 points, from k = 2: T = 380.897
+		3.07153, //3 points, from k = 2: T = 404.993
+		3.40684  //2 points, from k = 2: T = 433.553
 	};
 
 	vector <double> dy = {
-		0.200577 ,
-		0.0871921,
-		0.0542246,
-		0.0411082,
-		0.0579388,
-		0.0670202,
-		0.11059	 ,
-		0.0626644,
-		0.0697073,
-		0.0258094
+		0.00995207, //11 points, from k = 4: T = 211.849
+		0.0135674, //9 points, from k = 4: T = 228.254
+		0.00916106,  //7 points, from k = 4: T = 244.89
+		0.00852769, //6 points, from k = 3: T = 261.844
+		0.0164934, //(??)4 points, from k = 2: T = 279.271
+		0.00796906, //5 points, from k = 2: T = 297.374
+		0.012746, //4 points, from k = 2: T = 316.388
+		0.0109368, //3 points, from k = 2: T = 336.545
+		0.0162442,  //3 points, from k = 2: T = 358.027
+		0.010706, //3 points, from k = 2: T = 380.897
+		0.008821, //3 points, from k = 2: T = 404.993
+		0.00232835  //2 points, from k = 2: T = 433.553
 	};
 
 	int index = 0;
@@ -227,10 +245,28 @@ int main(int argc, char** argv) {
 		}
 	}
 
+	silly_plot(
+		x,
+		y,
+		dy,
+		"results/silly_plot.png",
+		"Effective chemical potential as a function of T:",
+		"#hat{#mu}",
+		0.2,
+		0.02,
+		0.5,
+		n_par_fit
+	);
+
+	vector <double> par(n_par_fit, 0);
+	vector <double> var_par(n_par_fit, 0);
+
 	fit_plot_points_errors(
 		x,
 		y,
 		dy,
+		par,
+		var_par,
 		name_image,
 		"Effective chemical potential as a function of T:",
 		"#hat{#mu}",
@@ -240,6 +276,23 @@ int main(int argc, char** argv) {
 		n_par_fit,
 		name_out_file
 	);
+
+	cout << "Considering absolute_sigma = False (so not exact errors): pcov(absolute_sigma=False) = pcov(absolute_sigma=True) * chisq(popt)/(M-N):" << endl;
+	
+	double new_var_T_BEC;
+	double chi2;
+
+	chi2_reduced_estimate(
+		x,
+		y,
+		dy,
+		par,
+		&chi2
+	);
+
+	new_var_T_BEC = var_par[1] * chi2 / (x.size() - n_par_fit);
+
+	cout << "new_err_T_BEC = " << sqrt(new_var_T_BEC) << endl;
 
 	return 0;
 }
@@ -272,6 +325,28 @@ double chi2_reduced_estimate(
 	return chi2r;
 }
 
+double chi2_reduced_estimate(
+	const vector<double>& x,
+	const vector<double>& y,
+	const vector<double>& y_err,
+	vector<double>& par,
+	double * chi2
+) {
+	double chi2r = 0, res;
+	for (int ii = 0; ii < x.size(); ++ii) {
+		double xx[1] = { x[ii] };
+		res = (y[ii] - fit_function(xx, par.data())) / y_err[ii];
+		res *= res;
+		chi2r += res;
+		//cout << "x["<< ii<< "]:" << x[ii] << endl;
+		//cout << "y[" << ii << "]:" << y[ii] << endl;
+		//cout << "y_err[" << ii << "]:" << y_err[ii] << endl;
+	}
+	(*chi2) = chi2r;
+	chi2r /= (x.size() - par.size());
+	return chi2r;
+}
+
 //-----------------------------------------------------------------
 //ROOT MACRO TO GRAPH:
 
@@ -279,6 +354,8 @@ void fit_plot_points_errors(
 	const vector<double>& x,
 	const vector<double>& y,
 	const vector<double>& y_err,
+	vector <double> & par,
+	vector <double> & var_par,
 	const string name_image,
 	const string title,
 	const string y_name,
@@ -293,8 +370,6 @@ void fit_plot_points_errors(
 		cerr << "Error: mismatched vector sizes in plot_points_errors()." << endl;
 		return;
 	}
-
-	vector <double> par(n_par_fit, 0);
 
 	ofstream output_file;
 	output_file.open(name_out_file);
@@ -339,7 +414,7 @@ void fit_plot_points_errors(
 	double fit_min = min_x;
 	double fit_max = max_x;
 
-	g_errors->GetXaxis()->SetLimits(min_x, max_x);
+	g_errors->GetXaxis()->SetLimits(min_x -60, max_x + 10);
 	g_errors->GetYaxis()->SetRangeUser(0, max_y + 0.01 * fabs(max_y));
 	g_errors->Draw("AP");
 
@@ -356,7 +431,7 @@ void fit_plot_points_errors(
 		//p_plot->SetParLimits(ii, 0, 1e6);    // par[ii]: solo positivi
 	}
 
-	p_plot->GetXaxis()->SetRangeUser(min_x, max_x);
+	p_plot->GetXaxis()->SetRangeUser(min_x - par[1] - 10, max_x + 10);
 	p_plot->GetYaxis()->SetRangeUser(0, g_errors->GetMaximum() * 1.01);
 
 
@@ -372,7 +447,7 @@ void fit_plot_points_errors(
 		par[ii] = p_plot->GetParameter(ii);
 		output_file << "\t -> FINAL estimate of par[" << ii << "] \t" << par[ii] << "+-" << sqrt(fit->GetCovarianceMatrixElement(ii, ii)) << endl;
 	}
-
+	
 	chi2_reduced_estimate(
 		x,
 		y,
@@ -393,6 +468,7 @@ void fit_plot_points_errors(
 		{
 			cov[ii][jj] = fit->GetCovarianceMatrixElement(ii, jj);
 			cout << cov[ii][jj] << "\t";
+			if (ii == jj) var_par[ii] = cov[ii][ii];
 			output_file << cov[ii][jj] << "\t";
 		}
 
@@ -496,14 +572,14 @@ void silly_plot(
 	g_errors->SetMarkerColor(kBlack);
 	g_errors->SetMarkerStyle(20);
 	g_errors->SetTitle("");
-	g_errors->GetXaxis()->SetLimits(min_x, max_x);
+	g_errors->GetXaxis()->SetLimits(min_x+10, max_x-10);
 	g_errors->GetYaxis()->SetRangeUser(min_y - 0.01 * fabs(min_y), max_y + 0.01 * fabs(max_y));
 	g_errors->Draw("AP");
 
 	// 2. function plot:
 
 	TF1* f1 = new TF1("f", fit_function, min_x, max_x, n_par_fit);
-
+	
 	par_estimate(x, y, par);
 
 	for (int ii = 0; ii < par.size(); ii++) {
