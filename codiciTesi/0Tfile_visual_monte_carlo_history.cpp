@@ -1,6 +1,7 @@
 /*<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-****              visual_monte_carlo_history.cpp:             ****
-****           visualization of Monte Carlo history           ****
+****          0Tfile_visual_monte_carlo_history.cpp:          **** 
+****  visualization of Monte Carlo history of fermionic files **** 
+***                    at zero temperature.                   ****
 ****                (author = Serena Bruzzesi)                ****
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
 

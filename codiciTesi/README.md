@@ -14,7 +14,7 @@
 
 - "converter_into_obs.cpp": script to convert value data in observable files to obs(value), arranged in two-column (one for conf_id, one for obs(value)).
 
-- "autocorr_check_simpler_files.cpp":  implements the blocking technique and ranges over different block sizes dim_block, returning the plot of variance vs dim_block for all files specified in file_list_therm.txt, in the 2-columns format.
+- "autocorr_check_simpler_files.cpp": implements the blocking technique and ranges over different block sizes dim_block, returning the plot of variance vs dim_block for all files specified in file_list_therm.txt, in the 2-columns format.
 
 - "susceptibility_with_errors.cpp": script dedicated to the estimation of the susceptibility of Polyakov loops and chiral condensates, with related error (use of blocking and bootstrap).
 
@@ -39,3 +39,11 @@
 - "analysis_rhok_vs_T.cpp": Starting from dedicated files ("mon.dat"), computes total monopole density per configuration. Averages over configurations at each temperature T. Plots <rho_tot/T^3> with its error vs temperature.
 
 - "cluster_lenght.cpp": starting from dedicated files ("mon_clusters.dat"), for each configuration, it calculates the length of the largest cluster (max_l) and the sum of the lengths of all clusters present (sum_l). With this information, it calculates the parameter r_c = max_l/sum_l for each gauge configuration. It then estimates the mean <r_c> and the standard deviation from the mean over all configurations. It returns an output .txt file with temperature, <r_c> and standard deviation and an image for <r_c> vs temperature.
+
+- "0Tfile_visual_monte_carlo_history.cpp": visualization of Monte Carlo history of fermionic files at zero temperature.
+
+- "0T_autocorr_check.cpp":  implements the blocking technique and ranges over different block sizes dim_block, returning the plot of variance vs dim_block for all files specified in file_list_therm_0T.txt, in the 1-columns format.
+
+- "0T_ff.cpp": visualization of the mean values ​​of the chiral condensate at (approximately) zero temperature (with corresponding standard deviation) as a function of the temperature.
+
+- "visual_reff_subtract0T.cpp": visualization of chiral condensate vs temperature, with additive renormalization constant subtracted via 0-temperature evaluation.

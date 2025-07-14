@@ -1,4 +1,8 @@
 /*<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+****               "visual_reff_subtract0T.cpp":              ****
+****  visualization of chiral condensate vs temperature, with ****
+****     additive renormalization constant subtracted via     ****
+****                 0-temperature evaluation.                ****
 ****                (author = Serena Bruzzesi)                ****
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
 

@@ -1,8 +1,10 @@
-/*<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+﻿/*<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+****                        0T_ff.cpp:                        ****
+**** visualization of the mean values ​​of the chiral condensate****
+****  at (approximately) zero temperature (with corresponding ****
+****   standard deviation) as a function of the temperature.  ****
 ****                (author = Serena Bruzzesi)                ****
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
-
-//TO FINISH: FOR 0T
 
 //-----------------------------------------------------------------
 //HEADERS && LIBRARY:
@@ -135,7 +137,7 @@ int main() {
 			dim_block_imff[ii],
 			skipLines
 		);
-		cout << "ff n�" << ii << " DONE! T = " << temp[ii] << endl;
+		cout << "ff n°" << ii << " DONE! T = " << temp[ii] << endl;
 		cout << endl;
 	}
 

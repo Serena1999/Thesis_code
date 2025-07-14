@@ -1,9 +1,9 @@
 /*<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-****                   0T_autocorr_check.cpp:                 ****
+****                  0T_autocorr_check.cpp:                  ****
 ****     implements the blocking technique and ranges over    ****
-****             different block sizes dim_block,             ****
-****    returning the plot of variance vs dim_block for all   ****
-****           files specified in 0T_file_list_therm.         ****
+****  different block sizes dim_block, returning the plot of  ****
+****     variance vs dim_block for all files specified in     ****
+****     file_list_therm_0T.txt, in the 1-columns format.     ****
 ****                (author = Serena Bruzzesi)                ****
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
 
