@@ -27,7 +27,7 @@ int main() {
 	double value_tmp, ff_re, ff_im;
 	string line, y_name1, y_name2, reff_image, imff_image, title;
 	vector<string> paths;
-	string name_file_list = "11_05_2025/file_list_0T.txt";
+	string name_file_list = "19_05_2025/file_list_0T.txt";
 
 	ifstream file_list;
 	file_list.open(name_file_list);

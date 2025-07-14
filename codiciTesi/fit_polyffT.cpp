@@ -15,13 +15,13 @@
 //-----------------------------------------------------------------
 //VARIABLES TO SET:
 
-const string tipology = "gauge"; //gauge/fermion, CHOOSABLE --> to do the gauge/fermion observables graph
+const string tipology = "fermion_T0subtracted"; //gauge/fermion/fermion_T0subtracted, CHOOSABLE --> to do the gauge/fermion observables graph
 #define CHOOSE_FIT_FUNCTION 1 //0 for polynomial, 1 for arctg, 2 for logistic function, 3 for Hill function, 4 for arctg+linear, 5 for sigmoid, 6 for personalized sigmoid;
 const bool bool_choose_at_eye = 1; //0 if you want an automatic set of parameters, 1 if you want to impose them by hand;
 // -> if 1, modify the corrisponding if condition in par_estimate function to choose parameters;
 bool bool_enlarge = 1;//0 if you want to use the original draws, 1 if you want that y-values are multiplied by a the following factor:
 double enlarge_factor = 100;//factor to multiply the draws if bool_enlarge = 0;
-bool bool_adjustable_range = 1; //1 if you want to use only index in [index_min, index_max] of given temperatures[index], 0 if you want to use them all
+bool bool_adjustable_range = 0; //1 if you want to use only index in [index_min, index_max] of given temperatures[index], 0 if you want to use them all
 
 //-----------------------------------------------------------------
 //FIT && ESTIMATE OF PARAMETERS FUNCTIONS: 
@@ -647,8 +647,8 @@ double chi2_reduced_estimate(
 int main() {
 
 	int skipLines = 1; //= number of lines to skip while reading input file;
-	double min_index = 4;
-	double max_index = 8;
+	double min_index = 0;
+	double max_index = 19;
 	
 	double temp_value, mod_value, mod_err_value, re_value, re_err_value, im_value, im_err_value;
 	vector <double> temp, mod, mod_err, re, re_err, im, im_err;
@@ -741,6 +741,39 @@ int main() {
 		pos_title_mod = 0.3;
 		pos_title_re = 0.3;
 		pos_title_im = 0.3;
+	}
+	else if (tipology == "fermion_T0subtracted") {
+		name_input_file = "0Tsubtracted_1500.0_ff_results.txt";
+		pos = name_input_file.find_last_of(".");
+		if (pos != string::npos) {
+			name_tmp = name_input_file.substr(0, pos); //I remove extension using substr
+		}
+		name_input_file = input_directory + name_input_file;//QUIII
+		if (bool_adjustable_range) {
+			name_image_mod = output_directory + "FIT_modffvsT_" + name_tmp + "_less_points_subT0.png";
+			name_image_re = output_directory + "FIT_reffvsT_" + name_tmp + "_less_points_subT0.png";
+			name_image_im = output_directory + "FIT_imffvsT_" + name_tmp + "_less_points_subT0.png";
+		}
+		else {
+			name_image_mod = output_directory + "FIT_modffvsT_" + name_tmp + "_subT0.png";
+			name_image_re = output_directory + "FIT_reffvsT_" + name_tmp + "_subT0.png";
+			name_image_im = output_directory + "FIT_imffvsT_" + name_tmp + "_subT0.png";
+		}
+		title_mod = "#LT|(#bar{#psi}#psi)(#bar{#psi}#psi)^{+}|#GT-#LT|(#bar{#psi}#psi)(#bar{#psi}#psi)^{+}|#GT_{T=0} vs temperature:";
+		title_re = "#LTRe{#bar{#psi}#psi}#GT-#LTRe{#bar{#psi}#psi}#GT_{T=0} vs temperature :";
+		title_im = "#LTIm{#bar{#psi}#psi}#GT-#LTIm{#bar{#psi}#psi}#GT_{T=0} vs temperature:";
+		y_name_mod = "#LT|(#bar{#psi}#psi)(#bar{#psi}#psi)^{+}|#GT-#LT|(#bar{#psi}#psi)(#bar{#psi}#psi)^{+}|#GT_{T=0}";
+		y_name_re = "#LTRe{#bar{#psi}#psi}#GT-#LTRe{#bar{#psi}#psi}#GT_{T=0}";
+		y_name_im = "#LTIm{#bar{#psi}#psi}#GT-#LTIm{#bar{#psi}#psi}#GT_{T=0}";
+		pos_ymod = 0.05;
+		pos_yre = 0.05;
+		pos_yim = 0.05;
+		height_mod = 0.3;
+		height_re = 0.3;
+		height_im = 0.3;
+		pos_title_mod = 0.2;
+		pos_title_re = 0.2;
+		pos_title_im = 0.2;
 	}
 	else {
 		cerr << "Invalid tipology: you must write gauge or fermion";

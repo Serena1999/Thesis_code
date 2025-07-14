@@ -68,9 +68,9 @@ int main() {
 	int Nt = 32; //BE CAREFUL TO CHOOSE IT WELL;
 	int skipLines_file_lpc = 2, skipLines_file_list = 1, skipLines = 1;
 	int step_sample_fermion = 10;
-	double mpi = 800; //MeV //BE CAREFUL TO CHOOSE IT WELL;
+	double mpi = 1500; //MeV //BE CAREFUL TO CHOOSE IT WELL;
 	bool bool_startFile_poly = 1, bool_startFile_ff = 1;//BE CAREFUL TO CHOOSE IT WELL;
-	vector<int> append_mode_ff = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};//20 entries (same size of beta);
+	vector<int> append_mode_ff = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};//20 entries (same size of beta);
 	
 	vector<int> n_skip_reff, n_skip_imff;
 	vector<int> dim_block_modff, dim_block_reff, dim_block_imff;
@@ -81,8 +81,8 @@ int main() {
 	mpi_stream << fixed << setprecision(1) << mpi; //set to 1 decimal place
 	string mpi_string = mpi_stream.str(); // conversion into string
 	string name_output_file_ff = "results/0T_" + mpi_string + "_ff_results.txt";
-	string name_file_lpc = "11_05_2025/LCP_800MeV_dimblock_extended.txt";
-	string name_file_list = "11_05_2025/file_list_therm_0T.txt";
+	string name_file_lpc = "19_05_2025/LCP_1500MeV_dimblock.txt";
+	string name_file_list = "19_05_2025/file_list_therm_0T.txt";
 
 	read_file_LPC_0T(
 		name_file_lpc,

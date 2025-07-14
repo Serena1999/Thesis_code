@@ -54,7 +54,7 @@ int main() {
 	double n_sub_ratio = 0.5;//=0.5*len(data) -> you can modify this number from 0 to 1;
 	string line, word, title1, title2, title3, name_output_file;
 	string var_dimblock_ff_image, var_dimblock_ffre_image, var_dimblock_ffim_image;
-	const string name_file_list_therm = "11_05_2025/file_list_therm_0T.txt";
+	const string name_file_list_therm = "19_05_2025/file_list_therm_0T.txt";
 	const string first_out_line_ferm = "# N°elements in each subset \t mean(|<ff * ff^dag>|) \t var(|<ff * ff^dag>|) \t mean(Re{ff}) \t var(Re{ff}) \t mean(Im{ff}) \t var(Im{ff}):";
 
 	ifstream file_list;

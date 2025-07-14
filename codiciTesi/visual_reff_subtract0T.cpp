@@ -28,17 +28,18 @@ void plot_points_errors(
 
 int main() {
 
-	string input_directory = "11_05_2025/polyff_results/";
-	string input_directory_0T = "11_05_2025/0T_ff_results/";
+	string input_directory = "19_05_2025/polyff_results/";
+	string input_directory_0T = "19_05_2025/0T_ff_results/";
 	string output_directory = "results/";
-	string name_input_file = "800.0_ff_results.txt";
-	string name_input_file_0T = "0T_800.0_ff_results.txt";
+	string name_input_file = "1500.0_ff_results.txt";
+	string name_input_file_0T = "0T_1500.0_ff_results.txt";
+	string name_output_file = "0Tsubtracted_1500.0_ff_results.txt";
 	int skipLines = 1; //= number of lines to skip while reading input file;
 	int skipLines_0T = 1;
 	
 	double temp_value, mod_value, mod_err_value, re_value, re_err_value, im_value, im_err_value;
 	vector <double> temp, mod, mod_err, re, re_err, im, im_err;
-	vector <double> temp_0T, mod_0T, mod_err_0T, re_0T, re_err_0T, im_0T, im_err_0T;
+	vector <double> mod_0T, mod_err_0T, re_0T, re_err_0T, im_0T, im_err_0T;
 	size_t pos;
 	string line, name_tmp;
 	pos = name_input_file.find_last_of(".");
@@ -48,20 +49,20 @@ int main() {
 	name_input_file = input_directory + name_input_file;
 	name_input_file_0T = input_directory_0T + name_input_file_0T;
 
-	string name_image_mod = output_directory + "modffvsT_" + name_tmp + ".png";
-	string name_image_re = output_directory + "reffvsT_" + name_tmp + ".png";
-	string name_image_im = output_directory + "imffvsT_" + name_tmp + ".png";
+	string name_image_mod = output_directory + "modffvsT_" + name_tmp + "_subracted0T.png";
+	string name_image_re = output_directory + "reffvsT_" + name_tmp + "_subracted0T.png";
+	string name_image_im = output_directory + "imffvsT_" + name_tmp + "_subracted0T.png";
 	string title_mod = "#LT|(#bar{#psi}#psi)(#bar{#psi}#psi)^{+}|#GT vs temperature:";
-	string title_re = "#LTRe{#bar{#psi}#psi}#GT vs temperature :";
+	string title_re = "#LTRe{#bar{#psi}#psi}#GT vs temperature:";
 	string title_im = "#LTIm{#bar{#psi}#psi}#GT vs temperature:";
 	string y_name_mod = "#LT|(#bar{#psi}#psi)(#bar{#psi}#psi)^{+}|#GT";
-	string y_name_re = "#LTRe{#bar{#psi}#psi}#GT";
+	string y_name_re = "#LTRe{#bar{#psi}#psi}#GT-#LTRe{#bar{#psi}#psi}#GT_{T=0}";
 	string y_name_im = "#LTIm{#bar{#psi}#psi}#GT";
 	double pos_ymod = 0.03;
 	double pos_yre = 0.03;
 	double pos_yim = 0.04;
 	double height_mod = 0.4;
-	double height_re = 0.45;
+	double height_re = 0.35;
 	double height_im = 0.45;
 	double pos_title_mod = 0.3;
 	double pos_title_re = 0.3;
@@ -118,7 +119,6 @@ int main() {
 	while (getline(input_file_0T, line)) {
 		istringstream iss(line);
 		if (iss >> temp_value >> mod_value >> mod_err_value >> re_value >> re_err_value >> im_value >> im_err_value) {
-			temp_0T.push_back(temp_value);
 			mod_0T.push_back(mod_value);
 			mod_err_0T.push_back(mod_err_value);
 			re_0T.push_back(re_value);
@@ -133,20 +133,47 @@ int main() {
 
 	input_file_0T.close();
 
-	if (temp.size() != temp_0T.size()) {
+	if (temp.size() != mod_0T.size()) {
 		cerr << "Problem in size" << endl;
 		return 1;
 	}
 
-	for (int ii = 0; ii < temp.size(); ++ii) {
-		temp[ii] = temp[ii] - temp_0T[ii];
-		mod[ii] = mod[ii] - mod_0T[ii];
-		mod_err[ii] = mod_err[ii] - mod_err_0T[ii];
-		re[ii] = re[ii] - re_0T[ii];
-		re_err[ii] = re_err[ii] - re_err_0T[ii];
-		im[ii] = im[ii] - im_0T[ii];
-		im_err[ii] = im_err[ii] - im_err_0T[ii];
+
+	ofstream output_file;
+	output_file.open(output_directory + name_output_file);
+	if (!output_file) {
+		cerr << "Error opening output file." << endl;
+		return 1;
 	}
+
+	output_file << "# T 	 |<ff * ff^dag>| 	 err(|<ff * ff^dag>|) 	 Re{ff} 	 err(Re{ff}) 	 Im{ff} 	 err(Im{ff})" << endl;
+
+	for (int ii = 0; ii < temp.size(); ++ii) {
+		mod[ii] = mod[ii] - mod_0T[ii];
+		mod_err[ii] = sqrt(mod_err[ii] * mod_err[ii] + mod_err_0T[ii] * mod_err_0T[ii]);
+		re[ii] = re[ii] - re_0T[ii];
+		re_err[ii] = sqrt(re_err[ii] * re_err[ii] + re_err_0T[ii] * re_err_0T[ii]);
+		im[ii] = im[ii] - im_0T[ii];
+		im_err[ii] = sqrt(im_err[ii] * im_err[ii] + im_err_0T[ii] * im_err_0T[ii]);;
+
+
+		//mod_err[ii] = sqrt(pow(mod_err[ii] / mod_0T[ii], 2) + pow(mod[ii] * mod_err_0T[ii] / pow(mod_0T[ii],2), 2));
+		//mod[ii] = mod[ii] / mod_0T[ii];
+		//re_err[ii] = sqrt(pow(re_err[ii] / re_0T[ii], 2) + pow(re[ii] * re_err_0T[ii] / pow(re_0T[ii], 2), 2));
+		//re[ii] = re[ii] / re_0T[ii];
+		//im_err[ii] = sqrt(pow(im_err[ii] / im_0T[ii], 2) + pow(im[ii] * im_err_0T[ii] / pow(im_0T[ii], 2), 2));
+		//im[ii] = im[ii] / im_0T[ii];
+
+		//mod[ii] -= 1;
+		//re[ii] -= 1;
+		//im[ii] -= 1;
+
+		output_file << temp[ii] << "\t" << mod[ii] << "\t" << mod_err[ii] << "\t" << re[ii] << "\t" << re_err[ii] << "\t" << im[ii] << "\t" << im_err[ii] << endl;
+
+		cout << re[ii] << "\t" << re_err[ii] << endl;
+	}
+
+	output_file.close();
 
 	//GRAPHIC REPRESENTATION:
 	plot_points_errors(temp, mod, mod_err, name_image_mod, title_mod, y_name_mod, pos_title_mod, pos_ymod, height_mod);
