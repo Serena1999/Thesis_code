@@ -21,7 +21,7 @@ const bool bool_choose_at_eye = 1; //0 if you want an automatic set of parameter
 // -> if 1, modify the corrisponding if condition in par_estimate function to choose parameters;
 bool bool_enlarge = 1;//0 if you want to use the original draws, 1 if you want that y-values are multiplied by a the following factor:
 double enlarge_factor = 100;//factor to multiply the draws if bool_enlarge = 0;
-bool bool_adjustable_range = 0; //1 if you want to use only index in [index_min, index_max] of given temperatures[index], 0 if you want to use them all
+bool bool_adjustable_range = 1; //1 if you want to use only index in [index_min, index_max] of given temperatures[index], 0 if you want to use them all
 
 //-----------------------------------------------------------------
 //FIT && ESTIMATE OF PARAMETERS FUNCTIONS: 
@@ -204,7 +204,6 @@ bool bool_adjustable_range = 0; //1 if you want to use only index in [index_min,
 			if (der > max_der) {
 				max_der = der;
 				i_infl = ii;
-			}
 		}
 		p[3] = x[i_infl];
 
@@ -605,7 +604,8 @@ void fit_plot_points_errors(
 	const double pos_title,
 	const double pos_y,
 	const double heigh_y,
-	const int n_par_fit
+	const int n_par_fit,
+	bool bool_application
 );
 
 void fit_plot_inverted_points_errors(
@@ -644,17 +644,20 @@ double chi2_reduced_estimate(
 //-----------------------------------------------------------------
 //MAIN:
 
-int main() {
+int main(int argc, char** argv) {
+
+	TApplication app("App", &argc, argv);
 
 	int skipLines = 1; //= number of lines to skip while reading input file;
 	double min_index = 0;
-	double max_index = 19;
+	double max_index = 4;
 	
 	double temp_value, mod_value, mod_err_value, re_value, re_err_value, im_value, im_err_value;
 	vector <double> temp, mod, mod_err, re, re_err, im, im_err;
 	size_t pos;
 	string line, name_tmp;
 	string input_directory = "19_05_2025/polyff_results/";
+	string mpi_string = "1500";
 	string output_directory = "results/";
 	string name_input_file;
 	string name_image_mod;
@@ -677,7 +680,7 @@ int main() {
 	double pos_title_im;
 
 	if (tipology == "gauge") {
-		name_input_file = "1500.0_poly_results.txt";
+		name_input_file = mpi_string + ".0_poly_results.txt";
 		pos = name_input_file.find_last_of(".");
 		if (pos != string::npos) {
 			name_tmp = name_input_file.substr(0, pos); //I remove extension using substr
@@ -710,7 +713,7 @@ int main() {
 		pos_title_im = 0.3;
 	}
 	else if (tipology == "fermion") {
-		name_input_file = "1500.0_ff_results.txt";
+		name_input_file = mpi_string + ".0_ff_results.txt";
 		pos = name_input_file.find_last_of(".");
 		if (pos != string::npos) {
 			name_tmp = name_input_file.substr(0, pos); //I remove extension using substr
@@ -743,7 +746,7 @@ int main() {
 		pos_title_im = 0.3;
 	}
 	else if (tipology == "fermion_T0subtracted") {
-		name_input_file = "0Tsubtracted_1500.0_ff_results.txt";
+		name_input_file = "0Tsubtracted_" + mpi_string + ".0_ff_results.txt";
 		pos = name_input_file.find_last_of(".");
 		if (pos != string::npos) {
 			name_tmp = name_input_file.substr(0, pos); //I remove extension using substr
@@ -860,9 +863,9 @@ int main() {
 
 
 	//GRAPHIC REPRESENTATION:
-	fit_plot_points_errors(temp, mod, mod_err, name_image_mod, title_mod, y_name_mod, pos_title_mod, pos_ymod, height_mod, n_par_fit);
-	fit_plot_points_errors(temp, re, re_err, name_image_re, title_re, y_name_re, pos_title_re, pos_yre, height_re, n_par_fit);
-	fit_plot_points_errors(temp, im, im_err, name_image_im, title_im, y_name_im, pos_title_im, pos_yim, height_im, n_par_fit);
+	fit_plot_points_errors(temp, mod, mod_err, name_image_mod, title_mod, y_name_mod, pos_title_mod, pos_ymod, height_mod, n_par_fit, 0);
+	fit_plot_points_errors(temp, im, im_err, name_image_im, title_im, y_name_im, pos_title_im, pos_yim, height_im, n_par_fit, 0);
+	fit_plot_points_errors(temp, re, re_err, name_image_re, title_re, y_name_re, pos_title_re, pos_yre, height_re, n_par_fit, 1);
 
 	//GRAPHIC REPRESENTATION:
 	/*
@@ -913,7 +916,8 @@ void fit_plot_points_errors(
 	const double pos_title,
 	const double pos_y,
 	const double heigh_y,
-	const int n_par_fit
+	const int n_par_fit,
+	bool bool_application
 ) {
 
 	if (x.size() != y.size() || y.size() != y_err.size()) {
@@ -1048,6 +1052,10 @@ void fit_plot_points_errors(
 
 	//to save also in vectorial pdf form:
 	canvas->SaveAs((name_image.substr(0, name_image.find_last_of(".")) + ".pdf").c_str());
+
+	if (bool_application) {
+		gApplication->Run(true); // <--- TRUE = non bloccare il terminale
+	}
 
 	//DELETE:
 	delete p_plot;
