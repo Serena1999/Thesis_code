@@ -47,7 +47,7 @@ void process_autocorr_block(
 //MAIN:
 
 int main() {
-	bool bool_long = 1; //1 if you want "_long" in the end of images names;
+	bool bool_long = 0; //1 if you want "_long" in the end of images names;
 	int skipLines_g = 1, skipLines_f = 1, skipLines_file_list_therm = 1; //= number of lines to skip while reading input file;
 	int step_sample_fermion = 10;
 	int step_sample_gauge = 1;
@@ -56,12 +56,12 @@ int main() {
 	vector<string> directories;
 	vector<string> gauge_files;
 	vector<string> fermion_files;
-	double n_sub_ratio = 0.5;//=0.5*len(data) -> you can modify this number from 0 to 1;
+	double n_sub_ratio = 0.07;//=0.5*len(data) -> you can modify this number from 0 to 1;
 	string line, word, title1, title2, title3, var_dimblock_poly_image, var_dimblock_polyre_image, var_dimblock_polyim_image, name_output_file;
 	string var_dimblock_ff_image, var_dimblock_ffre_image, var_dimblock_ffim_image;
-	const string name_file_list_therm = "11_05_2025/file_list_therm.txt";
-	const string first_out_line_gauge = "# N°elements in each subset \t	mean(|<P * P^dag>|) \t var(|<P * P^dag>| ) \t mean(Re{ P }) \t var(Re{ P }) \t mean(Im{P}) \t var(Im{ P }):";
-	const string first_out_line_ferm = "# N°elements in each subset \t mean(|<ff * ff^dag>|) \t var(|<ff * ff^dag>|) \t mean(Re{ff}) \t var(Re{ff}) \t mean(Im{ff}) \t var(Im{ff}):";
+	const string name_file_list_therm = "19_05_2025/file_list_therm.txt";
+	const string first_out_line_gauge = "# N°elements in each subset \t	mean(<|P|>) \t var(<|P|>| ) \t mean(Re{ P }) \t var(Re{ P }) \t mean(Im{P}) \t var(Im{ P }):";
+	const string first_out_line_ferm = "# N°elements in each subset \t mean(<|ff|>) \t var(<|ff|>) \t mean(Re{ff}) \t var(Re{ff}) \t mean(Im{ff}) \t var(Im{ff}):";
 	
 	ifstream file_list;
 	file_list.open(name_file_list_therm);
@@ -364,7 +364,7 @@ void process_autocorr_block(
 				n_copy_accum_m++;
 				n_copy_accum_r++;
 				n_copy_accum_i++;
-				value_mod_tmp += obs_re * obs_re + obs_im * obs_im;//obs = |obs|^2 = obs_re^2 + obs_im^2;
+				value_mod_tmp += sqrt(obs_re * obs_re + obs_im * obs_im);//obs = sqrt(|obs|^2) = sqrt(obs_re^2 + obs_im^2);
 				value_re_tmp += obs_re;
 				value_im_tmp += obs_im;
 			}
