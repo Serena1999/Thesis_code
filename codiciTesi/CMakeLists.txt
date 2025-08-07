@@ -36,6 +36,9 @@ add_executable(0Tfile_visual_monte_carlo_history "0Tfile_visual_monte_carlo_hist
 add_executable(0T_autocorr_check "0T_autocorr_check.cpp")
 add_executable(0T_ff "0T_ff.cpp")
 add_executable(visual_reff_subtract0T "visual_reff_subtract0T.cpp")
+add_executable(ff_beta_0andT "ff_beta_0andT.cpp")
+add_executable(cluster_lenght_double "cluster_lenght_double.cpp")
+add_executable(cluster_lenght_double_from_file "cluster_lenght_double_from_file.cpp") #DA FARE PER BENE
 
 target_link_libraries(polyff ${ROOT_LIBRARIES})
 target_link_libraries(autocorr_check ${ROOT_LIBRARIES})
@@ -59,3 +62,6 @@ target_link_libraries(cluster_lenght_fit ${ROOT_LIBRARIES})
 target_link_libraries(0Tfile_visual_monte_carlo_history ${ROOT_LIBRARIES})
 target_link_libraries(0T_autocorr_check ${ROOT_LIBRARIES})
 target_link_libraries(visual_reff_subtract0T ${ROOT_LIBRARIES})
+target_link_libraries(ff_beta_0andT ${ROOT_LIBRARIES})
+target_link_libraries(cluster_lenght_double ${ROOT_LIBRARIES})
+target_link_libraries(cluster_lenght_double_from_file ${ROOT_LIBRARIES})

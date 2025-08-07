@@ -24,7 +24,7 @@ const double hbar_c = 197.3269804; //MeV * fm
 //VARIABLES TO SET:
 
 const bool debug_mode = 0;
-const string tipology = "reff";//YOU CAN CHOOSE BETWEEN reP, imP, reff, imff;
+const string tipology = "reff_subT0";//YOU CAN CHOOSE BETWEEN reP, imP, reff, imff, reff_subT0;
 
 //-----------------------------------------------------------------
 //DECLARATIONS:
@@ -94,8 +94,8 @@ int main() {
 	mpi_stream << fixed << setprecision(1) << mpi; //set to 1 decimal place
 	string mpi_string = mpi_stream.str(); // conversion into string
 	string name_output_file = "results/" + mpi_string + "_" + tipology + "_results.txt";
-	string name_file_lpc = "11_05_2025/data_value/lcp_data_value.txt";
-	string name_file_list = "11_05_2025/data_value/file_list_therm.txt";
+	string name_file_lpc = "19_05_2025/data_value/lcp_data_value.txt";
+	string name_file_list = "19_05_2025/data_value/file_list_therm.txt";
 
 	double temp_value;
 	vector<int> n_skip, n_skip2, dim_block, dim_block2;

@@ -15,7 +15,7 @@
 //-----------------------------------------------------------------
 //VARIABLES TO SET:
 
-const string tipology = "gauge"; //gauge/fermion, CHOOSABLE --> to do the gauge/fermion observables graph
+const string tipology = "fermionT0"; //gauge/fermion/fermionT0, CHOOSABLE --> to do the gauge/fermion observables graph
 
 //-----------------------------------------------------------------
 //ROOT MACRO TO DO FIT AND GRAPH:
@@ -45,7 +45,7 @@ int main() {
 	vector <double> temp, mod, mod_err, re, re_err, im, im_err;
 	size_t pos;
 	string line, name_tmp;
-	string input_directory = "11_05_2025/polyff_results/";
+	string input_directory = "19_05_2025/polyff_results/";
 	string output_directory = "results/";
 	string name_input_file;
 	pos = name_input_file.find_last_of(".");
@@ -99,6 +99,32 @@ int main() {
 	}
 	else if (tipology == "fermion") {
 		name_input_file = "800.0_ff_results.txt";
+		pos = name_input_file.find_last_of(".");
+		if (pos != string::npos) {
+			name_tmp = name_input_file.substr(0, pos); //I remove extension using substr
+		}
+		name_input_file = input_directory + name_input_file;
+		name_image_mod = output_directory + "modffvsT_" + name_tmp + ".png";
+		name_image_re = output_directory + "reffvsT_" + name_tmp + ".png";
+		name_image_im = output_directory + "imffvsT_" + name_tmp + ".png";
+		title_mod = "#LT|(#bar{#psi}#psi)(#bar{#psi}#psi)^{+}|#GT vs temperature:";
+		title_re = "#LTRe{#bar{#psi}#psi}#GT vs temperature :";
+		title_im = "#LTIm{#bar{#psi}#psi}#GT vs temperature:";
+		y_name_mod = "#LT|(#bar{#psi}#psi)(#bar{#psi}#psi)^{+}|#GT";
+		y_name_re = "#LTRe{#bar{#psi}#psi}#GT";
+		y_name_im = "#LTIm{#bar{#psi}#psi}#GT";
+		pos_ymod = 0.03;
+		pos_yre = 0.03;
+		pos_yim = 0.04;
+		height_mod = 0.4;
+		height_re = 0.45;
+		height_im = 0.45;
+		pos_title_mod = 0.3;
+		pos_title_re = 0.3;
+		pos_title_im = 0.3;
+	}
+	else if (tipology == "fermionT0") {
+		name_input_file = "0Tsubtracted_1500.0_ff_results.txt";
 		pos = name_input_file.find_last_of(".");
 		if (pos != string::npos) {
 			name_tmp = name_input_file.substr(0, pos); //I remove extension using substr

@@ -12,6 +12,26 @@
 #include "../library.h"
 #include "../root_include.h"
 
+const vector <double> aml = {
+	0.361455,
+0.317982,
+0.282472,
+0.253483,
+0.229726,
+0.210066,
+0.193520,
+0.179257,
+0.166601,
+0.155027,
+0.144165,
+0.133796,
+0.123855,
+0.114431,
+0.105762,
+0.097238
+};
+
+
 //-----------------------------------------------------------------
 //ROOT MACRO TO DO FIT AND GRAPH:
 
@@ -56,10 +76,10 @@ int main() {
 	string name_image_mod = output_directory + "modffvsT_" + name_tmp + "_subracted0T.png";
 	string name_image_re = output_directory + "reffvsT_" + name_tmp + "_subracted0T.png";
 	string name_image_im = output_directory + "imffvsT_" + name_tmp + "_subracted0T.png";
-	string title_mod = "#LT|(#bar{#psi}#psi)(#bar{#psi}#psi)^{+}|#GT vs temperature:";
+	string title_mod = "#LT|#bar{#psi}#psi|#GT vs temperature:";//"#LT|(#bar{#psi}#psi)(#bar{#psi}#psi)^{+}|#GT vs temperature:";
 	string title_re = "#LTRe{#bar{#psi}#psi}#GT vs temperature:";
 	string title_im = "#LTIm{#bar{#psi}#psi}#GT vs temperature:";
-	string y_name_mod = "#LT|(#bar{#psi}#psi)(#bar{#psi}#psi)^{+}|#GT";
+	string y_name_mod = "#LT|#bar{#psi}#psi|#GT";//"#LT|(#bar{#psi}#psi)(#bar{#psi}#psi)^{+}|#GT";
 	string y_name_re = "#LTRe{#bar{#psi}#psi}#GT-#LTRe{#bar{#psi}#psi}#GT_{T=0}";
 	string y_name_im = "#LTIm{#bar{#psi}#psi}#GT";
 	double pos_ymod = 0.03;
@@ -153,13 +173,30 @@ int main() {
 	output_file << "# T 	 |<ff * ff^dag>| 	 err(|<ff * ff^dag>|) 	 Re{ff} 	 err(Re{ff}) 	 Im{ff} 	 err(Im{ff})" << endl;
 
 	for (int ii = 0; ii < temp.size(); ++ii) {
-		mod[ii] = mod[ii] - mod_0T[ii];
+		//mod[ii] = mod[ii] - mod_0T[ii];
+		//mod_err[ii] = sqrt(mod_err[ii] * mod_err[ii] + mod_err_0T[ii] * mod_err_0T[ii]);
+		//re[ii] = re[ii] - re_0T[ii];
+		//re_err[ii] = sqrt(re_err[ii] * re_err[ii] + re_err_0T[ii] * re_err_0T[ii]);
+		//im[ii] = im[ii] - im_0T[ii];
+		//im_err[ii] = sqrt(im_err[ii] * im_err[ii] + im_err_0T[ii] * im_err_0T[ii]);;
+
+
+		mod_err[ii] = abs(mod_err[ii] / (2 * sqrt(mod[ii])));
+		mod[ii] = sqrt(mod[ii]) - sqrt(mod_0T[ii]);
 		mod_err[ii] = sqrt(mod_err[ii] * mod_err[ii] + mod_err_0T[ii] * mod_err_0T[ii]);
 		re[ii] = re[ii] - re_0T[ii];
 		re_err[ii] = sqrt(re_err[ii] * re_err[ii] + re_err_0T[ii] * re_err_0T[ii]);
 		im[ii] = im[ii] - im_0T[ii];
 		im_err[ii] = sqrt(im_err[ii] * im_err[ii] + im_err_0T[ii] * im_err_0T[ii]);;
 
+
+
+		mod[ii] *= aml[ii];
+		mod_err[ii] *= aml[ii];
+		re[ii] *= aml[ii];
+		re_err[ii] *= aml[ii];
+		im[ii] *= aml[ii];
+		im_err[ii] *= aml[ii];
 
 		//mod_err[ii] = sqrt(pow(mod_err[ii] / mod_0T[ii], 2) + pow(mod[ii] * mod_err_0T[ii] / pow(mod_0T[ii],2), 2));
 		//mod[ii] = mod[ii] / mod_0T[ii];

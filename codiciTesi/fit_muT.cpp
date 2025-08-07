@@ -7,8 +7,8 @@
 const bool bool_choose_at_eye = 0; //0 if you want an automatic set of parameters, 1 if you want to impose them by hand;
 // -> if 1, modify the corrisponding if condition in par_estimate function to choose parameters;
 
-const int discard_until = 2; //to discard x[ii] with ii < discard_until
-const int discard_last = 1; //to discard the last discard_last indexes
+const int discard_until = 1; //to discard x[ii] with ii < discard_until
+const int discard_last = 4; //to discard the last discard_last indexes
 
 //-----------------------------------------------------------------
 //ROOT MACRO TO DO FIT AND GRAPH:
@@ -178,9 +178,8 @@ int main(int argc, char** argv) {
 	
 
 	vector <double> x = {
-		211.849,
 		228.254,
-		244.89 ,
+		244.890,
 		261.844,
 		279.271,
 		297.374,
@@ -188,38 +187,33 @@ int main(int argc, char** argv) {
 		336.545,
 		358.027,
 		380.897,
-		404.993,
-		433.553
+		404.993
 	};
 
 	vector <double> y = {
-		0.121246, //11 points, from k = 4: T = 211.849
-		0.249843, //9 points, from k = 4: T = 228.254
-		0.530733,  //7 points, from k = 4: T = 244.89
-		0.907386, //6 points, from k = 3: T = 261.844
-		1.35453,  //(??)4 points, from k = 2: T = 279.271
-		1.69766, //5 points, from k = 2: T = 297.374
-		1.95734, //4 points, from k = 2: T = 316.388
-		2.21152, //3 points, from k = 2: T = 336.545
-		2.54757,  //3 points, from k = 2: T = 358.027
-		2.77543, //3 points, from k = 2: T = 380.897
-		3.07153, //3 points, from k = 2: T = 404.993
-		3.40684  //2 points, from k = 2: T = 433.553
+		0.251,
+		0.531,
+		0.909,
+		1.340,
+		1.680,
+		1.935,
+		2.190,
+		2.530,
+		2.790,
+		3.110
 	};
 
 	vector <double> dy = {
-		0.00995207, //11 points, from k = 4: T = 211.849
-		0.0135674, //9 points, from k = 4: T = 228.254
-		0.00916106,  //7 points, from k = 4: T = 244.89
-		0.00852769, //6 points, from k = 3: T = 261.844
-		0.0164934, //(??)4 points, from k = 2: T = 279.271
-		0.00796906, //5 points, from k = 2: T = 297.374
-		0.012746, //4 points, from k = 2: T = 316.388
-		0.0109368, //3 points, from k = 2: T = 336.545
-		0.0162442,  //3 points, from k = 2: T = 358.027
-		0.010706, //3 points, from k = 2: T = 380.897
-		0.008821, //3 points, from k = 2: T = 404.993
-		0.00232835  //2 points, from k = 2: T = 433.553
+		0.054,
+		0.027,
+		0.028,
+		0.094,
+		0.060,
+		0.070,
+		0.100,
+		0.100,
+		0.100,
+		0.100 
 	};
 
 	int index = 0;

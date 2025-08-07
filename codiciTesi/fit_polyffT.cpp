@@ -15,7 +15,7 @@
 //-----------------------------------------------------------------
 //VARIABLES TO SET:
 
-const string tipology = "fermion_T0subtracted"; //gauge/fermion/fermion_T0subtracted, CHOOSABLE --> to do the gauge/fermion observables graph
+const string tipology = "gauge"; //gauge/fermion/fermion_T0subtracted, CHOOSABLE --> to do the gauge/fermion observables graph
 #define CHOOSE_FIT_FUNCTION 1 //0 for polynomial, 1 for arctg, 2 for logistic function, 3 for Hill function, 4 for arctg+linear, 5 for sigmoid, 6 for personalized sigmoid;
 const bool bool_choose_at_eye = 1; //0 if you want an automatic set of parameters, 1 if you want to impose them by hand;
 // -> if 1, modify the corrisponding if condition in par_estimate function to choose parameters;
@@ -649,8 +649,8 @@ int main(int argc, char** argv) {
 	TApplication app("App", &argc, argv);
 
 	int skipLines = 1; //= number of lines to skip while reading input file;
-	double min_index = 0;
-	double max_index = 4;
+	double min_index = 2;
+	double max_index = 8;
 	
 	double temp_value, mod_value, mod_err_value, re_value, re_err_value, im_value, im_err_value;
 	vector <double> temp, mod, mod_err, re, re_err, im, im_err;
