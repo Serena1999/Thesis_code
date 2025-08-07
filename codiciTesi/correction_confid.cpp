@@ -51,6 +51,12 @@ int main() {
 
 	cout << "READ: GOOD" << endl;
 
+	//MOMENTANEO:
+	//directories.clear();
+	//directories.push_back("19_05_2025/build_good_mpi1500_16_out/");
+	//name_input_file = "ferm_obs2239384639.txt";
+	//name_output_file = "corrected_" + name_input_file;
+
 	for (int ii = 0; ii < directories.size(); ++ii) {
 
 		cout << ii << "STARTED" << endl;
@@ -68,6 +74,10 @@ int main() {
 			cerr << "Error opening first output file" << endl;
 			return 1;
 		}
+
+		//MOMENTANEO:
+		//output_file << "#conf_id    acc     plq     rect    ReP     ImP" << endl;
+		//output_file << "#0.conf     1.icopy 02.Plaquette    03.Rectangle    04.Reff_light_s           05.Imff_light_s           06.ReN_light_s            07.ImN_light_s            08.ReMag_light_s           09.ImMag_light_s           10.ReChSuscConn_light_s  11.ImChSuscConn_light_s  12.ReQNSuscConn1_light_s 13.ImQNSuscConn1_light_s 14.ReQNSuscConn2_light_s  15.ImQNSuscConn2_light_s" << endl;
 
 		//we don't consider the first skip_lines_input_file:
 		for (int jj = 0; jj < skip_lines_input_file; ++jj) {
