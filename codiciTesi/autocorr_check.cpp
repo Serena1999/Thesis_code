@@ -47,7 +47,7 @@ void process_autocorr_block(
 //MAIN:
 
 int main() {
-	bool bool_long = 0; //1 if you want "_long" in the end of images names;
+	bool bool_long = 1; //1 if you want "_long" in the end of images names;
 	int skipLines_g = 1, skipLines_f = 1, skipLines_file_list_therm = 1; //= number of lines to skip while reading input file;
 	int step_sample_fermion = 10;
 	int step_sample_gauge = 1;
@@ -56,7 +56,7 @@ int main() {
 	vector<string> directories;
 	vector<string> gauge_files;
 	vector<string> fermion_files;
-	double n_sub_ratio = 0.07;//=0.5*len(data) -> you can modify this number from 0 to 1;
+	double n_sub_ratio = 0.5;//=0.5*len(data) -> you can modify this number from 0 to 1;
 	string line, word, title1, title2, title3, var_dimblock_poly_image, var_dimblock_polyre_image, var_dimblock_polyim_image, name_output_file;
 	string var_dimblock_ff_image, var_dimblock_ffre_image, var_dimblock_ffim_image;
 	const string name_file_list_therm = "19_05_2025/file_list_therm.txt";
@@ -108,7 +108,7 @@ int main() {
 	for (int ii = 0; ii < directories.size(); ii++) {
 
 		if (gauge_mode) {
-			title1 = "|<P * P^dag>|";
+			title1 = "<|P|>";
 			title2 = "Var(Re{P})";
 			title3 = "Var(Im{P})";
 
@@ -150,7 +150,7 @@ int main() {
 			);
 		}
 		if (fermion_mode) {
-			title1 = "|<ff * ff^dag>|";
+			title1 = "<|ff|>";
 			title2 = "Var(Re{ff})";
 			title3 = "Var(Im{ff})";
 
@@ -496,7 +496,7 @@ void process_autocorr_block(
 	while (getline(input_file, line)) {
 		istringstream iss(line);
 		if (iss >> value_tmp >> value_tmp >> value_tmp >> value_tmp >> obs_re >> obs_im) {
-			obs = obs_re * obs_re + obs_im * obs_im;//obs = |obs|^2 = obs_re^2 + obs_im^2;
+			obs = sqrt(obs_re * obs_re + obs_im * obs_im);//obs = sqrt(|obs|^2) = sqrt(obs_re^2 + obs_im^2);
 			y.push_back(obs);
 			yr.push_back(obs_re);
 			yi.push_back(obs_im);
@@ -525,7 +525,7 @@ void process_autocorr_block(
 		var_new.push_back(var_m);
 		varr_new.push_back(var_re);
 		vari_new.push_back(var_im);
-		output_file << dim_block << "\t" << var_m << "\t" << var_re << "\t" << var_im << endl;
+		output_file << dim_block << "\t" << mean << "\t" << var_m << "\t" << mean_re << "\t" << var_re << "\t" << mean_im << "\t" << var_im << endl;
 	}
 
 	vector <double> n_sub_d;
