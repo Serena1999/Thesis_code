@@ -85,8 +85,8 @@ int main() {
 	double mpi = 1500; //MeV //BE CAREFUL TO CHOOSE IT WELL;
 	bool bool_startFile_poly = 1, bool_startFile_ff = 1;//BE CAREFUL TO CHOOSE IT WELL;
 	double temp_value;
-	vector<int> append_mode_poly = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };//20 entries (same size of beta);
-	vector<int> append_mode_ff = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};//20 entries (same size of beta);
+	vector<int> append_mode_poly = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };//18 entries (same size of beta);
+	vector<int> append_mode_ff = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };//18 entries (same size of beta);
 	vector<int> n_skip_rep, n_skip_imp, n_skip_reff, n_skip_imff;
 	vector<int> dim_block_modP, dim_block_reP, dim_block_imP, dim_block_modff, dim_block_reff, dim_block_imff;
 	vector<double> aml, beta, afm, temp;//T = \hbar * c /(Nt * a[fm]) (1.60), Nt = 8; 
@@ -421,7 +421,7 @@ void stats_thesis(
 			}
 			istringstream iss(line);
 			if (iss >> discard1 >> discard2 >> discard3 >> discard4 >> obs_re >> obs_im) {
-				obs = obs_re * obs_re + obs_im * obs_im;//obs = |obs|^2 = obs_re^2 + obs_im^2;
+				obs = sqrt(obs_re * obs_re + obs_im * obs_im);//obs = |obs| = sqrt(obs_re^2 + obs_im^2);
 				y.push_back(obs);
 				yr.push_back(obs_re);
 				yi.push_back(obs_im);
@@ -544,7 +544,7 @@ void stats_thesis(
 				n_copy_accum_m++;
 				n_copy_accum_r++;
 				n_copy_accum_i++;
-				value_mod_tmp += obs_re * obs_re + obs_im * obs_im;//obs = |obs|^2 = obs_re^2 + obs_im^2;
+				value_mod_tmp += sqrt(obs_re * obs_re + obs_im * obs_im);//obs = |obs| = sqrt(obs_re^2 + obs_im^2);
 				value_re_tmp += obs_re;
 				value_im_tmp += obs_im;
 			}
@@ -594,7 +594,7 @@ void stats_thesis(
 		blocking_more_faster(&mean_im, &var_im, yi, dim_block_im);
 	}
 
-	cout << tipology << ": |<Obs * Obs^dag>| = " << mean << " +- " << sqrt(var_m) << endl;
+	cout << tipology << ": <|Obs|> = " << mean << " +- " << sqrt(var_m) << endl;
 	cout << tipology << ": <Re{Obs}> = " << mean_re << " +- " << sqrt(var_re) << endl;
 	cout << tipology << ": <Im{Obs}> = " << mean_im << " +- " << sqrt(var_im) << endl;
 

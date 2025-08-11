@@ -15,7 +15,7 @@
 //-----------------------------------------------------------------
 //VARIABLES TO SET:
 
-const string tipology = "fermionT0"; //gauge/fermion/fermionT0, CHOOSABLE --> to do the gauge/fermion observables graph
+const string tipology = "fermion"; //gauge/fermion/fermionT0, CHOOSABLE --> to do the gauge/fermion observables graph
 
 //-----------------------------------------------------------------
 //ROOT MACRO TO DO FIT AND GRAPH:
@@ -72,7 +72,7 @@ int main() {
 	double pos_title_im;
 
 	if (tipology == "gauge") {
-		name_input_file = "800.0_poly_results.txt";
+		name_input_file = "1500.0_poly_results.txt";
 		pos = name_input_file.find_last_of(".");
 		if (pos != string::npos) {
 			name_tmp = name_input_file.substr(0, pos); //I remove extension using substr
@@ -81,10 +81,10 @@ int main() {
 		name_image_mod = output_directory + "modPvsT_" + name_tmp + ".png";
 		name_image_re = output_directory + "rePvsT_" + name_tmp + ".png";
 		name_image_im = output_directory + "imPvsT_" + name_tmp + ".png";
-		title_mod = "#LT|PP^{+}|#GT vs temperature:";
+		title_mod = "#LT|P|#GT vs temperature:";
 		title_re = "#LTRe{P}#GT vs temperature :";
 		title_im = "#LTIm{P}#GT vs temperature:";
-		y_name_mod = "#LT|PP^{+}|#GT";
+		y_name_mod = "#LT|P|#GT";
 		y_name_re = "#LTRe{P}#GT";
 		y_name_im = "#LTIm{P}#GT";
 		pos_ymod = 0.02;
@@ -98,7 +98,7 @@ int main() {
 		pos_title_im = 0.3;
 	}
 	else if (tipology == "fermion") {
-		name_input_file = "800.0_ff_results.txt";
+		name_input_file = "1500.0_ff_results.txt";
 		pos = name_input_file.find_last_of(".");
 		if (pos != string::npos) {
 			name_tmp = name_input_file.substr(0, pos); //I remove extension using substr
@@ -107,10 +107,10 @@ int main() {
 		name_image_mod = output_directory + "modffvsT_" + name_tmp + ".png";
 		name_image_re = output_directory + "reffvsT_" + name_tmp + ".png";
 		name_image_im = output_directory + "imffvsT_" + name_tmp + ".png";
-		title_mod = "#LT|(#bar{#psi}#psi)(#bar{#psi}#psi)^{+}|#GT vs temperature:";
+		title_mod = "#LT|#bar{#psi}#psi|#GT vs temperature:";
 		title_re = "#LTRe{#bar{#psi}#psi}#GT vs temperature :";
 		title_im = "#LTIm{#bar{#psi}#psi}#GT vs temperature:";
-		y_name_mod = "#LT|(#bar{#psi}#psi)(#bar{#psi}#psi)^{+}|#GT";
+		y_name_mod = "#LT|#bar{#psi}#psi|#GT";
 		y_name_re = "#LTRe{#bar{#psi}#psi}#GT";
 		y_name_im = "#LTIm{#bar{#psi}#psi}#GT";
 		pos_ymod = 0.03;
