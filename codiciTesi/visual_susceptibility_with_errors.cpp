@@ -44,7 +44,7 @@ int main() {
 	vector <double> temp, chi, chi_err;
 	size_t pos;
 	string line, name_tmp;
-	string input_directory = "11_05_2025/data_susceptiblities_with_errors/";
+	string input_directory = "19_05_2025/data_susceptiblities_with_errors/";
 	string output_directory = "results/";
 	string name_input_file;
 	pos = name_input_file.find_last_of(".");
@@ -60,7 +60,7 @@ int main() {
 	double width_canvas;
 
 	if (tipology == "reP") {
-		name_input_file = "800.0_reP_results.txt";
+		name_input_file = "1500.0_reP_results.txt";
 		pos = name_input_file.find_last_of(".");
 		if (pos != string::npos) {
 			name_tmp = name_input_file.substr(0, pos); //I remove extension using substr
@@ -75,7 +75,7 @@ int main() {
 		width_canvas = 900;
 	}
 	else if (tipology == "imP") {
-		name_input_file = "800.0_imP_results.txt";
+		name_input_file = "1500.0_imP_results.txt";
 		pos = name_input_file.find_last_of(".");
 		if (pos != string::npos) {
 			name_tmp = name_input_file.substr(0, pos); //I remove extension using substr
@@ -90,7 +90,7 @@ int main() {
 		width_canvas = 900;
 	}
 	else if (tipology == "reff") {
-		name_input_file = "800.0_reff_results.txt";
+		name_input_file = "1500.0_reff_results.txt";
 		pos = name_input_file.find_last_of(".");
 		if (pos != string::npos) {
 			name_tmp = name_input_file.substr(0, pos); //I remove extension using substr
@@ -105,7 +105,7 @@ int main() {
 		width_canvas = 1100;
 	}
 	else if (tipology == "imff") {
-		name_input_file = "800.0_imff_results.txt";
+		name_input_file = "1500.0_imff_results.txt";
 		pos = name_input_file.find_last_of(".");
 		if (pos != string::npos) {
 			name_tmp = name_input_file.substr(0, pos); //I remove extension using substr

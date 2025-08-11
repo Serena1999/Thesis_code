@@ -37,6 +37,8 @@ int main() {
 		"19_05_2025/build_good_mpi1500_4_out/",
 		"19_05_2025/build_good_mpi1500_5_out/",
 		"19_05_2025/build_good_mpi1500_6_out/",
+		"19_05_2025/build_good_mpi1500_17_out/",
+		"19_05_2025/build_good_mpi1500_18_out/",
 		"19_05_2025/build_good_mpi1500_7_out/",
 		"19_05_2025/build_good_mpi1500_8_out/",
 		"19_05_2025/build_good_mpi1500_9_out/",
@@ -51,27 +53,28 @@ int main() {
 
 	//T=0 1500 MEV:
 	vector <string> name_files = {//CAMBIA SECONDO NECESSITà
-		"0T_ferm_obs2872285299.txt",
-		"0T_ferm_obs2047750879.txt",
-		"0T_ferm_obs1781648439.txt",
-		"0T_ferm_obs227583724.txt",
-		"0T_ferm_obs3948504460.txt",
-		"0T_ferm_obs3686097930.txt",
-		"0T_ferm_obs961399191.txt",
-		"0T_ferm_obs3960814346.txt",
-		"0T_ferm_obs286800022.txt",
-		"0T_ferm_obs51408888.txt",
-		"0T_ferm_obs530211343.txt",
-		"0T_ferm_obs3915561611.txt",
-		"0T_ferm_obs2916735140.txt",
-		"0T_ferm_obs1246938570.txt",
-		"0T_ferm_obs3704530785.txt",
-		"0T_ferm_obs2838630875.txt"
-
+		"corrected_ferm_obs1194794680.txt",
+		"corrected_ferm_obs958284955.txt",
+		"corrected_ferm_obs2174723772.txt",
+		"corrected_ferm_obs2393834332.txt",
+		"corrected_ferm_obs2698338921.txt",
+		"corrected_ferm_obs2087301928.txt",
+		"corrected_ferm_obs2149388610.txt",
+		"corrected_ferm_obs1804190129.txt",
+		"corrected_ferm_obs1439591720.txt",
+		"corrected_ferm_obs3844636190.txt",
+		"corrected_ferm_obs4003409327.txt",
+		"corrected_ferm_obs1698962147.txt",
+		"corrected_ferm_obs1287052570.txt",
+		"corrected_ferm_obs230875197.txt",
+		"corrected_ferm_obs802462068.txt",
+		"corrected_ferm_obs14065219.txt",
+		"corrected_ferm_obs4048334874.txt",
+		"corrected_ferm_obs2239384639.txt"
 	};
 
-	int col_index = 5;//CAMBIA SECONDO NECESSITà: 5 per re, 6 oer im (numerazione a partire da 1)
-	string obs_name = "reff";//CAMBIA SECONDO NECESSITà: usa (re/im)P2 per ((re/im)loop di Pol)^2 e (re/im)ff2 per ((re/im)cond
+	int col_index = 6;//CAMBIA SECONDO NECESSITà: 5 per re, 6 oer im (numerazione a partire da 1)
+	string obs_name = "imff";//CAMBIA SECONDO NECESSITà: usa (re/im)P2 per ((re/im)loop di Pol)^2 e (re/im)ff2 per ((re/im)cond
 
 	//reff->imff->reP->imP
 

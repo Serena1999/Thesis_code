@@ -8,6 +8,7 @@
 ****             selectable from an external file.            ****
 ****                (author = Serena Bruzzesi)                ****
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
+//TODO IN MANIERA PIù INTELLIGENTE INCLUDENDO MOD_P E MOD_FF
 
 //-----------------------------------------------------------------
 //HEADERS && LIBRARY:
@@ -24,7 +25,7 @@ const double hbar_c = 197.3269804; //MeV * fm
 //VARIABLES TO SET:
 
 const bool debug_mode = 0;
-const string tipology = "reff_subT0";//YOU CAN CHOOSE BETWEEN reP, imP, reff, imff, reff_subT0;
+const string tipology = "imff";//YOU CAN CHOOSE BETWEEN reP, imP, reff, imff, reff_subT0;
 
 //-----------------------------------------------------------------
 //DECLARATIONS:
@@ -87,7 +88,7 @@ int main() {
 	const int Ns = 32; //BE CAREFUL TO CHOOSE IT WELL;
 	const int Vs = Ns * Ns * Ns;
 	int skipLines_file_lpc = 2, skipLines_file_list = 1, skipLines = 0;
-	double mpi = 800; //MeV //BE CAREFUL TO CHOOSE IT WELL;
+	double mpi = 1500; //MeV //BE CAREFUL TO CHOOSE IT WELL;
 	bool bool_startFile = 1;//BE CAREFUL TO CHOOSE IT WELL;
 	vector<int> append_mode(20, 1); //80 entries with value = 1 (same size of beta); 
 	ostringstream mpi_stream;//TO INTRODUCE ALSO IN NUMERICAL METHODS CODE: IT IS USEFUL;
