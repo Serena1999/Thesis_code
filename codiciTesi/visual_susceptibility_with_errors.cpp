@@ -15,7 +15,7 @@
 //-----------------------------------------------------------------
 //VARIABLES TO SET:
 
-const string tipology = "reP"; //YOU CAN CHOOSE BETWEEN reP, imP, reff, imff;
+const string tipology = "modff"; //YOU CAN CHOOSE BETWEEN reP, imP, reff, imff, modP, modff;
 const bool bool_log_scale = 0;
 
 //-----------------------------------------------------------------
@@ -67,8 +67,8 @@ int main() {
 		}
 		name_input_file = input_directory + name_input_file;
 		name_image = output_directory + "chi(reP)vsT_" + name_tmp + ".png";
-		title = "#chi_{|Re(P)|} vs temperature:";
-		y_name = "#chi_{|Re(P)|}";
+		title = "#chi_{Re(P)} vs temperature:";
+		y_name = "#chi_{Re(P)}";
 		pos_y = 0.020;
 		height = 0.45;
 		pos_title = 0.35;
@@ -82,8 +82,23 @@ int main() {
 		}
 		name_input_file = input_directory + name_input_file;
 		name_image = output_directory + "chi(imP)vsT_" + name_tmp + ".png";
-		title = "#chi_{|Im(P)|} vs temperature:";
-		y_name = "#chi_{|Im(P)|}";
+		title = "#chi_{Im(P)} vs temperature:";
+		y_name = "#chi_{Im(P)}";
+		pos_y = 0.03;
+		height = 0.45;
+		pos_title = 0.35;
+		width_canvas = 900;
+	}
+	else if (tipology == "modP") {
+		name_input_file = "1500.0_modP_results.txt";
+		pos = name_input_file.find_last_of(".");
+		if (pos != string::npos) {
+			name_tmp = name_input_file.substr(0, pos); //I remove extension using substr
+		}
+		name_input_file = input_directory + name_input_file;
+		name_image = output_directory + "chi(modP)vsT_" + name_tmp + ".png";
+		title = "#chi_{|P|} vs temperature:";
+		y_name = "#chi_{|P|}";
 		pos_y = 0.03;
 		height = 0.45;
 		pos_title = 0.35;
@@ -114,6 +129,21 @@ int main() {
 		name_image = output_directory + "chi(imff)vsT_" + name_tmp + ".png";
 		title = "#chi_{Im(#bar{#psi}#psi)} vs temperature:";
 		y_name = "#chi_{Im(#bar{#psi}#psi)}";
+		pos_y = 0.03;
+		height = 0.45;
+		pos_title = 0.35;
+		width_canvas = 900;
+	}
+	else if (tipology == "modff") {
+		name_input_file = "1500.0_modff_results.txt";
+		pos = name_input_file.find_last_of(".");
+		if (pos != string::npos) {
+			name_tmp = name_input_file.substr(0, pos); //I remove extension using substr
+		}
+		name_input_file = input_directory + name_input_file;
+		name_image = output_directory + "chi(modff)vsT_" + name_tmp + ".png";
+		title = "#chi_{|#bar{#psi}#psi|} vs temperature:";
+		y_name = "#chi_{|#bar{#psi}#psi|}";
 		pos_y = 0.03;
 		height = 0.45;
 		pos_title = 0.35;
