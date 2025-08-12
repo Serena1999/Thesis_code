@@ -89,11 +89,12 @@ template <class T> int blocking_sample(
 
 void mean_chi_f(
 	sample_gen& sampler,
-	const int n_steps, 
-	vector <double>& blocked_draws, 
+	const int n_steps,
+	vector <double>& original_draws,
+	vector <double>& blocked_draws,
 	double prefactor,
-	double * mean_chi_re, 
-	double * var_chi_re
+	double* chi_estimate,
+	double* var_chi
 );
 
 bool read_measurements(
@@ -467,28 +468,24 @@ void susceptibility_with_errors(
 		return;
 	}
 
-	original_draws_re.clear();
-
 	if (blocking_sample(original_draws_im, blocked_draws_im, dim_block_im)) {
 		cout << "Problem in blocking of im_original_draws" << endl;
 		return;
 	}
-
-	original_draws_im.clear();
 
 	if (blocking_sample(original_draws_mod, blocked_draws_mod, dim_block_mod)) {
 		cout << "Problem in blocking of mod_original_draws" << endl;
 		return;
 	}
 
-	original_draws_mod.clear();
 
 	//mean computation:
 
 	double estimator_chi_re, estimator_chi_im, estimator_chi_mod;
 	double var_chi_re, var_chi_im, var_chi_mod;
 
-	mean_chi_f(sampler, n_steps, blocked_draws_re, prefactor, &estimator_chi_re, &var_chi_re);
+	mean_chi_f(sampler, n_steps, original_draws_re, blocked_draws_re, prefactor, &estimator_chi_re, &var_chi_re);
+
 
 	if (var_chi_re < 0) {
 		cout << "[WARNING] var_chi_re problem at T = " << temp << ", var_chi_re = " << var_chi_re << endl;
@@ -509,12 +506,13 @@ void susceptibility_with_errors(
 	output_file_re << fixed << setprecision(numeric_limits<double>::max_digits10);
 	output_file_re << temp << "\t" << estimator_chi_re << "\t" << sqrt(var_chi_re) << endl;
 
+	original_draws_re.clear();
 	blocked_draws_re.clear();
 
 	output_file_re.close();
 
 
-	mean_chi_f(sampler, n_steps, blocked_draws_im, prefactor, &estimator_chi_im, &var_chi_im);
+	mean_chi_f(sampler, n_steps, original_draws_im, blocked_draws_im, prefactor, &estimator_chi_im, &var_chi_im);
 	
 	if (var_chi_im < 0) {
 		cout << "[WARNING] var_chi_im problem at T = " << temp << ", var_chi_im = " << var_chi_im << endl;
@@ -535,12 +533,13 @@ void susceptibility_with_errors(
 	output_file_im << fixed << setprecision(numeric_limits<double>::max_digits10);
 	output_file_im << temp << "\t" << estimator_chi_im << "\t" << sqrt(var_chi_im) << endl;
 
+	original_draws_im.clear();
 	blocked_draws_im.clear();
 
 	output_file_im.close();
 
 
-	mean_chi_f(sampler, n_steps, blocked_draws_mod, prefactor, &estimator_chi_mod, &var_chi_mod);
+	mean_chi_f(sampler, n_steps, original_draws_mod, blocked_draws_mod, prefactor, &estimator_chi_mod, &var_chi_mod);
 	if (var_chi_mod < 0) {
 		cout << "[WARNING] var_chi_mod problem at T = " << temp << ", var_chi_mod = " << var_chi_mod << endl;
 		cout << "dim_block = " << dim_block_mod << endl;
@@ -560,6 +559,7 @@ void susceptibility_with_errors(
 	output_file_mod << fixed << setprecision(numeric_limits<double>::max_digits10);
 	output_file_mod << temp << "\t" << estimator_chi_mod << "\t" << sqrt(var_chi_mod) << endl;
 
+	original_draws_mod.clear();
 	blocked_draws_mod.clear();
 
 	output_file_mod.close();
@@ -568,8 +568,9 @@ void susceptibility_with_errors(
 
 
 void mean_chi_f(
-	sample_gen & sampler,
+	sample_gen& sampler,
 	const int n_steps,
+	vector <double>& original_draws,
 	vector <double>& blocked_draws,
 	double prefactor,
 	double* chi_estimate,
@@ -577,17 +578,16 @@ void mean_chi_f(
 ) {
 	double mean = 0, mean2 = 0, mean_chi2 = 0, mean_chi = 0, value;
 	double mean_tmp, mean_tmp2;
-	int N = blocked_draws.size(), index;
+	int N = original_draws.size(), index;
 
 	for (int ii = 0; ii < N; ii++) {
-		value = blocked_draws[ii];
+		value = original_draws[ii];
 		mean += value;
 		mean2 += (value * value);
 	}
-	mean /= (double)N;
-	mean2 /= (double)N;
+	mean /= (double)original_draws.size();
+	mean2 /= (double)original_draws.size();
 	(*chi_estimate) = obs_function(prefactor, mean, mean2);
-
 
 	//variance computation:
 

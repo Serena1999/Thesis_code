@@ -15,7 +15,7 @@
 //-----------------------------------------------------------------
 //VARIABLES TO SET:
 
-const string tipology = "modff"; //YOU CAN CHOOSE BETWEEN reP, imP, reff, imff, modP, modff;
+const string tipology = "reP"; //YOU CAN CHOOSE BETWEEN reP, imP, reff, imff, modP, modff;
 const bool bool_log_scale = 0;
 
 //-----------------------------------------------------------------

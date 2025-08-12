@@ -25,7 +25,7 @@ const double hbar_c = 197.3269804; //MeV * fm
 //VARIABLES TO SET:
 
 const bool debug_mode = 0;
-const string tipology = "imff";//YOU CAN CHOOSE BETWEEN reP, imP, reff, imff, reff_subT0;
+const string tipology = "reP";//YOU CAN CHOOSE BETWEEN reP, imP, reff, imff, reff_subT0;
 
 //-----------------------------------------------------------------
 //DECLARATIONS:
@@ -351,14 +351,14 @@ void susceptibility_with_errors(
 		mean += value;
 		mean2 += (value * value);
 	}
-	mean /= (double)N;
-	mean2 /= (double)N;
+	mean /= (double)renormalized_conf_draws.size();
+	mean2 /= (double)renormalized_conf_draws.size();
 	chi_estimate = obs_function(prefactor, mean, mean2);
 
+	N = blocked_draws.size();
 
 	//variance computation:
 
-	N = blocked_draws.size();
 	uniform_int_distribution<> dist_int(0, N - 1);
 	//sampler.init(10);//SEED
 
