@@ -20,6 +20,9 @@ void plot_points(vector<double>& x, vector<double>& y, string name_image, string
 
 int main() {
 
+	bool see_from_given_n = 1;
+	int given_n = 1000;
+
 	int skipLines_file_list = 1, skipLines = 1; //= number of lines to skip while reading input file;
 	vector<double> time1, time2, polyr_vec, polyi_vec, reff_vec, imff_vec; //to contain data
 	int index = 0, conf_id;
@@ -35,7 +38,7 @@ int main() {
 	string reff_image;
 	string imff_image;
 	string title;
-	string name_file_list = "19_05_2025/file_list.txt";
+	string name_file_list = "1500_48x8/file_list.txt";
 	
 	ifstream file_list;
 	file_list.open(name_file_list);
@@ -87,6 +90,12 @@ int main() {
 		title = "Monte Carlo History " + gauge_files[ii] + ":";
 		polyre_image = y_name1 + "_" + gauge_files[ii] + ".png";
 		polyim_image = y_name2 + "_" + gauge_files[ii] + ".png";
+
+		if (see_from_given_n == 1) {
+			skipLines += given_n;
+			polyre_image = "reduced_" + polyre_image;
+			polyim_image = "reduced_" + polyim_image;
+		}
 
 		for (int i = 0; i < skipLines; i++) {
 			if (!getline(input_file, line)) {
@@ -202,13 +211,17 @@ void plot_points(vector<double>& x, vector<double>& y, string name_image, string
 
 	g->SetLineColor(1);
 
-	g->GetYaxis()->SetRangeUser(min_y - 0.01 * abs(min_y), max_y + 0.01 * abs(max_y));//to set y axis range
+	g->GetYaxis()->SetLimits(min_y - 0.01 * abs(min_y), max_y + 0.01 * abs(max_y));//to set y axis range
+	//g->GetYaxis()->SetLimits(min_y+0.0000000001, max_y -0.0000000001);//to set y axis range
 	g->GetXaxis()->SetLimits(min_x- 100, max_x + 100);//to set x axis range //SetLimits cannot be ignored by ROOT, while SetRangeUser yes.
 
-	gStyle->SetOptFit(1111);
-
 	g->Draw("ALP");
+	g->GetYaxis()->SetRangeUser(min_y - 0.01 * abs(min_y), max_y + 0.01 * abs(max_y));
 	gPad->Update();
+	cout << min_y << endl;
+	cout << max_y << endl;
+	cout << endl;
+
 
 	//LATEX: I add LaTeX titles and axis labels:
 	TLatex latex;

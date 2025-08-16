@@ -649,15 +649,15 @@ int main(int argc, char** argv) {
 	TApplication app("App", &argc, argv);
 
 	int skipLines = 1; //= number of lines to skip while reading input file;
-	double min_index = 2;
-	double max_index = 8;
+	double min_index = 3;
+	double max_index = 7;// tot=17 per 1500 MeV, tot =20 per 800 MeV
 	
 	double temp_value, mod_value, mod_err_value, re_value, re_err_value, im_value, im_err_value;
 	vector <double> temp, mod, mod_err, re, re_err, im, im_err;
 	size_t pos;
 	string line, name_tmp;
-	string input_directory = "19_05_2025/polyff_results/";
-	string mpi_string = "1500";
+	string input_directory = "11_05_2025/polyff_results/";
+	string mpi_string = "800";
 	string output_directory = "results/";
 	string name_input_file;
 	string name_image_mod;
@@ -696,10 +696,10 @@ int main(int argc, char** argv) {
 			name_image_re = output_directory + "FIT_rePvsT_" + name_tmp + ".png";
 			name_image_im = output_directory + "FIT_imPvsT_" + name_tmp + ".png";
 		}
-		title_mod = "#LT|PP^{+}|#GT vs temperature:";
+		title_mod = "#LT|P|#GT vs temperature:";
 		title_re = "#LTRe{P}#GT vs temperature :";
 		title_im = "#LTIm{P}#GT vs temperature:";
-		y_name_mod = "#LT|PP^{+}|#GT";
+		y_name_mod = "#LT|P|#GT";
 		y_name_re = "#LTRe{P}#GT";
 		y_name_im = "#LTIm{P}#GT";
 		pos_ymod = 0.02;
@@ -729,10 +729,10 @@ int main(int argc, char** argv) {
 			name_image_re = output_directory + "FIT_reffvsT_" + name_tmp + ".png";
 			name_image_im = output_directory + "FIT_imffvsT_" + name_tmp + ".png";
 		}
-		title_mod = "#LT|(#bar{#psi}#psi)(#bar{#psi}#psi)^{+}|#GT vs temperature:";
+		title_mod = "#LT|#bar{#psi}#psi|#GT vs temperature:";
 		title_re = "#LTRe{#bar{#psi}#psi}#GT vs temperature :";
 		title_im = "#LTIm{#bar{#psi}#psi}#GT vs temperature:";
-		y_name_mod = "#LT|(#bar{#psi}#psi)(#bar{#psi}#psi)^{+}|#GT";
+		y_name_mod = "#LT|#bar{#psi}#psi|#GT";
 		y_name_re = "#LTRe{#bar{#psi}#psi}#GT";
 		y_name_im = "#LTIm{#bar{#psi}#psi}#GT";
 		pos_ymod = 0.03;

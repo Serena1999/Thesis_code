@@ -59,7 +59,7 @@ int main() {
 	double n_sub_ratio = 0.5;//=0.5*len(data) -> you can modify this number from 0 to 1;
 	string line, word, title1, title2, title3, var_dimblock_poly_image, var_dimblock_polyre_image, var_dimblock_polyim_image, name_output_file;
 	string var_dimblock_ff_image, var_dimblock_ffre_image, var_dimblock_ffim_image;
-	const string name_file_list_therm = "19_05_2025/file_list_therm.txt";
+	const string name_file_list_therm = "11_05_2025/file_list_therm_extended.txt";
 	const string first_out_line_gauge = "# N°elements in each subset \t	mean(<|P|>) \t var(<|P|>| ) \t mean(Re{ P }) \t var(Re{ P }) \t mean(Im{P}) \t var(Im{ P }):";
 	const string first_out_line_ferm = "# N°elements in each subset \t mean(<|ff|>) \t var(<|ff|>) \t mean(Re{ff}) \t var(Re{ff}) \t mean(Im{ff}) \t var(Im{ff}):";
 	

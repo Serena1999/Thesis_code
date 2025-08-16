@@ -25,7 +25,7 @@ const double hbar_c = 197.3269804; //MeV * fm
 //VARIABLES TO SET:
 
 const bool debug_mode = 0;
-const string tipology = "reP";//YOU CAN CHOOSE BETWEEN reP, imP, reff, imff, reff_subT0;
+const string tipology = "imff";//YOU CAN CHOOSE BETWEEN reP, imP, reff, imff, reff_subT0;
 
 //-----------------------------------------------------------------
 //DECLARATIONS:
@@ -88,15 +88,15 @@ int main() {
 	const int Ns = 32; //BE CAREFUL TO CHOOSE IT WELL;
 	const int Vs = Ns * Ns * Ns;
 	int skipLines_file_lpc = 2, skipLines_file_list = 1, skipLines = 0;
-	double mpi = 1500; //MeV //BE CAREFUL TO CHOOSE IT WELL;
+	double mpi = 800; //MeV //BE CAREFUL TO CHOOSE IT WELL;
 	bool bool_startFile = 1;//BE CAREFUL TO CHOOSE IT WELL;
-	vector<int> append_mode(20, 1); //80 entries with value = 1 (same size of beta); 
+	vector<int> append_mode(21, 1); //84 entries with value = 1 (same size of beta); 
 	ostringstream mpi_stream;//TO INTRODUCE ALSO IN NUMERICAL METHODS CODE: IT IS USEFUL;
 	mpi_stream << fixed << setprecision(1) << mpi; //set to 1 decimal place
 	string mpi_string = mpi_stream.str(); // conversion into string
 	string name_output_file = "results/" + mpi_string + "_" + tipology + "_results.txt";
-	string name_file_lpc = "19_05_2025/data_value/lcp_data_value.txt";
-	string name_file_list = "19_05_2025/data_value/file_list_therm.txt";
+	string name_file_lpc = "11_05_2025/data_value/lcp_data_value.txt";
+	string name_file_list = "11_05_2025/data_value/file_list_therm.txt";
 
 	double temp_value;
 	vector<int> n_skip, n_skip2, dim_block, dim_block2;
