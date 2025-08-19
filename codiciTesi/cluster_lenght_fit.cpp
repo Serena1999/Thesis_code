@@ -659,8 +659,8 @@ double chi2_reduced_estimate(
 int main(int argc, char** argv) {
 
 	int skipLines = 1; //= number of lines to skip while reading input file;
-	int temp_min = 210;
-	int temp_max = 280;
+	int temp_min = 200;
+	int temp_max = 260;
 	string mpi_string = "1500";
 	string input_directory = "19_05_2025/cluster_lenght/";
 

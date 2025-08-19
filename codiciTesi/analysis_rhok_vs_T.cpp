@@ -63,10 +63,10 @@ double f(double rho_k, double rho_1) {
 
 int main() {
 
-	string mpi = "800";
+	string mpi = "1500";//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	string line;
 
-	string list_file = "11_05_2025/file_list_therm_extended.txt";
+	string list_file = "19_05_2025/file_list_therm.txt";//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	int skipLines_list_file = 1;
 	int step_sample_gauge = 1;
 	int step_sample_fermion = 10;

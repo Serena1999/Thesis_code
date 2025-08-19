@@ -7,8 +7,8 @@
 const bool bool_choose_at_eye = 0; //0 if you want an automatic set of parameters, 1 if you want to impose them by hand;
 // -> if 1, modify the corrisponding if condition in par_estimate function to choose parameters;
 
-const int discard_until = 1; //to discard x[ii] with ii < discard_until
-const int discard_last = 4; //to discard the last discard_last indexes
+const int discard_until = 2; //to discard x[ii] with ii < discard_until
+const int discard_last = 0; //to discard the last discard_last indexes
 
 //-----------------------------------------------------------------
 //ROOT MACRO TO DO FIT AND GRAPH:
@@ -124,7 +124,7 @@ bool par_estimate(
 
 	// linear fit y_new = p2 * x_new + log(p0):
 	double sum_x = 0, sum_y = 0, sum_xx = 0, sum_xy = 0;
-	int N = x.size();
+	int N = x_new.size();
 	for (int ii = 0; ii < N; ++ii) {
 		sum_x += x_new[ii];
 		sum_y += y_new[ii];
@@ -176,9 +176,10 @@ int main(int argc, char** argv) {
 		name_image = "results/FIT_MUT_" + quantity + "_mpi" + mpi + "discard_until" + to_string(discard_until) + "discard_last" + to_string(discard_last) + ".png";
 	}
 	
-
 	vector <double> x = {
 		228.254,
+		233.389,
+		240.397,
 		244.890,
 		261.844,
 		279.271,
@@ -192,6 +193,8 @@ int main(int argc, char** argv) {
 
 	vector <double> y = {
 		0.251,
+		0.325,
+		0.476,
 		0.531,
 		0.909,
 		1.340,
@@ -205,6 +208,8 @@ int main(int argc, char** argv) {
 
 	vector <double> dy = {
 		0.054,
+		0.052,
+		0.049,
 		0.027,
 		0.028,
 		0.094,
@@ -213,7 +218,7 @@ int main(int argc, char** argv) {
 		0.100,
 		0.100,
 		0.100,
-		0.100 
+		0.100
 	};
 
 	int index = 0;

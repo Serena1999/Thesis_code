@@ -27,13 +27,13 @@ const bool bool_choose_at_eye = 0; //0 if you want an automatic set of parameter
 // -> if 1, modify the corrisponding if condition in par_estimate function to choose parameters;
 
 const bool only_one_graph = 1;//to choose to focus only on a single graph
-const int index_graph = 15; //index of the graph to focus on if only_one_graph = 1. //7 not usable for 800 MeV //3 not usable for 1500 MeV
+const int index_graph = 25; //index of the graph to focus on if only_one_graph = 1. //7 not usable for 800 MeV //3 not usable for 1500 MeV
 
-const int discard_until = 0;
+const int discard_until = 4;
 
-const bool log_scale = 1;
+const bool log_scale = 0;
 
-double init_p0 = 0.121246; //for fit_function 4
+double init_p0 = 0.474843; //for fit_function 4
 
 //-----------------------------------------------------------------
 //ROOT MACRO TO DO FIT AND GRAPH:
@@ -556,7 +556,8 @@ int main(int argc, char** argv) {
 //		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
 //		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
 //		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
-//		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
+		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
+		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
 		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
 		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
 		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
@@ -576,7 +577,8 @@ int main(int argc, char** argv) {
 //		"#LT #rho_{k} / #rho_{1} #GT",
 //		"#LT #rho_{k} / #rho_{1} #GT",
 //		"#LT #rho_{k} / #rho_{1} #GT",
-//		"#LT #rho_{k} / #rho_{1} #GT",
+		"#LT #rho_{k} / #rho_{1} #GT",
+		"#LT #rho_{k} / #rho_{1} #GT",
 		"#LT #rho_{k} / #rho_{1} #GT",
 		"#LT #rho_{k} / #rho_{1} #GT",
 		"#LT #rho_{k} / #rho_{1} #GT",
@@ -602,8 +604,9 @@ int main(int argc, char** argv) {
 //		0.5,
 //		0.5,
 //		0.5,
-//		0.5,
-//		0.5,
+		0.5,
+		0.5,
+		0.5,
 		0.5,
 		0.5,
 		0.5,
@@ -645,8 +648,9 @@ int main(int argc, char** argv) {
 //		0.020,
 //		0.020,
 //		0.020,
-//		0.020,
-//		0.020,
+		0.020,
+		0.020,
+		0.020,
 		0.020,
 		0.020,
 		0.020,
@@ -688,8 +692,9 @@ int main(int argc, char** argv) {
 //		0.45,
 //		0.45,
 //		0.45,
-//		0.45,
-//		0.45,
+		0.45,
+		0.45,
+		0.45,
 		0.45,
 		0.45,
 		0.45,
