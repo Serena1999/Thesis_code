@@ -15,7 +15,7 @@
 #include "../library.h"
 #include "../root_include.h"
 
-#define CHOOSE_FIT_FUNCTION 4
+#define CHOOSE_FIT_FUNCTION 1
 /*
  -> 0 for rho_k/rho_1 = exp(-par[0]*(x-1))/pow(x,par[1])
  -> 1 for rho_k/rho_1 = exp(-par[0]*(x-1))/pow(x, 2.5)
@@ -27,13 +27,13 @@ const bool bool_choose_at_eye = 0; //0 if you want an automatic set of parameter
 // -> if 1, modify the corrisponding if condition in par_estimate function to choose parameters;
 
 const bool only_one_graph = 1;//to choose to focus only on a single graph
-const int index_graph = 25; //index of the graph to focus on if only_one_graph = 1. //7 not usable for 800 MeV //3 not usable for 1500 MeV
+const int index_graph = 4; //index of the graph to focus on if only_one_graph = 1. //7 not usable for 800 MeV //3 not usable for 1500 MeV
 
-const int discard_until = 4;
+const int discard_until = 5;
 
-const bool log_scale = 0;
+const bool log_scale = 1;
 
-double init_p0 = 0.474843; //for fit_function 4
+double init_p0 = 0.3; //for fit_function 4 (and for fit_function = 1 if bool_choose_at_eye = 1)
 
 //-----------------------------------------------------------------
 //ROOT MACRO TO DO FIT AND GRAPH:
@@ -189,7 +189,7 @@ double log_function(
 		vector<double>& p //parameters
 	) {
 	
-		p[0] = 1;
+		p[0] = init_p0;
 	
 		if (bool_choose_at_eye || (x.size() < n_par_fit)) {//TO CHANGE THE FOLLOWING FOR "CHOOSE BY EYE" SETTING
 			if (x.size() < n_par_fit) {
@@ -553,9 +553,6 @@ int main(int argc, char** argv) {
 	read_name_files(files, directory + name_file_list);
 
 	vector <string> y_name = {//BE CAREFUL TO CHOOSE WELL;
-//		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
-//		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
-//		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
 		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
 		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
 		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
@@ -574,9 +571,9 @@ int main(int argc, char** argv) {
 		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
 		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
 		"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
-//		"#LT #rho_{k} / #rho_{1} #GT",
-//		"#LT #rho_{k} / #rho_{1} #GT",
-//		"#LT #rho_{k} / #rho_{1} #GT",
+		//"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
+		//"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
+		//"#LT #rho_{k} #GT / #LT #rho_{1} #GT",
 		"#LT #rho_{k} / #rho_{1} #GT",
 		"#LT #rho_{k} / #rho_{1} #GT",
 		"#LT #rho_{k} / #rho_{1} #GT",
@@ -594,16 +591,20 @@ int main(int argc, char** argv) {
 		"#LT #rho_{k} / #rho_{1} #GT",
 		"#LT #rho_{k} / #rho_{1} #GT",
 		"#LT #rho_{k} / #rho_{1} #GT",
-		"#LT #rho_{k} / #rho_{1} #GT"
+		"#LT #rho_{k} / #rho_{1} #GT",
+		//"#LT #rho_{k} / #rho_{1} #GT",
+		//"#LT #rho_{k} / #rho_{1} #GT",
+		//"#LT #rho_{k} / #rho_{1} #GT"
 	};
 
 	vector <double> pos_title = {//BE CAREFUL TO CHOOSE WELL;
-//		0.5,
-//		0.5,
-//		0.5,
-//		0.5,
-//		0.5,
-//		0.5,
+		//0.5,
+		//0.5,
+		//0.5,
+		//0.5,
+		//0.5,
+		//0.5,
+		0.5,
 		0.5,
 		0.5,
 		0.5,
@@ -642,12 +643,13 @@ int main(int argc, char** argv) {
 	};
 
 	vector <double> pos_y = {//BE CAREFUL TO CHOOSE WELL;
-//		0.020,
-//		0.020,
-//		0.020,
-//		0.020,
-//		0.020,
-//		0.020,
+		//0.020,
+		//0.020,
+		//0.020,
+		//0.020,
+		//0.020,
+		//0.020,
+		0.020,
 		0.020,
 		0.020,
 		0.020,
@@ -686,12 +688,13 @@ int main(int argc, char** argv) {
 	};
 
 	vector <double> heigh_y = {//BE CAREFUL TO CHOOSE WELL;
-//		0.45,
-//		0.45,
-//		0.45,
-//		0.45,
-//		0.45,
-//		0.45,
+		//0.45,
+		//0.45,
+		//0.45,
+		//0.45,
+		//0.45,
+		//0.45,
+		0.45,
 		0.45,
 		0.45,
 		0.45,
@@ -1086,10 +1089,10 @@ void fit_plot_points_errors(
 	}
 
 	//SAVE: I save the canvas as an image
-	canvas->SaveAs(name_image.c_str());
+	//canvas->SaveAs(name_image.c_str());
 
 	//to save also in vectorial pdf form:
-	canvas->SaveAs((name_image.substr(0, name_image.find_last_of(".")) + ".pdf").c_str());
+	//canvas->SaveAs((name_image.substr(0, name_image.find_last_of(".")) + ".pdf").c_str());
 
 	output_file.close();
 
@@ -1175,10 +1178,10 @@ void silly_plot(
 
 
 	//SAVE: I save the canvas as an image
-	canvas->SaveAs(name_image.c_str());
+	//canvas->SaveAs(name_image.c_str());
 
 	//to save also in vectorial pdf form:
-	canvas->SaveAs((name_image.substr(0, name_image.find_last_of(".")) + ".pdf").c_str());
+	//canvas->SaveAs((name_image.substr(0, name_image.find_last_of(".")) + ".pdf").c_str());
 
 	//DELETE:
 	delete f1;

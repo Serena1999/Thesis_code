@@ -18,7 +18,7 @@ const bool bool_choose_at_eye = 0; //0 if you want an automatic set of parameter
 
 bool bool_enlarge = 0;//0 if you want to use the original draws, 1 if you want that y-values are multiplied by a the following factor:
 double enlarge_factor = 100;//factor to multiply the draws if bool_enlarge = 0;
-bool bool_adjustable_range = 1; //1 if you want to use only temperatures in [temp_min, temp_max], 0 if you want to use them all
+bool bool_adjustable_range = 0; //1 if you want to use only temperatures in [temp_min, temp_max], 0 if you want to use them all
 
 //-----------------------------------------------------------------
 //FIT && ESTIMATE OF PARAMETERS FUNCTIONS: 
@@ -659,10 +659,10 @@ double chi2_reduced_estimate(
 int main(int argc, char** argv) {
 
 	int skipLines = 1; //= number of lines to skip while reading input file;
-	int temp_min = 200;
-	int temp_max = 260;
-	string mpi_string = "1500";
-	string input_directory = "19_05_2025/cluster_lenght/";
+	int temp_min = 0;
+	int temp_max = 600;
+	string mpi_string = "800";
+	string input_directory = "11_05_2025/cluster_lenght/";
 
 	double temp_value, rc_value, rc_err_value;
 	vector <double> temp, rc, rc_err;

@@ -7,8 +7,8 @@
 const bool bool_choose_at_eye = 0; //0 if you want an automatic set of parameters, 1 if you want to impose them by hand;
 // -> if 1, modify the corrisponding if condition in par_estimate function to choose parameters;
 
-const int discard_until = 2; //to discard x[ii] with ii < discard_until
-const int discard_last = 0; //to discard the last discard_last indexes
+const int discard_until = 0; //to discard x[ii] with ii < discard_until
+const int discard_last = 2; //to discard the last discard_last indexes
 
 //-----------------------------------------------------------------
 //ROOT MACRO TO DO FIT AND GRAPH:
@@ -160,7 +160,7 @@ int main(int argc, char** argv) {
 
 	//TO CHOOSE:
 	string mpi = "1500";
-	string quantity = "2"; //1 for <rhok>/<rho1>, 2 for <rhok/rho1> 
+	string quantity = "1"; //1 for <rhok>/<rho1>, 2 for <rhok/rho1> 
 
 	TApplication app("App", &argc, argv);
 	
@@ -178,8 +178,8 @@ int main(int argc, char** argv) {
 	
 	vector <double> x = {
 		228.254,
-		233.389,
-		240.397,
+233.38884691008275,
+240.39708484174287,
 		244.890,
 		261.844,
 		279.271,
@@ -192,34 +192,35 @@ int main(int argc, char** argv) {
 	};
 
 	vector <double> y = {
-		0.251,
-		0.325,
-		0.476,
-		0.531,
-		0.909,
-		1.340,
-		1.680,
-		1.935,
-		2.190,
-		2.530,
-		2.790,
-		3.110
+0.2480,
+0.3430,
+		0.4845,
+		0.5280,
+		0.8990,
+		1.2510,
+		1.6610,
+		1.9010,
+		2.1400,
+		2.4400,
+		2.7490,
+		3.3200
 	};
 
 	vector <double> dy = {
-		0.054,
-		0.052,
-		0.049,
-		0.027,
-		0.028,
-		0.094,
-		0.060,
-		0.070,
-		0.100,
-		0.100,
-		0.100,
-		0.100
+0.0320,
+0.0140,
+		0.0590,
+		0.0290,
+		0.0350,
+		0.0067,
+		0.0600,
+		0.0890,
+		0.1100,
+		0.1500,
+		0.1000,
+		0.2400
 	};
+
 
 	int index = 0;
 	while (index < discard_until) {
@@ -516,10 +517,10 @@ void fit_plot_points_errors(
 
 
 	//SAVE: I save the canvas as an image
-	canvas->SaveAs(name_image.c_str());
+	//canvas->SaveAs(name_image.c_str());
 
 	//to save also in vectorial pdf form:
-	canvas->SaveAs((name_image.substr(0, name_image.find_last_of(".")) + ".pdf").c_str());
+	//canvas->SaveAs((name_image.substr(0, name_image.find_last_of(".")) + ".pdf").c_str());
 
 	gApplication->Run(true); // <--- TRUE = non bloccare il terminale
 
@@ -602,10 +603,10 @@ void silly_plot(
 
 
 	//SAVE: I save the canvas as an image
-	canvas->SaveAs(name_image.c_str());
+	//canvas->SaveAs(name_image.c_str());
 
 	//to save also in vectorial pdf form:
-	canvas->SaveAs((name_image.substr(0, name_image.find_last_of(".")) + ".pdf").c_str());
+	//canvas->SaveAs((name_image.substr(0, name_image.find_last_of(".")) + ".pdf").c_str());
 
 	//DELETE:
 	delete f1;
